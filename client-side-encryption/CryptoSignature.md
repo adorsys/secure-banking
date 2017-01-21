@@ -9,10 +9,10 @@ This is a simple overview on cryptographic signatures. Here we can distinguish b
   
 Follows a mapping of security features of those crypto signatures:
 
-| Cryptographic Primitive   | Hash 		| Mac					| Digital Signature 	|
-| Security Goal				|			|						|						|
-|---------------------------|-----------|-----------------------|-----------------------|
-| Integrity					| Yes		| Yes					| Yes					|
-| Authentication			| No		| Yes					| Yes					|	 
-| Non-repudiation			| No		| No					| Yes					|
-| Kind of keys				| none		| Symmetric (SecretKey) | Asymmetric (Keypair) 	|
+| Cryptographic Primitive | Hash | Mac | Digital Signature |
+| ------ | ---- | ------- |--------- |
+| Integrity | Yes | Yes | Yes |
+| Authentication | No | Yes| Yes |	 
+| Non-repudiation | No | No	| Yes |
+| Kind of keys | none | Symmetric (SecretKey) | Asymmetric (Keypair) |
+
