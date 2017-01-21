@@ -74,17 +74,89 @@ Example JWT:
 }
 ```
 
-#### Needed Implementation Work
+#### Implementation Work
 
-* Component to JWE encrypt a string given a public key
-	* SecretCredentialEncryptor
-	  * encrypt(String secret, JWK key) : JWE
+* Component to extract access token
+  * The oAuthToken sent from server might contain more than just an access token.
+  * AccessTokenExtractor
+    * extractAccessToken(oAuthToken:Base64EncodedJWT):Base64EncodedJWT
+    * We assume oAuthToken contains the claim "access_token" or ist just an access token.
 * Component to extract the json web key from the jwt token.
-	* JWTPublicKeyExtractor
-	  * extractKey(JWT jwt) : JWK
+  * JWTPublicKeyExtractor
+    * extractKey(oAuthToken Base64EncodedJWT) : JWK // Token from server
 	* We assume the JWT contains a claim named "res_pub_key"
+	* The format and the location of this information might be dependent on the target identity provider.
+	  * We prefer the IdP keeping this out of the access_token or refresh_token
+	  * IdP can put this in the oAuthToken
+	  * an identity provider might decide to put it accessToken because there is nothing else send to the client.
+	  * So the public key extractor will be configured to work with the target idp
+* Component to JWE encrypt a string given a public key
+  * SecretCredentialEncryptor
+    * encrypt(secret:String, serverPublicKey:JWK) : Base64EncodedJWT
+* Component to transform a PEM public key into a JWK
+  * Some server will publish their pulic key just in a PEM encoded format.
+  * JWKBuilder
+    * build(publicKey:PemEcnodedPublicKey):JWK
 
-### Client signed and nonceed a token
-Like describe above, the purpose ist to make sure a token sent by the client to the server can not be resent as result of a replay.
+### Client signed and nonced Token
+Like described above, the purpose is to make sure a token sent by the client to the server can not be resent as result of a replay.
+#### Workflow
+In order to do this, the client must:
+* For each new token
+  * Generate a HMAC Key to be sent to the server
+  * Encrypt the HMAC Key with the publick key of the server
+  * Generate a ClientJWT wrapping the Access Token with the following structure
+  * Generate the first nonce and add to ClientJWT
+  * Generate a timestamp and add to ClientJWT
+  * Add very short exiration to ClientJWT
+  * Include the encrypted HMAC Key in the first request to the server
+  ```json
+  {
+  	"access_token":"access.token.from.idp",
+  	"nonce":2341234,
+  	"timestamp":"45654674657",
+  	"hamac_key":"jwe.encrypted.hamac.key",
+  	"expir":141234231
+  }
+  ```
+  * HashMac sign and send ClientJWT to server : "Authorisation: Bearer hamac.sign.client.jwt"
+* For each subsequent service request
+  * Generate a ClientJWT wrapping the Access Token with the following structure
+  * Generate the first nonce and add to ClientJWT
+  * Generate a timestamp and add to ClientJWT
+  * Add very short exiration to ClientJWT
+  ```json
+  {
+  	"access_token":"access.token.from.idp",
+  	"nonce":2341234,
+  	"timestamp":"45654674657",
+  	"expir":141234231
+  }
+  ```
+  * HashMac sign and send ClientJWT to server : "Authorisation: Bearer hamac.sign.client.jwt"
+#### Implementation Work
+* Component to Generate HMACKey
+  * HMACKeyGenerator
+    * generateHMACKey(): JWK
+* Component to Encrypt the HMACKey with public key of the server (We might add this to the secret credential encryptor class)
+  * SecretCredentialEncryptor
+    * encrypt(hmacKey:JWK, serverPublicKey:JWK) : Base64EncodedJWE
+* Component to generate a nonce
+  * NonceGenerator
+    * generateNonce():Number
+* Component to generate the timestamp
+  * TimestamGenerator
+    * generateTimeStamp():Number
+* Component to build the ClientJWT object
+  * ClientJWTBuilder
+    * newClientJWT() : ClientJWT
+    * withAccessToken(accessToken Base64EncodedJWT) : ClientJWT // 
+    * withNonceGenerator(NonceGenerator) : ClientJWT
+    * withTimestampGenerator(TimestamGenerator) : ClientJWT
+    * withExpir(Number) : ClientJWT// The number of milliseconds of the validity
+    * includeEncryptedHMAC(SecretCredentialEncryptor, serverPublicKey:JWK) : ClientJWT // used to encrypt the HMAC
+    * build(hmacKey:JWK):Base64EncodedJWT
+ 
+
 
  
