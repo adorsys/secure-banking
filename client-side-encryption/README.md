@@ -81,7 +81,11 @@ Example JWT:
   * AccessTokenExtractor
     * extractAccessToken(oAuthToken:Base64EncodedJWT):Base64EncodedJWT
     * We assume oAuthToken contains the claim "access_token" or ist just an access token.
-* Component to extract the json web key from the jwt token.
+* Component to put and extract the json web key from the jwt token.
+  * On the Server
+    * JWTPublicKeyIncluder
+      * include(oAuthToken JWT, resourceServerPublicKey JWK): JWT
+      * The name of the claim to include is "res_pub_key"
   * JWTPublicKeyExtractor
     * extractKey(oAuthToken Base64EncodedJWT) : JWK // Token from server
 	* We assume the JWT contains a claim named "res_pub_key"
