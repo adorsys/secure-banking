@@ -3,9 +3,5 @@
 The intention of this module is to provide CSE implementations as a keycloak extension.
 
 ## TODOs
-
-### Define and implements JWTPublicKeyIncluder
-    * JWTPublicKeyIncluder
-      * include(oAuthToken JWT, resourceServerPublicKey JWK): JWT
-      * The name of the claim to include is "res_pub_key"
-
+* Create an IDP extension which uses JWTPublicKeyIncluder component to include resource server public key into oAuthToken
+* Create an IDP extension to decrypt secret credentials sent to IDP during logon workflow

@@ -108,11 +108,11 @@ Like described above, the purpose is to make sure a token sent by the client to 
 In order to do this, the client must:
 * For each new token
   * Generate a HMAC Key to be sent to the server
-  * Encrypt the HMAC Key with the publick key of the server
+  * Encrypt the HMAC Key with the public key of the server
   * Generate a ClientJWT wrapping the Access Token with the following structure
   * Generate the first nonce and add to ClientJWT
   * Generate a timestamp and add to ClientJWT
-  * Add very short exiration to ClientJWT
+  * Add very short expiration to ClientJWT
   * Include the encrypted HMAC Key in the first request to the server
   ```json
   {
@@ -163,4 +163,3 @@ In order to do this, the client must:
  
 
 
- 

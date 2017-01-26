@@ -8,22 +8,34 @@ The intention of this module is to provide CSE implementations for the different
 
 We have two use cases:
 
-### Client accessed the token endpoint of the ide with a credential
+### 1. Client accessed the token endpoint of the ide with a credential
 
 In this case client uses a secret credential to authenticate with the IDP. For example going to the token endpoint of the IDP with the password grant folw to acquire an access token.
 
 We can protect this password by using the public key of the IDP to encrypt the password of the user.
 
-### Client want to send a form to the resource server with secret credential
+### 2. Client want to send a form to the resource server with secret credential
 
 A typical use case is the storage of the user PIN in a multibanking application.
 
-In order to encrypt the secret credential send with the form (like a PIN), we need the public key of the resource server. This information can be stored in the access token of the client by the IDP.
+In order to encrypt the secret credential send with the form (like a PIN), we need the public key of the resource server. This information can be stored in the oAuth token of the client by the IDP.
 
-### TODO
+### TODOs:
 
 * Define functionality to decrypt encrypted credential in the IDP using the IDP private key.
 * Define functionality to decrypt a form parameter in the resource server using the resource server private key.
-* Define an IDP extension to put resource server public key in the access token.
-
-Both functionalities are the same. I Means use a private key to decrypt the client encrypted credential.
+This should also include the checks of nonce and request timestamps and to store those from first and last requests in a sequence
+    * Create a component to decrypt secret credentials with the server private key
+        * JWTSecretCredentialDecryptor
+            * decryptSecret(encryptedData Base64EncodedJWT, serverPrivateKey String) : String
+    * Create a component to store and compare the nonce and timestamps of last request and to validate the expiration time
+        * JWTRequestInPartialOrderValidator
+            * validateRequest(JWT request): boolean
+* Create a component to put resource server public key in the access token.
+    * JWTPublicKeyIncluder
+      * include(oAuthToken JWT, resourceServerPublicKey JWK): JWT
+      * The name of the claim to include is "res_pub_key"
+* Component to transform a PEM public key into a JWK
+  * Some server will publish their pulic key just in a PEM encoded format.
+  * JWKBuilder
+    * build(publicKey:PemEcnodedPublicKey):JWK
