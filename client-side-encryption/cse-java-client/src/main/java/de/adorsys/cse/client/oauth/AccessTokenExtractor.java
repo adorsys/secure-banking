@@ -1,7 +1,9 @@
 package de.adorsys.cse.client.oauth;
 
+
 import de.adorsys.cse.jwt.Base64EncodedJWT;
+import de.adorsys.cse.jwt.JWT;
 
 public interface AccessTokenExtractor {
-    Base64EncodedJWT extractAccessToken(Base64EncodedJWT oAuthToken);
+    JWT extractAccessToken(Base64EncodedJWT oAuthToken) throws AccessTokenExtractorException;
 }

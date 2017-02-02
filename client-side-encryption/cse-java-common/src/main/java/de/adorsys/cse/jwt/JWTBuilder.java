@@ -16,5 +16,5 @@ public interface JWTBuilder {
 
     JWTBuilder withEncryptedServerPublicKey(SecretCredentialEncryptor encryptor, JWK serverPublicKey);
 
-    Base64EncodedJWT build(JWT hMacKey);
+    Base64EncodedJWT build(String hMacKey);
 }

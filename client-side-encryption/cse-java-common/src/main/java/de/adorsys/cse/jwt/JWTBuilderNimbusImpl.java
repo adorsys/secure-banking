@@ -5,22 +5,11 @@ import de.adorsys.cse.jwk.JWK;
 import de.adorsys.cse.nonce.NonceGenerator;
 import de.adorsys.cse.timestamp.TimestampGenerator;
 
-public class JWTBuilderImpl implements JWTBuilder {
+public class JWTBuilderNimbusImpl implements JWTBuilder {
 
     private JWT jwt;
 
-    JWTBuilderImpl() {
-        this.jwt = new JWT() {
-            @Override
-            public Base64EncodedJWT encode() {
-                return null;
-            }
-
-            @Override
-            public String getResourcePublicKey() {
-                return null;
-            }
-        };
+    JWTBuilderNimbusImpl() {
     }
 
     @Override
@@ -49,7 +38,7 @@ public class JWTBuilderImpl implements JWTBuilder {
     }
 
     @Override
-    public Base64EncodedJWT build(JWT hMacKey) {
+    public Base64EncodedJWT build(String hMacKey) {
         return null;
     }
 

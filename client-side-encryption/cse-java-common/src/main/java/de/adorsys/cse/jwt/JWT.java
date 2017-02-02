@@ -1,13 +1,13 @@
 package de.adorsys.cse.jwt;
 
+import java.text.ParseException;
+
 public interface JWT {
     String PUBLIC_KEY_CLAIM = "res_pub_key";
 
     Base64EncodedJWT encode();
 
-    String getResourcePublicKey();
+    String getResourcePublicKey() throws ParseException;
 
-    static JWTBuilder create() {
-        return new JWTBuilderImpl();
-    }
+    String getClaim(String claimName) throws ParseException;
 }
