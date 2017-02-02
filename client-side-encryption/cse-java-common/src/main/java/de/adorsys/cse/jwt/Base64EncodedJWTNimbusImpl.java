@@ -15,4 +15,19 @@ public class Base64EncodedJWTNimbusImpl implements Base64EncodedJWT {
     public JWT decode() throws ParseException {
         return new JWTNimbusImpl(container);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Base64EncodedJWTNimbusImpl that = (Base64EncodedJWTNimbusImpl) o;
+
+        return container.equals(that.container);
+    }
+
+    @Override
+    public int hashCode() {
+        return container.hashCode();
+    }
 }

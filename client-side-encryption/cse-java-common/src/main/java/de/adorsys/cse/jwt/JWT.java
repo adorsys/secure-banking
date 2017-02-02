@@ -1,5 +1,7 @@
 package de.adorsys.cse.jwt;
 
+import de.adorsys.cse.jwk.JWK;
+
 import java.text.ParseException;
 
 public interface JWT {
@@ -7,7 +9,7 @@ public interface JWT {
 
     Base64EncodedJWT encode();
 
-    String getResourcePublicKey() throws ParseException;
+    JWK getResourcePublicKey() throws ParseException;
 
     String getClaim(String claimName) throws ParseException;
 }

@@ -2,6 +2,7 @@ package de.adorsys.cse.jwt;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
+import de.adorsys.cse.jwk.JWK;
 
 import java.text.ParseException;
 
@@ -23,8 +24,10 @@ public class JWTNimbusImpl implements JWT {
     }
 
     @Override
-    public String getResourcePublicKey() throws ParseException {
-        return claimsSet.getStringClaim(JWT.PUBLIC_KEY_CLAIM);
+    public JWK getResourcePublicKey() throws ParseException {
+        //TODO convert to JWK
+        claimsSet.getStringClaim(JWT.PUBLIC_KEY_CLAIM);
+        return null;
     }
 
     @Override
