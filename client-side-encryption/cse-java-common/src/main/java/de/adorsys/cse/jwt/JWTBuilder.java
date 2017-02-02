@@ -6,7 +6,7 @@ import de.adorsys.cse.nonce.NonceGenerator;
 import de.adorsys.cse.timestamp.TimestampGenerator;
 
 public interface JWTBuilder {
-    JWTBuilder withAccessToken(Base64EncodedJWT accessToken);
+    JWTBuilder withAccessToken(JWT accessToken);
 
     JWTBuilder withNonceGenerator(NonceGenerator nonceGenerator);
 
@@ -16,5 +16,5 @@ public interface JWTBuilder {
 
     JWTBuilder withEncryptedServerPublicKey(SecretCredentialEncryptor encryptor, JWK serverPublicKey);
 
-    Base64EncodedJWT build(String hMacKey);
+    JWT build(String hMacKey);
 }

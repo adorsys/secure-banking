@@ -7,7 +7,7 @@ import java.text.ParseException;
 public interface JWT {
     String PUBLIC_KEY_CLAIM = "res_pub_key";
 
-    Base64EncodedJWT encode();
+    String encode();
 
     JWK getResourcePublicKey() throws ParseException;
 

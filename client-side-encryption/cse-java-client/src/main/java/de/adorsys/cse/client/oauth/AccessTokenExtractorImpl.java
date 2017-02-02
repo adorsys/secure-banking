@@ -1,8 +1,7 @@
 package de.adorsys.cse.client.oauth;
 
-import de.adorsys.cse.jwt.Base64EncodedJWT;
-import de.adorsys.cse.jwt.Base64EncodedJWTNimbusImpl;
 import de.adorsys.cse.jwt.JWT;
+import de.adorsys.cse.jwt.JWTNimbusImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,11 +12,15 @@ public class AccessTokenExtractorImpl implements AccessTokenExtractor {
     private static final String CLAIM_ACCESS_TOKEN = "access_token";
 
     @Override
-    public JWT extractAccessToken(Base64EncodedJWT oAuthToken) throws AccessTokenExtractorException {
+    public JWT extractAccessToken(JWT oAuthToken) throws AccessTokenExtractorException {
+        if (oAuthToken == null) {
+            log.error("Passed oAuthToken is null");
+            throw new IllegalArgumentException("oAuthToken cannot be null");
+        }
+
         try {
-            JWT oAuthDecodedToken = oAuthToken.decode();
-            Base64EncodedJWT accessToken = new Base64EncodedJWTNimbusImpl(oAuthDecodedToken.getClaim(CLAIM_ACCESS_TOKEN));
-            return accessToken.decode();
+            String accessToken = oAuthToken.getClaim(CLAIM_ACCESS_TOKEN);
+            return new JWTNimbusImpl(accessToken);
         }
         catch (ParseException e) {
             log.error("Provided token {} doesn't contain claim {}", oAuthToken, CLAIM_ACCESS_TOKEN);

@@ -13,7 +13,7 @@ public class JWTBuilderNimbusImpl implements JWTBuilder {
     }
 
     @Override
-    public JWTBuilder withAccessToken(Base64EncodedJWT accessToken) {
+    public JWTBuilder withAccessToken(JWT accessToken) {
         return this;
     }
 
@@ -38,7 +38,7 @@ public class JWTBuilderNimbusImpl implements JWTBuilder {
     }
 
     @Override
-    public Base64EncodedJWT build(String hMacKey) {
+    public JWT build(String hMacKey) {
         return null;
     }
 
