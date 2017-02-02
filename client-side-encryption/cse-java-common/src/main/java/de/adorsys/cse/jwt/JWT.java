@@ -8,6 +8,6 @@ public interface JWT {
     String getResourcePublicKey();
 
     static JWTBuilder create() {
-        return new JWTBuilder();
+        return new JWTBuilderImpl();
     }
 }

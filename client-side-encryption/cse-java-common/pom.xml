@@ -13,4 +13,12 @@
     <artifactId>cse-java-common</artifactId>
     <packaging>jar</packaging>
 
+    <dependencies>
+        <!--<dependency>-->
+            <!--<groupId>com.nimbusds</groupId>-->
+            <!--<artifactId>nimbus-jose-jwt</artifactId>-->
+            <!--<version>4.34.1</version>-->
+        <!--</dependency>-->
+    </dependencies>
+
 </project>
