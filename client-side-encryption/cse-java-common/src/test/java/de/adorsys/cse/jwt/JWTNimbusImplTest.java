@@ -10,10 +10,17 @@ import static org.junit.Assert.fail;
 public class JWTNimbusImplTest {
     private JWT jwt;
 
-    @Test(expected = ParseException.class)
-    public void createWithNullThrowsParseException() throws Exception {
+    @Test(expected = IllegalArgumentException.class)
+    public void createWithNullThrowsException() throws Exception {
+        //noinspection ConstantConditions
         new JWTNimbusImpl(null);
-        fail("Creation of JWT with null-String causes ParseException");
+        fail("Creation of JWT with null-String causes IllegalArgumentException");
+    }
+
+    @Test(expected = ParseException.class)
+    public void createWithAStringThatNotATokenThrowsParseException() throws Exception {
+        new JWTNimbusImpl("bla-bla-bla");
+        fail("Creation of JWT with invalid token-String causes ParseException");
     }
 
     @Test
