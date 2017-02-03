@@ -1,15 +1,10 @@
 package de.adorsys.cse.jwt;
 
-import de.adorsys.cse.jwk.JWK;
-
-import java.text.ParseException;
+import java.util.Optional;
 
 public interface JWT {
-    String PUBLIC_KEY_CLAIM = "res_pub_key";
 
     String encode();
 
-    JWK getResourcePublicKey() throws ParseException;
-
-    String getClaim(String claimName) throws ParseException;
+    Optional<String> getClaim(String claimName);
 }

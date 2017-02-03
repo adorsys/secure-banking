@@ -8,8 +8,9 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import java.util.Optional;
+
+import static org.junit.Assert.*;
 
 public class AccessTokenExtractorImplTest {
     private AccessTokenExtractor accessTokenExtractor;
@@ -24,15 +25,15 @@ public class AccessTokenExtractorImplTest {
         accessTokenExtractor.extractAccessToken(null);
     }
 
-    @Test(expected = AccessTokenExtractorException.class)
-    public void withoutAccessTokenPassedReturnException() throws Exception {
+    @Test
+    public void withoutAccessTokenPassedReturnsNone() throws Exception {
 
         final String inputBase64EncodedJWT = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpZCI6IjYzMjIwNzg0YzUzODA3ZjVmZTc2Yjg4ZjZkNjdlMmExZTIxODlhZTEiLCJjbGllbnRfaWQiOiJUZXN0IENsaWVudCBJRCIsInVzZXJfaWQiOm51bGwsImV4cGlyZXMiOjEzODAwNDQ1NDIsInRva2VuX3R5cGUiOiJiZWFyZXIiLCJzY29wZSI6bnVsbH0.PcC4k8Q_etpU-J4yGFEuBUdeyMJhtpZFkVQ__sXpe78eSi7xTniqOOtgfWa62Y4sj5Npta8xPuDglH8Fueh_APZX4wGCiRE1P4nT4APQCOTbgcuCNXwjmP8znk9F76ID2WxThaMbmpsTTEkuyyUYQKCCdxlIcSbVvcLZUGKZ6-g";
         JWT oAuthTokenToInput = new JWTNimbusImpl(inputBase64EncodedJWT);
 
-        accessTokenExtractor.extractAccessToken(oAuthTokenToInput);
+        Optional<JWT> actualAccessToken = accessTokenExtractor.extractAccessToken(oAuthTokenToInput);
 
-        fail("Token without access_token claim throws AccessTokenExtractorException");
+        assertFalse("Token without access_token claim returns nothing", actualAccessToken.isPresent());
     }
 
     @Test
@@ -43,9 +44,10 @@ public class AccessTokenExtractorImplTest {
         final String inputBase64EncodedJWT = "eyJhbGciOiJub25lIn0.eyJhY2Nlc3NfdG9rZW4iOiJleUowZVhBaU9pSktWMVFpTENKaGJHY2lPaUpTVXpJMU5pSjkuZXlKcFpDSTZJall6TWpJd056ZzBZelV6T0RBM1pqVm1aVGMyWWpnNFpqWmtOamRsTW1FeFpUSXhPRGxoWlRFaUxDSmpiR2xsYm5SZmFXUWlPaUpVWlhOMElFTnNhV1Z1ZENCSlJDSXNJblZ6WlhKZmFXUWlPbTUxYkd3c0ltVjRjR2x5WlhNaU9qRXpPREF3TkRRMU5ESXNJblJ2YTJWdVgzUjVjR1VpT2lKaVpXRnlaWElpTENKelkyOXdaU0k2Ym5Wc2JIMC5QY0M0azhRX2V0cFUtSjR5R0ZFdUJVZGV5TUpodHBaRmtWUV9fc1hwZTc4ZVNpN3hUbmlxT090Z2ZXYTYyWTRzajVOcHRhOHhQdURnbEg4RnVlaF9BUFpYNHdHQ2lSRTFQNG5UNEFQUUNPVGJnY3VDTlh3am1QOHpuazlGNzZJRDJXeFRoYU1ibXBzVFRFa3V5eVVZUUtDQ2R4bEljU2JWdmNMWlVHS1o2LWciLCJleHBpcmVzIjoiMTM4MjYzMDQ3MyIsImNsaWVudF9pZCI6Ik1ZX0NMSUVOVF9JRCJ9.";
         JWT oAuthTokenToInput = new JWTNimbusImpl(inputBase64EncodedJWT);
 
-        JWT actualAccessToken = accessTokenExtractor.extractAccessToken(oAuthTokenToInput);
+        Optional<JWT> actualAccessToken = accessTokenExtractor.extractAccessToken(oAuthTokenToInput);
 
-        assertEquals("Access Token is extracted", expectedAccesToken, actualAccessToken);
+        assertTrue("Access token is present", actualAccessToken.isPresent());
+        assertEquals("Access Token is extracted", expectedAccesToken, actualAccessToken.get());
 
     }
 

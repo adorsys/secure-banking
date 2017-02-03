@@ -3,6 +3,8 @@ package de.adorsys.cse.client.oauth;
 
 import de.adorsys.cse.jwt.JWT;
 
+import java.util.Optional;
+
 public interface AccessTokenExtractor {
-    JWT extractAccessToken(JWT oAuthToken) throws AccessTokenExtractorException;
+    Optional<JWT> extractAccessToken(JWT oAuthToken);
 }
