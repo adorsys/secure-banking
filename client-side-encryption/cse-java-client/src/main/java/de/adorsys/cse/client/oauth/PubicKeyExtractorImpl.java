@@ -6,6 +6,7 @@ import de.adorsys.cse.jwt.JWT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.ParseException;
 import java.util.Optional;
 
 public class PubicKeyExtractorImpl implements PublicKeyExtractor {
@@ -20,7 +21,12 @@ public class PubicKeyExtractorImpl implements PublicKeyExtractor {
         }
         Optional<String> claim = token.getClaim(PUBLIC_KEY_CLAIM);
         if (claim.isPresent()) {
-            return Optional.of(new JWKNimbusImpl(claim.get()));
+            try {
+                return Optional.of(new JWKNimbusImpl(claim.get()));
+            }
+            catch (ParseException e) {
+                log.warn("Storred in token claim is invalid or corrupted: {}", e.getMessage());
+            }
         }
         else {
             log.warn("No claim or empty claim \"{}\" found in token", PUBLIC_KEY_CLAIM);
