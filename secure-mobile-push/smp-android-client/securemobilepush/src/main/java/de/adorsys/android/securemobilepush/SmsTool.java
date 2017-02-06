@@ -14,18 +14,16 @@ public class SmsTool {
     private static final int REQUEST_CODE_ASK_PERMISSIONS = 123;
 
     private Context context;
-    private Activity activity;
 
     public SmsTool(@NonNull Context context) {
         this.context = context;
-        activity = (Activity) context;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void requestSMSPermission() {
-        final String permission = Manifest.permission.READ_SMS;
+        Activity activity = (Activity) context;
+        final String permission = Manifest.permission.RECEIVE_SMS;
         int hasSpecificPermission = ContextCompat.checkSelfPermission(context, permission);
-
         if (hasSpecificPermission != PackageManager.PERMISSION_GRANTED) {
             if (!activity.shouldShowRequestPermissionRationale(permission)) {
                 activity.requestPermissions(new String[]{permission},
