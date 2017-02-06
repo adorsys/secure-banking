@@ -14,15 +14,17 @@ import de.adorsys.android.securemobilepush.KeyValues;
 public class SmsReceiver extends BroadcastReceiver {
     private static final String testNumber = "0900123456";
 
+    /**
+     * Retrieve the SMS message received and if it is sent from a specific number send a broadcast
+     * containing the senderNumber & message
+     */
     @Override
     public void onReceive(Context context, Intent intent) {
-
         if (intent.getAction().equals("android.provider.Telephony.SMS_RECEIVED")) {
-            Bundle bundle = intent.getExtras();        //Get the SMS message passed in
+            Bundle bundle = intent.getExtras();
             SmsMessage[] smsMessages;
             String messageFrom;
             if (bundle != null) {
-                //Retrieve the SMS message received
                 try {
                     Object[] pdus = (Object[]) bundle.get("pdus");
                     smsMessages = new SmsMessage[pdus.length];

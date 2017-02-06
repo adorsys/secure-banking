@@ -19,6 +19,9 @@ public class SmsTool {
         this.context = context;
     }
 
+    /**
+     * Ask for RECEIVE_SMS permission for devices on Android M and later.
+     */
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void requestSMSPermission() {
         Activity activity = (Activity) context;

@@ -17,6 +17,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView smsSenderTextView;
     private TextView smsMessageTextView;
     private LocalBroadcastManager localBroadcastManager;
+
     /**
      * Set Data received from Broadcast receiver to specific views
      */
