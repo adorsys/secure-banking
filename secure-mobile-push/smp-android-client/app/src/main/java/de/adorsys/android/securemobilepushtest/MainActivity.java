@@ -49,11 +49,12 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * UnRegister BroadcastReceiver from Activity to prevent potential memory leaks
+     * and not keep receiving sms when app is in background
      */
     @Override
-    protected void onDestroy() {
+    protected void onPause() {
         localBroadcastManager.unregisterReceiver(broadcastReceiver);
-        super.onDestroy();
+        super.onPause();
     }
 
     /**
