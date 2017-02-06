@@ -11,7 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
 import de.adorsys.android.securemobilepush.KeyValues;
-import de.adorsys.android.securemobilepush.SmsTool;
+import de.adorsys.android.securemobilepush.sms.SmsTool;
 
 public class MainActivity extends AppCompatActivity {
     private TextView smsSenderTextView;

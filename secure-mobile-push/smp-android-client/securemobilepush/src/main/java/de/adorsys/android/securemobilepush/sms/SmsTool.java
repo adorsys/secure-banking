@@ -1,4 +1,4 @@
-package de.adorsys.android.securemobilepush;
+package de.adorsys.android.securemobilepush.sms;
 
 
 import android.Manifest;

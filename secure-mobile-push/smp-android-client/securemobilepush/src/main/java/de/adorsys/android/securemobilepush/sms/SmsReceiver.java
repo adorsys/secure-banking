@@ -1,4 +1,4 @@
-package de.adorsys.android.securemobilepush;
+package de.adorsys.android.securemobilepush.sms;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -7,6 +7,9 @@ import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
+
+import de.adorsys.android.securemobilepush.BuildConfig;
+import de.adorsys.android.securemobilepush.KeyValues;
 
 public class SmsReceiver extends BroadcastReceiver {
     private static final String testNumber = "0900123456";
