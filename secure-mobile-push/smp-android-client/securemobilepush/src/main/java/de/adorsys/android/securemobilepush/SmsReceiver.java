@@ -4,9 +4,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
-import android.widget.Toast;
 
 public class SmsReceiver extends BroadcastReceiver {
     private static final String testNumber = "0900123456";
@@ -28,7 +28,10 @@ public class SmsReceiver extends BroadcastReceiver {
                         messageFrom = smsMessages[i].getOriginatingAddress();
                         String messageBody = smsMessages[i].getMessageBody();
                         if (messageFrom.equals(testNumber)) {
-                            Toast.makeText(context, "" + messageFrom + "   " + messageBody, Toast.LENGTH_SHORT).show();
+                            Intent broadcastIntent = new Intent(KeyValues.INTENT_FILTER_SMS);
+                            broadcastIntent.putExtra(KeyValues.KEY_SMS_SENDER, messageFrom);
+                            broadcastIntent.putExtra(KeyValues.KEY_SMS_MESSAGE, messageBody);
+                            LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
                         }
                     }
                 } catch (Exception e) {
