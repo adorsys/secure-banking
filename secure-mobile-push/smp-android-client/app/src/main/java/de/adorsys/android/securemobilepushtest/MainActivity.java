@@ -1,4 +1,4 @@
-package de.adorsys.android.securemobilepush;
+package de.adorsys.android.securemobilepushtest;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
