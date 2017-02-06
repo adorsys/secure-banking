@@ -1,4 +1,8 @@
 package de.adorsys.android.securemobilepush;
 
-public class Dummy {
+
+public class SmsManager {
+
+
+
 }
