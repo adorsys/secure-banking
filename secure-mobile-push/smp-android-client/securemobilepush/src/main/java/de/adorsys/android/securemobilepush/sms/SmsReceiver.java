@@ -15,8 +15,6 @@ public class SmsReceiver extends BroadcastReceiver {
     public static final String KEY_SMS_SENDER = "smsSender";
     public static final String KEY_SMS_MESSAGE = "smsMessage";
 
-    private static final String testNumber = "0900123456";
-
     /**
      * Retrieve the SMS message received and if it is sent from a specific number send a broadcast
      * containing the senderNumber & message
@@ -35,7 +33,7 @@ public class SmsReceiver extends BroadcastReceiver {
                         smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
                         messageFrom = smsMessages[i].getOriginatingAddress();
                         String messageBody = smsMessages[i].getMessageBody();
-                        if (messageFrom.equals(testNumber)) {
+                        if (messageFrom.equals(BuildConfig.smsSenderNumber)) {
                             Intent broadcastIntent = new Intent(INTENT_FILTER_SMS);
                             broadcastIntent.putExtra(KEY_SMS_SENDER, messageFrom);
                             broadcastIntent.putExtra(KEY_SMS_MESSAGE, messageBody);

@@ -13,9 +13,14 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
     }
+
     buildTypes {
+        debug {
+            buildConfigField "String", "smsSenderNumber", "\"0900123456\""
+        }
         release {
             minifyEnabled false
+            buildConfigField "String", "smsSenderNumber", "\"0900123456\""
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
