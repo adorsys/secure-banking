@@ -32,8 +32,8 @@ public class MainActivity extends AppCompatActivity {
             if (intent.getAction().equals(SmsReceiver.INTENT_FILTER_SMS)) {
                 String receivedTitle = intent.getStringExtra(SmsReceiver.KEY_SMS_SENDER);
                 String receivedMessage = intent.getStringExtra(SmsReceiver.KEY_SMS_MESSAGE);
-                smsSenderTextView.setText(receivedTitle);
-                smsMessageTextView.setText(receivedMessage);
+                smsSenderTextView.setText(getString(R.string.sms_sender_number, receivedTitle));
+                smsMessageTextView.setText(getString(R.string.sms_message, receivedMessage));
             }
         }
     };
@@ -96,6 +96,9 @@ public class MainActivity extends AppCompatActivity {
     private void initViews() {
         smsSenderTextView = (TextView) findViewById(R.id.sms_sender_text_view);
         smsMessageTextView = (TextView) findViewById(R.id.sms_message_text_view);
+
+        smsSenderTextView.setText(getString(R.string.sms_sender_number, ""));
+        smsMessageTextView.setText(getString(R.string.sms_message, ""));
     }
 
     /**

@@ -24,7 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:text="@string/sms_sender_number" />
+        tools:text="@string/sms_sender_number" />
 
     <TextView
         android:id="@+id/sms_message_text_view"
@@ -32,6 +32,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:text="@string/sms_message" />
+        tools:text="@string/sms_message" />
 
 </LinearLayout>
