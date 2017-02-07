@@ -39,8 +39,8 @@ public class SmsReceiver extends BroadcastReceiver {
                     for (int i = 0; i < smsMessages.length; i++) {
                         smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
                         messageFrom = smsMessages[i].getOriginatingAddress();
-                        String messageBody = smsMessages[i].getMessageBody();
                         if (smsSenderNumbers.contains(messageFrom)) {
+                            String messageBody = smsMessages[i].getMessageBody();
                             Intent broadcastIntent = new Intent(INTENT_FILTER_SMS);
                             broadcastIntent.putExtra(KEY_SMS_SENDER, messageFrom);
                             broadcastIntent.putExtra(KEY_SMS_MESSAGE, messageBody);
