@@ -61,6 +61,6 @@ public class SmsReceiver extends BroadcastReceiver {
         int startIndex = message.indexOf(BuildConfig.BEGIN_INDEX);
         int endIndex = message.indexOf(BuildConfig.END_INDEX);
 
-        return message.substring(startIndex, endIndex).replace(BuildConfig.BEGIN_INDEX, "");
+        return message.substring(startIndex, endIndex).replace(BuildConfig.BEGIN_INDEX, "").trim();
     }
 }
