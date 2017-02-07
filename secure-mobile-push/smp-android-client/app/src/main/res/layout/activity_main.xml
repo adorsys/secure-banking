@@ -12,11 +12,19 @@
     tools:context="de.adorsys.android.securemobilepushtest.MainActivity">
 
     <TextView
+        style="@style/Base.TextAppearance.AppCompat.Large"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:text="@string/send_a_sms_for_app_to_read" />
+
+    <TextView
         android:id="@+id/sms_sender_text_view"
         style="@style/Base.TextAppearance.AppCompat.Small"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:text="SMS SENDER No." />
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:text="@string/sms_sender_number" />
 
     <TextView
         android:id="@+id/sms_message_text_view"
@@ -24,6 +32,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/activity_vertical_margin"
-        tools:text="SMS MESSAGE" />
+        android:text="@string/sms_message" />
 
 </LinearLayout>

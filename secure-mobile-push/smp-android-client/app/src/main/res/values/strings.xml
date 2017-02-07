@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Secure Mobile Push</string>
+    <string name="send_a_sms_for_app_to_read">Send a SMS for the App to Read</string>
+    <string name="sms_sender_number">SMS SENDER Number</string>
+    <string name="sms_message">SMS MESSAGE</string>
 </resources>
