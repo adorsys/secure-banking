@@ -80,6 +80,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Re-register broadcastReceiver when activity is resumed
+     */
+    @Override
+    protected void onResume() {
+        registerReceiver();
+        super.onResume();
+    }
+
+    /**
      * Initialize Views
      */
     private void initViews() {
