@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -18,9 +19,9 @@ import de.adorsys.android.securemobilepush.sms.SmsReceiver;
 import de.adorsys.android.securemobilepush.sms.SmsTool;
 
 public class MainActivity extends AppCompatActivity {
-    private TextView smsSenderTextView;
-    private TextView smsMessageTextView;
-    private LocalBroadcastManager localBroadcastManager;
+    @NonNull private TextView smsSenderTextView;
+    @NonNull private TextView smsMessageTextView;
+    @NonNull private LocalBroadcastManager localBroadcastManager;
 
     /**
      * Set Data received from Broadcast receiver to specific views
@@ -48,7 +49,8 @@ public class MainActivity extends AppCompatActivity {
                         || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(this, "App cannot work without RECEIVE_SMS permission!",
                             Toast.LENGTH_LONG).show();
-                    startActivity(new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getApplicationContext().getPackageName())));
+                    startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.parse("package:" + getApplicationContext().getPackageName())));
                 }
             }
         }

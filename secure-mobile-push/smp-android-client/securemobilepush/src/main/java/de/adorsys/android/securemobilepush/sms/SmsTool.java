@@ -1,6 +1,5 @@
 package de.adorsys.android.securemobilepush.sms;
 
-
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
@@ -13,7 +12,7 @@ import android.support.v4.content.ContextCompat;
 public class SmsTool {
     public static final int REQUEST_CODE_ASK_PERMISSIONS = 123;
 
-    private Context context;
+    @NonNull private Context context;
 
     public SmsTool(@NonNull Context context) {
         this.context = context;
