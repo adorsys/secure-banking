@@ -8,6 +8,9 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import de.adorsys.android.securemobilepush.BuildConfig;
 
 public class SmsReceiver extends BroadcastReceiver {
@@ -22,6 +25,8 @@ public class SmsReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals("android.provider.Telephony.SMS_RECEIVED")) {
+            ArrayList<String> smsSenderNumbers =
+                    new ArrayList<>(Arrays.asList(BuildConfig.smsSenderNumbers));
             Bundle bundle = intent.getExtras();
             SmsMessage[] smsMessages;
             String messageFrom;
@@ -33,7 +38,7 @@ public class SmsReceiver extends BroadcastReceiver {
                         smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
                         messageFrom = smsMessages[i].getOriginatingAddress();
                         String messageBody = smsMessages[i].getMessageBody();
-                        if (messageFrom.equals(BuildConfig.smsSenderNumber)) {
+                        if (smsSenderNumbers.contains(messageFrom)) {
                             Intent broadcastIntent = new Intent(INTENT_FILTER_SMS);
                             broadcastIntent.putExtra(KEY_SMS_SENDER, messageFrom);
                             broadcastIntent.putExtra(KEY_SMS_MESSAGE, messageBody);

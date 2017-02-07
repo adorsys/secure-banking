@@ -16,11 +16,21 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField "String", "smsSenderNumber", "\"0900123456\""
+            buildConfigField "String[]", "smsSenderNumbers",
+                    "{" +
+                            "\"0900123456\"," +
+                            "\"0900654321\"," +
+                            "\"0900900900\"" +
+                            "}"
         }
         release {
+            buildConfigField "String[]", "smsSenderNumbers",
+                    "{" +
+                            "\"0900123456\"," +
+                            "\"0900654321\"," +
+                            "\"0900900900\"" +
+                            "}"
             minifyEnabled false
-            buildConfigField "String", "smsSenderNumber", "\"0900123456\""
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
