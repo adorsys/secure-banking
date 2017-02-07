@@ -15,7 +15,9 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField "String[]", "smsSenderNumbers",
+            buildConfigField "String", "BEGIN_INDEX", "\"BEGIN-MESSAGE\""
+            buildConfigField "String", "END_INDEX", "\"END-MESSAGE\""
+            buildConfigField "String[]", "SMS_SENDER_NUMBER",
                     "{" +
                             "\"0900123456\"," +
                             "\"0900654321\"," +
@@ -23,7 +25,9 @@ android {
                             "}"
         }
         release {
-            buildConfigField "String[]", "smsSenderNumbers",
+            buildConfigField "String", "BEGIN_INDEX", "\"BEGIN-MESSAGE\""
+            buildConfigField "String", "END_INDEX", "\"END-MESSAGE\""
+            buildConfigField "String[]", "SMS_SENDER_NUMBER",
                     "{" +
                             "\"0900123456\"," +
                             "\"0900654321\"," +

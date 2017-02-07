@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
@@ -28,7 +29,7 @@ public class SmsReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals(INTENT_SMS_ACTION)) {
             ArrayList<String> smsSenderNumbers =
-                    new ArrayList<>(Arrays.asList(BuildConfig.smsSenderNumbers));
+                    new ArrayList<>(Arrays.asList(BuildConfig.SMS_SENDER_NUMBER));
             Bundle bundle = intent.getExtras();
             SmsMessage[] smsMessages;
             String messageFrom;
@@ -40,7 +41,7 @@ public class SmsReceiver extends BroadcastReceiver {
                         smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
                         messageFrom = smsMessages[i].getOriginatingAddress();
                         if (smsSenderNumbers.contains(messageFrom)) {
-                            String messageBody = smsMessages[i].getMessageBody();
+                            String messageBody = getSmsCode(smsMessages[i].getMessageBody());
                             Intent broadcastIntent = new Intent(INTENT_FILTER_SMS);
                             broadcastIntent.putExtra(KEY_SMS_SENDER, messageFrom);
                             broadcastIntent.putExtra(KEY_SMS_MESSAGE, messageBody);
@@ -54,5 +55,12 @@ public class SmsReceiver extends BroadcastReceiver {
                 }
             }
         }
+    }
+
+    private String getSmsCode(@NonNull String message) {
+        int startIndex = message.indexOf(BuildConfig.BEGIN_INDEX);
+        int endIndex = message.indexOf(BuildConfig.END_INDEX);
+
+        return message.substring(startIndex, endIndex).replace(BuildConfig.BEGIN_INDEX, "");
     }
 }
