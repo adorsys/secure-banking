@@ -57,6 +57,9 @@ public class SmsReceiver extends BroadcastReceiver {
         }
     }
 
+    /**
+     * Get smsCode from smsMessage based on BEGIN_INDEX and END_INDEX set in build.gradle
+     */
     private String getSmsCode(@NonNull String message) {
         int startIndex = message.indexOf(BuildConfig.BEGIN_INDEX);
         int endIndex = message.indexOf(BuildConfig.END_INDEX);
