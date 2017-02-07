@@ -9,9 +9,12 @@ import android.telephony.SmsMessage;
 import android.util.Log;
 
 import de.adorsys.android.securemobilepush.BuildConfig;
-import de.adorsys.android.securemobilepush.KeyValues;
 
 public class SmsReceiver extends BroadcastReceiver {
+    public static final String INTENT_FILTER_SMS = "intentFilterSms";
+    public static final String KEY_SMS_SENDER = "smsSender";
+    public static final String KEY_SMS_MESSAGE = "smsMessage";
+
     private static final String testNumber = "0900123456";
 
     /**
@@ -33,9 +36,9 @@ public class SmsReceiver extends BroadcastReceiver {
                         messageFrom = smsMessages[i].getOriginatingAddress();
                         String messageBody = smsMessages[i].getMessageBody();
                         if (messageFrom.equals(testNumber)) {
-                            Intent broadcastIntent = new Intent(KeyValues.INTENT_FILTER_SMS);
-                            broadcastIntent.putExtra(KeyValues.KEY_SMS_SENDER, messageFrom);
-                            broadcastIntent.putExtra(KeyValues.KEY_SMS_MESSAGE, messageBody);
+                            Intent broadcastIntent = new Intent(INTENT_FILTER_SMS);
+                            broadcastIntent.putExtra(KEY_SMS_SENDER, messageFrom);
+                            broadcastIntent.putExtra(KEY_SMS_MESSAGE, messageBody);
                             LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
                         }
                     }

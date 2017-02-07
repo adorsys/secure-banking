@@ -14,7 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import de.adorsys.android.securemobilepush.KeyValues;
+import de.adorsys.android.securemobilepush.sms.SmsReceiver;
 import de.adorsys.android.securemobilepush.sms.SmsTool;
 
 public class MainActivity extends AppCompatActivity {
@@ -28,9 +28,9 @@ public class MainActivity extends AppCompatActivity {
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(KeyValues.INTENT_FILTER_SMS)) {
-                String receivedTitle = intent.getStringExtra(KeyValues.KEY_SMS_SENDER);
-                String receivedMessage = intent.getStringExtra(KeyValues.KEY_SMS_MESSAGE);
+            if (intent.getAction().equals(SmsReceiver.INTENT_FILTER_SMS)) {
+                String receivedTitle = intent.getStringExtra(SmsReceiver.KEY_SMS_SENDER);
+                String receivedMessage = intent.getStringExtra(SmsReceiver.KEY_SMS_MESSAGE);
                 smsSenderTextView.setText(receivedTitle);
                 smsMessageTextView.setText(receivedMessage);
             }
@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
                                            @NonNull String permissions[],
                                            @NonNull int[] grantResults) {
         switch (requestCode) {
-            case KeyValues.REQUEST_CODE_ASK_PERMISSIONS: {
+            case SmsTool.REQUEST_CODE_ASK_PERMISSIONS: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length <= 0
                         || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
     private void registerReceiver() {
         localBroadcastManager = LocalBroadcastManager.getInstance(this);
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(KeyValues.INTENT_FILTER_SMS);
+        intentFilter.addAction(SmsReceiver.INTENT_FILTER_SMS);
         localBroadcastManager.registerReceiver(broadcastReceiver, intentFilter);
     }
 }

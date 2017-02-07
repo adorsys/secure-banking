@@ -10,9 +10,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 
-import de.adorsys.android.securemobilepush.KeyValues;
-
 public class SmsTool {
+    public static final int REQUEST_CODE_ASK_PERMISSIONS = 123;
+
     private Context context;
 
     public SmsTool(@NonNull Context context) {
@@ -30,7 +30,7 @@ public class SmsTool {
         if (hasSpecificPermission != PackageManager.PERMISSION_GRANTED) {
             if (!activity.shouldShowRequestPermissionRationale(permission)) {
                 activity.requestPermissions(new String[]{permission},
-                        KeyValues.REQUEST_CODE_ASK_PERMISSIONS);
+                        REQUEST_CODE_ASK_PERMISSIONS);
             }
         }
     }
