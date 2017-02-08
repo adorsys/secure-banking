@@ -43,11 +43,7 @@ public class SmsReceiver extends BroadcastReceiver {
                             }
                             messageFrom = smsMessages[i].getOriginatingAddress();
                             if (smsSenderNumbers.contains(messageFrom)) {
-                                String messageBody = getSmsCode(smsMessages[i].getMessageBody());
-                                Intent broadcastIntent = new Intent(INTENT_ACTION_SMS);
-                                broadcastIntent.putExtra(KEY_SMS_SENDER, messageFrom);
-                                broadcastIntent.putExtra(KEY_SMS_MESSAGE, messageBody);
-                                LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
+                                sendBroadcast(context, messageFrom, smsMessages[i]);
                             }
                         }
                     }
@@ -58,6 +54,16 @@ public class SmsReceiver extends BroadcastReceiver {
                 }
             }
         }
+    }
+
+    private void sendBroadcast(@NonNull Context context,
+                               @NonNull String messageFrom,
+                               @NonNull SmsMessage smsMessage) {
+        String messageBody = getSmsCode(smsMessage.getMessageBody());
+        Intent broadcastIntent = new Intent(INTENT_ACTION_SMS);
+        broadcastIntent.putExtra(KEY_SMS_SENDER, messageFrom);
+        broadcastIntent.putExtra(KEY_SMS_MESSAGE, messageBody);
+        LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
     }
 
     private String getSmsCode(@NonNull String message) {
