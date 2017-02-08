@@ -5,12 +5,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.support.annotation.Keep;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 
-@Keep
 public class SmsTool {
     public static final int REQUEST_CODE_ASK_PERMISSIONS = 123;
 
