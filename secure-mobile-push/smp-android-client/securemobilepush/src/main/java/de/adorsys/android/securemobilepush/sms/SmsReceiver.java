@@ -26,7 +26,7 @@ public class SmsReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals(INTENT_ACTION_SMS_RECEIVED)) {
-            List<String> smsSenderNumbers = Arrays.asList(BuildConfig.SMS_SENDER_NUMBER);
+            List<String> smsSenderNumbers = Arrays.asList(BuildConfig.SMS_SENDER_NUMBERS);
             Bundle bundle = intent.getExtras();
             SmsMessage[] smsMessages;
             String messageFrom;
