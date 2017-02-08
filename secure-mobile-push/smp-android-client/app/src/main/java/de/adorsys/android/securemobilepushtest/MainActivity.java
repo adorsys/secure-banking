@@ -62,9 +62,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        SmsTool smsTool = new SmsTool(this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            smsTool.requestSMSPermission();
+            SmsTool.requestSMSPermission(this);
         }
 
         initViews();
