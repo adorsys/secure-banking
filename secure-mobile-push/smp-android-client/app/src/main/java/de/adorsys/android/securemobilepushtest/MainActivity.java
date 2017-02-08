@@ -19,9 +19,12 @@ import de.adorsys.android.securemobilepush.sms.SmsReceiver;
 import de.adorsys.android.securemobilepush.sms.SmsTool;
 
 public class MainActivity extends AppCompatActivity {
-    @NonNull private TextView smsSenderTextView;
-    @NonNull private TextView smsMessageTextView;
-    @NonNull private LocalBroadcastManager localBroadcastManager;
+    @NonNull
+    private TextView smsSenderTextView;
+    @NonNull
+    private TextView smsMessageTextView;
+    @NonNull
+    private LocalBroadcastManager localBroadcastManager;
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
@@ -40,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
                                            @NonNull String permissions[],
                                            @NonNull int[] grantResults) {
         switch (requestCode) {
-            case SmsTool.REQUEST_CODE_ASK_PERMISSIONS: {
+            case SmsTool.REQUEST_CODE_ASK_PERMISSIONS:
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length <= 0
                         || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
@@ -49,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                             Uri.parse("package:" + getApplicationContext().getPackageName())));
                 }
-            }
         }
     }
 
