@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length <= 0
                         || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(this, "App cannot work without RECEIVE_SMS permission!",
+                    Toast.makeText(this, getString(R.string.warning_permission_not_granted),
                             Toast.LENGTH_LONG).show();
                     startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                             Uri.parse("package:" + getApplicationContext().getPackageName())));
