@@ -22,10 +22,6 @@ public class SmsReceiver extends BroadcastReceiver {
 
     private static final String INTENT_SMS_ACTION = "android.provider.Telephony.SMS_RECEIVED";
 
-    /**
-     * Retrieve the SMS message received and if it is sent from a specific number send a broadcast
-     * containing the senderNumber & message
-     */
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals(INTENT_SMS_ACTION)) {
@@ -58,9 +54,6 @@ public class SmsReceiver extends BroadcastReceiver {
         }
     }
 
-    /**
-     * Get smsCode from smsMessage based on BEGIN_INDEX and END_INDEX set in build.gradle
-     */
     private String getSmsCode(@NonNull String message) {
         int startIndex = message.indexOf(BuildConfig.BEGIN_INDEX);
         int endIndex = message.indexOf(BuildConfig.END_INDEX);

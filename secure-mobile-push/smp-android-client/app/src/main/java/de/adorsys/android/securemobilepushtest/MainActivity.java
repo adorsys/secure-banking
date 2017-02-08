@@ -23,9 +23,6 @@ public class MainActivity extends AppCompatActivity {
     @NonNull private TextView smsMessageTextView;
     @NonNull private LocalBroadcastManager localBroadcastManager;
 
-    /**
-     * Set Data received from Broadcast receiver to specific views
-     */
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -71,28 +68,18 @@ public class MainActivity extends AppCompatActivity {
         registerReceiver();
     }
 
-    /**
-     * UnRegister BroadcastReceiver from Activity to prevent potential memory leaks
-     * and not keep receiving sms when app is in background
-     */
     @Override
     protected void onPause() {
         localBroadcastManager.unregisterReceiver(broadcastReceiver);
         super.onPause();
     }
 
-    /**
-     * Re-register broadcastReceiver when activity is resumed
-     */
     @Override
     protected void onResume() {
         registerReceiver();
         super.onResume();
     }
 
-    /**
-     * Initialize Views
-     */
     private void initViews() {
         smsSenderTextView = (TextView) findViewById(R.id.sms_sender_text_view);
         smsMessageTextView = (TextView) findViewById(R.id.sms_message_text_view);
@@ -101,9 +88,6 @@ public class MainActivity extends AppCompatActivity {
         smsMessageTextView.setText(getString(R.string.sms_message, ""));
     }
 
-    /**
-     * Register BroadcastReceiver to Activity to get data from Notification in foreground
-     */
     private void registerReceiver() {
         localBroadcastManager = LocalBroadcastManager.getInstance(this);
         IntentFilter intentFilter = new IntentFilter();
