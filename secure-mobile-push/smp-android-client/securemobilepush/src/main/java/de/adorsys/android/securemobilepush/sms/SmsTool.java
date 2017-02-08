@@ -12,7 +12,8 @@ import android.support.v4.content.ContextCompat;
 public class SmsTool {
     public static final int REQUEST_CODE_ASK_PERMISSIONS = 123;
 
-    @NonNull private Context context;
+    @NonNull
+    private Context context;
 
     public SmsTool(@NonNull Context context) {
         this.context = context;
@@ -23,11 +24,10 @@ public class SmsTool {
         Activity activity = (Activity) context;
         final String permission = Manifest.permission.RECEIVE_SMS;
         int hasSpecificPermission = ContextCompat.checkSelfPermission(context, permission);
-        if (hasSpecificPermission != PackageManager.PERMISSION_GRANTED) {
-            if (!activity.shouldShowRequestPermissionRationale(permission)) {
-                activity.requestPermissions(new String[]{permission},
-                        REQUEST_CODE_ASK_PERMISSIONS);
-            }
+        if (hasSpecificPermission != PackageManager.PERMISSION_GRANTED
+                && !activity.shouldShowRequestPermissionRationale(permission)) {
+            activity.requestPermissions(new String[]{permission},
+                    REQUEST_CODE_ASK_PERMISSIONS);
         }
     }
 }
