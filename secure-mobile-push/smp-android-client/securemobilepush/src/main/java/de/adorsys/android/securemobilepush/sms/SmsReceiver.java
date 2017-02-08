@@ -17,15 +17,15 @@ import java.util.List;
 import de.adorsys.android.securemobilepush.BuildConfig;
 
 public class SmsReceiver extends BroadcastReceiver {
-    public static final String INTENT_FILTER_SMS = "intentFilterSms";
-    public static final String KEY_SMS_SENDER = "smsSender";
-    public static final String KEY_SMS_MESSAGE = "smsMessage";
+    public static final String INTENT_ACTION_SMS = "intent_action_sms";
+    public static final String KEY_SMS_SENDER = "key_sms_sender";
+    public static final String KEY_SMS_MESSAGE = "key_sms_message";
 
-    private static final String INTENT_SMS_ACTION = "android.provider.Telephony.SMS_RECEIVED";
+    private static final String INTENT_ACTION_SMS_RECEIVED = "android.provider.Telephony.SMS_RECEIVED";
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (intent.getAction().equals(INTENT_SMS_ACTION)) {
+        if (intent.getAction().equals(INTENT_ACTION_SMS_RECEIVED)) {
             List smsSenderNumbers =
                     new ArrayList<>(Arrays.asList(BuildConfig.SMS_SENDER_NUMBER));
             Bundle bundle = intent.getExtras();
@@ -46,7 +46,7 @@ public class SmsReceiver extends BroadcastReceiver {
                             messageFrom = smsMessages[i].getOriginatingAddress();
                             if (smsSenderNumbers.contains(messageFrom)) {
                                 String messageBody = getSmsCode(smsMessages[i].getMessageBody());
-                                Intent broadcastIntent = new Intent(INTENT_FILTER_SMS);
+                                Intent broadcastIntent = new Intent(INTENT_ACTION_SMS);
                                 broadcastIntent.putExtra(KEY_SMS_SENDER, messageFrom);
                                 broadcastIntent.putExtra(KEY_SMS_MESSAGE, messageBody);
                                 LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);

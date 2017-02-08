@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(SmsReceiver.INTENT_FILTER_SMS)) {
+            if (intent.getAction().equals(SmsReceiver.INTENT_ACTION_SMS)) {
                 String receivedTitle = intent.getStringExtra(SmsReceiver.KEY_SMS_SENDER);
                 String receivedMessage = intent.getStringExtra(SmsReceiver.KEY_SMS_MESSAGE);
                 smsSenderTextView.setText(getString(R.string.text_sms_sender_number, receivedTitle));
@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
     private void registerReceiver() {
         localBroadcastManager = LocalBroadcastManager.getInstance(this);
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(SmsReceiver.INTENT_FILTER_SMS);
+        intentFilter.addAction(SmsReceiver.INTENT_ACTION_SMS);
         localBroadcastManager.registerReceiver(broadcastReceiver, intentFilter);
     }
 
