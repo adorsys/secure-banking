@@ -69,6 +69,7 @@ public class SmsReceiver extends BroadcastReceiver {
         LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
     }
 
+    @NonNull
     private String getSmsCode(@NonNull String message) {
         int startIndex = message.indexOf(BuildConfig.BEGIN_INDEX);
         int endIndex = message.indexOf(BuildConfig.END_INDEX);
