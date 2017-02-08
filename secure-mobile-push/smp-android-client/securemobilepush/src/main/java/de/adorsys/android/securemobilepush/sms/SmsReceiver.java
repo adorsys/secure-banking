@@ -1,0 +1,83 @@
+package de.adorsys.android.securemobilepush.sms;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Build;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
+import android.telephony.SmsMessage;
+import android.util.Log;
+
+import java.util.Arrays;
+import java.util.List;
+
+import de.adorsys.android.securemobilepush.BuildConfig;
+
+public class SmsReceiver extends BroadcastReceiver {
+    public static final String INTENT_ACTION_SMS = "intent_action_sms";
+    public static final String KEY_SMS_SENDER = "key_sms_sender";
+    public static final String KEY_SMS_MESSAGE = "key_sms_message";
+
+    private static final String INTENT_ACTION_SMS_RECEIVED = "android.provider.Telephony.SMS_RECEIVED";
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        if (intent.getAction().equals(INTENT_ACTION_SMS_RECEIVED)) {
+            List<String> smsSenderNumbers = Arrays.asList(BuildConfig.SMS_SENDER_NUMBERS);
+            Bundle bundle = intent.getExtras();
+            SmsMessage[] smsMessages;
+            String messageFrom;
+            if (bundle != null) {
+                try {
+                    //PDU = protocol data unit
+                    //A PDU is a “protocol data unit”, which is the industry format for an SMS message.
+                    //Because SMSMessage reads/writes them you shouldn’t need to disect them.
+                    //A large message might be broken into many, which is why it is an array of objects.
+                    Object[] pdus = (Object[]) bundle.get("pdus");
+                    if (pdus != null) {
+                        smsMessages = new SmsMessage[pdus.length];
+                        for (int i = 0; i < smsMessages.length; i++) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i],
+                                        bundle.getString("format"));
+                            } else {
+                                smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
+                            }
+                            messageFrom = smsMessages[i].getOriginatingAddress();
+                            if (smsSenderNumbers.contains(messageFrom)) {
+                                sendBroadcast(context, messageFrom, smsMessages[i]);
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    if (BuildConfig.DEBUG) {
+                        Log.d(SmsReceiver.class.getName(), e.getMessage());
+                    }
+                    sendBroadcast(context, null, null);
+                }
+            }
+        }
+    }
+
+    private void sendBroadcast(@NonNull Context context,
+                               @Nullable String messageFrom,
+                               @Nullable SmsMessage smsMessage) {
+        Intent broadcastIntent = new Intent(INTENT_ACTION_SMS);
+
+        broadcastIntent.putExtra(KEY_SMS_SENDER, messageFrom);
+        broadcastIntent.putExtra(KEY_SMS_MESSAGE, smsMessage != null
+                ? getSmsCode(smsMessage.getMessageBody()) : null);
+        LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
+    }
+
+    @NonNull
+    private String getSmsCode(@NonNull String message) {
+        int startIndex = message.indexOf(BuildConfig.BEGIN_INDEX);
+        int endIndex = message.indexOf(BuildConfig.END_INDEX);
+
+        return message.substring(startIndex, endIndex).replace(BuildConfig.BEGIN_INDEX, "").trim();
+    }
+}

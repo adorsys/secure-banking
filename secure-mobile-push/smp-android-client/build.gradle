@@ -14,7 +14,7 @@ allprojects {
 }
 
 ext {
-    supportFrameworkVersion = "25.1.0"
+    supportFrameworkVersion = "25.1.1"
 }
 
 task clean(type: Delete) {
