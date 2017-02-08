@@ -13,26 +13,19 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
+    defaultConfig {
+        buildConfigField "String", "BEGIN_INDEX", "\"BEGIN-MESSAGE\""
+        buildConfigField "String", "END_INDEX", "\"END-MESSAGE\""
+        buildConfigField "String[]", "SMS_SENDER_NUMBER",
+                "{" +
+                        "\"0900123456\"," +
+                        "\"0900654321\"," +
+                        "\"0900900900\"" +
+                        "}"
+    }
+
     buildTypes {
-        debug {
-            buildConfigField "String", "BEGIN_INDEX", "\"BEGIN-MESSAGE\""
-            buildConfigField "String", "END_INDEX", "\"END-MESSAGE\""
-            buildConfigField "String[]", "SMS_SENDER_NUMBER",
-                    "{" +
-                            "\"0900123456\"," +
-                            "\"0900654321\"," +
-                            "\"0900900900\"" +
-                            "}"
-        }
         release {
-            buildConfigField "String", "BEGIN_INDEX", "\"BEGIN-MESSAGE\""
-            buildConfigField "String", "END_INDEX", "\"END-MESSAGE\""
-            buildConfigField "String[]", "SMS_SENDER_NUMBER",
-                    "{" +
-                            "\"0900123456\"," +
-                            "\"0900654321\"," +
-                            "\"0900900900\"" +
-                            "}"
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
