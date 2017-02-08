@@ -10,7 +10,6 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,8 +25,7 @@ public class SmsReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals(INTENT_ACTION_SMS_RECEIVED)) {
-            List smsSenderNumbers =
-                    new ArrayList<>(Arrays.asList(BuildConfig.SMS_SENDER_NUMBER));
+            List<String> smsSenderNumbers = Arrays.asList(BuildConfig.SMS_SENDER_NUMBER);
             Bundle bundle = intent.getExtras();
             SmsMessage[] smsMessages;
             String messageFrom;
