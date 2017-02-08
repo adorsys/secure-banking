@@ -35,9 +35,9 @@ public class SmsReceiver extends BroadcastReceiver {
                     if (pdus != null) {
                         smsMessages = new SmsMessage[pdus.length];
                         for (int i = 0; i < smsMessages.length; i++) {
-                            String format = bundle.getString("format");
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i], format);
+                                smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i],
+                                        bundle.getString("format"));
                             } else {
                                 smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
                             }
