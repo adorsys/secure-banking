@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
@@ -51,18 +52,20 @@ public class SmsReceiver extends BroadcastReceiver {
                     if (BuildConfig.DEBUG) {
                         Log.d(SmsReceiver.class.getName(), e.getMessage());
                     }
+                    sendBroadcast(context, null, null);
                 }
             }
         }
     }
 
     private void sendBroadcast(@NonNull Context context,
-                               @NonNull String messageFrom,
-                               @NonNull SmsMessage smsMessage) {
-        String messageBody = getSmsCode(smsMessage.getMessageBody());
+                               @Nullable String messageFrom,
+                               @Nullable SmsMessage smsMessage) {
         Intent broadcastIntent = new Intent(INTENT_ACTION_SMS);
+
         broadcastIntent.putExtra(KEY_SMS_SENDER, messageFrom);
-        broadcastIntent.putExtra(KEY_SMS_MESSAGE, messageBody);
+        broadcastIntent.putExtra(KEY_SMS_MESSAGE, smsMessage != null
+                ? getSmsCode(smsMessage.getMessageBody()) : null);
         LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
     }
 
