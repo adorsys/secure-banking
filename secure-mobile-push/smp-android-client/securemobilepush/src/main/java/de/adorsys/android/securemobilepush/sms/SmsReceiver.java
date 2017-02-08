@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Keep;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 import android.telephony.SmsMessage;
@@ -15,6 +16,7 @@ import java.util.List;
 
 import de.adorsys.android.securemobilepush.BuildConfig;
 
+@Keep
 public class SmsReceiver extends BroadcastReceiver {
     public static final String INTENT_FILTER_SMS = "intentFilterSms";
     public static final String KEY_SMS_SENDER = "smsSender";
