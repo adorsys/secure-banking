@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        localBroadcastManager.unregisterReceiver(broadcastReceiver);
+        unRegisterReceiver();
         super.onPause();
     }
 
@@ -93,5 +93,9 @@ public class MainActivity extends AppCompatActivity {
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(SmsReceiver.INTENT_FILTER_SMS);
         localBroadcastManager.registerReceiver(broadcastReceiver, intentFilter);
+    }
+
+    private void unRegisterReceiver() {
+        localBroadcastManager.unregisterReceiver(broadcastReceiver);
     }
 }
