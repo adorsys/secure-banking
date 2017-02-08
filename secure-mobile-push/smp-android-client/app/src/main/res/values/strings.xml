@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Secure Mobile Push</string>
-    <string name="send_a_sms_for_app_to_read">Send a SMS for the App to Read</string>
-    <string name="sms_sender_number">SMS Sender Number: %1$s</string>
-    <string name="sms_message">SMS Message: %1$s</string>
+    <string name="text_sms_send">Send a SMS to the application</string>
+    <string name="text_sms_sender_number">SMS Sender Number: %1$s</string>
+    <string name="text_sms_message">SMS Message: %1$s</string>
     <string name="warning_permission_not_granted">App cannot work without RECEIVE_SMS permission!</string>
 </resources>
