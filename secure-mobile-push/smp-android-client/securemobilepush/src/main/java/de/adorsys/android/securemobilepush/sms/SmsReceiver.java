@@ -3,6 +3,7 @@ package de.adorsys.android.securemobilepush.sms;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Keep;
 import android.support.annotation.NonNull;
@@ -35,16 +36,23 @@ public class SmsReceiver extends BroadcastReceiver {
             if (bundle != null) {
                 try {
                     Object[] pdus = (Object[]) bundle.get("pdus");
-                    smsMessages = new SmsMessage[pdus.length];
-                    for (int i = 0; i < smsMessages.length; i++) {
-                        smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
-                        messageFrom = smsMessages[i].getOriginatingAddress();
-                        if (smsSenderNumbers.contains(messageFrom)) {
-                            String messageBody = getSmsCode(smsMessages[i].getMessageBody());
-                            Intent broadcastIntent = new Intent(INTENT_FILTER_SMS);
-                            broadcastIntent.putExtra(KEY_SMS_SENDER, messageFrom);
-                            broadcastIntent.putExtra(KEY_SMS_MESSAGE, messageBody);
-                            LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
+                    if (pdus != null) {
+                        smsMessages = new SmsMessage[pdus.length];
+                        for (int i = 0; i < smsMessages.length; i++) {
+                            String format = bundle.getString("format");
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i], format);
+                            } else {
+                                smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
+                            }
+                            messageFrom = smsMessages[i].getOriginatingAddress();
+                            if (smsSenderNumbers.contains(messageFrom)) {
+                                String messageBody = getSmsCode(smsMessages[i].getMessageBody());
+                                Intent broadcastIntent = new Intent(INTENT_FILTER_SMS);
+                                broadcastIntent.putExtra(KEY_SMS_SENDER, messageFrom);
+                                broadcastIntent.putExtra(KEY_SMS_MESSAGE, messageBody);
+                                LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
+                            }
                         }
                     }
                 } catch (Exception e) {
