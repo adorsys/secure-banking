@@ -32,6 +32,10 @@ public class SmsReceiver extends BroadcastReceiver {
             String messageFrom;
             if (bundle != null) {
                 try {
+                    //PDU = protocol data unit
+                    //A PDU is a “protocol data unit”, which is the industry format for an SMS message.
+                    //Because SMSMessage reads/writes them you shouldn’t need to disect them.
+                    //A large message might be broken into many, which is why it is an array of objects.
                     Object[] pdus = (Object[]) bundle.get("pdus");
                     if (pdus != null) {
                         smsMessages = new SmsMessage[pdus.length];
