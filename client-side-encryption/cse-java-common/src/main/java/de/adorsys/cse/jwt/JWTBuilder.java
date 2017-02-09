@@ -1,54 +1,20 @@
 package de.adorsys.cse.jwt;
 
 import de.adorsys.cse.crypt.SecretCredentialEncryptor;
+import de.adorsys.cse.jwk.JWK;
 import de.adorsys.cse.nonce.NonceGenerator;
 import de.adorsys.cse.timestamp.TimestampGenerator;
 
-public class JWTBuilder {
+public interface JWTBuilder {
+    JWTBuilder withAccessToken(JWT accessToken);
 
-    private JWT jwt;
+    JWTBuilder withNonceGenerator(NonceGenerator nonceGenerator);
 
-    JWTBuilder() {
-        this.jwt = new JWT() {
-            @Override
-            public Base64EncodedJWT encode() {
-                return null;
-            }
+    JWTBuilder withTimestampGenerator(TimestampGenerator timestampGenerator);
 
-            @Override
-            public String getResourcePublicKey() {
-                return null;
-            }
-        };
-    }
+    JWTBuilder withExpirationTimeInMs(long expirationTimeInMs);
 
-    public JWTBuilder withAccessToken(Base64EncodedJWT accessToken) {
-        return this;
-    }
+    JWTBuilder withEncryptedServerPublicKey(SecretCredentialEncryptor encryptor, JWK serverPublicKey);
 
-    public JWTBuilder withNonceGenerator(NonceGenerator nonceGenerator) {
-        return this;
-    }
-
-    public JWTBuilder withTimestampGenerator(TimestampGenerator timestampGenerator) {
-        return this;
-    }
-
-    public JWTBuilder withExpirationTimeInMs(long expirationTimeInMs) {
-        return this;
-    }
-
-    public JWTBuilder withEncryptedServerPublicKey(SecretCredentialEncryptor encryptor, JWT serverPublicKey) {
-        return this;
-    }
-
-    public Base64EncodedJWT build(JWT hMacKey) {
-        return new Base64EncodedJWT() {
-            @Override
-            public JWT decode() {
-                return null;
-            }
-        };
-    }
-
+    JWT build(String hMacKey);
 }
