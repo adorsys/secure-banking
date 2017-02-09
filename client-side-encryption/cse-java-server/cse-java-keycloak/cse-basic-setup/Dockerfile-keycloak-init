@@ -1,0 +1,12 @@
+FROM jboss/keycloak:2.5.1.Final
+
+ENV JBOSS_HOME /opt/jboss/keycloak
+
+# h2 for access to keycloak database. Just for debugging
+ADD volumes/idp-server/lib/h2console.war $JBOSS_HOME/standalone/deployments/
+ADD volumes/idp-server/lib/.h2.server.properties /opt/jboss/
+
+# configuring wildfly over cli
+ADD keycloak-jboss-cli.txt $JBOSS_HOME/bin/
+RUN $JBOSS_HOME/bin/jboss-cli.sh --file=$JBOSS_HOME/bin/keycloak-jboss-cli.txt
+RUN rm -rf $JBOSS_HOME/standalone/configuration/standalone_xml_history

@@ -1,0 +1,58 @@
+version: '2'
+services:
+    # The ci server is to call scripts for the initialization of the keycloak environment. 
+    ci-server:
+        # We use centos 7 because it brings bash and curl
+        image: centos:7
+        links: 
+            - keycloak
+        volumes:
+             - ./volumes/idp-server:/idp-server
+        environment:
+            idphost: keycloak
+            idpport: 8080
+            IDP_CONFIG_DIR: /idp-server/data
+        depends_on:
+            - keycloak
+        command:
+            ######
+            # Not needed in productive system
+            ######
+            ## wait-for-it.sh 
+            # is used to wait for another container to start
+            #
+            ## add-domain-user.sh 
+            # create a new user in the keycloak database. Those can be used to test the sqrl process.
+            #
+            ######
+            # Needed for production
+            ######
+            ## add-direct-grant-client.sh 
+            # create a client with clientId sqrl-web-client. This is the client id used to get a token from keycloak
+            # This script store client config info in: $IDP_CONFIG_DIR/sqrl-web-client.json for use by the sqrl server.
+            #
+            ## read-realm-public-key.sh 
+            # export realm public key and store it in the file $IDP_CONFIG_DIR/realm-master-keys.json
+            # File is used by the sqrl server to verify the signature of token when registering devices
+            #
+            /bin/bash -c "/idp-server/post-deploy/wait-for-it.sh keycloak:9090;
+            /idp-server/post-deploy/add-domain-user.sh keycloak:8080 francis francis; 
+            /idp-server/post-deploy/add-domain-user.sh keycloak:8080 denys denys;
+            /idp-server/post-deploy/add-direct-grant-client.sh keycloak:8080 cse-client;
+            /idp-server/post-deploy/read-realm-public-key.sh keycloak:8080";
+    keycloak:
+        build:
+            context: .
+            dockerfile: Dockerfile-keycloak-init
+        ports:
+            - "8080:8080"
+            - "9090:9090"
+            - "8787:8787"
+        volumes:
+             - ./volumes/idp-server/pre-deploy:/opt/jboss/keycloak/pre-deploy
+             - ./volumes/idp-server/data:/opt/jboss/keycloak/standalone/data
+        environment:
+            JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8787
+        entrypoint: /opt/jboss/keycloak/pre-deploy/docker-entrypoint-clean.sh
+        command: -b 0.0.0.0 -bmanagement 0.0.0.0 -c standalone-ha.xml
+            

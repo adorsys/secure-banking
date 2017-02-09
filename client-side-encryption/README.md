@@ -41,41 +41,20 @@ The is no specific additional protocol message needed. Use the public key of the
 
 #### CLient Filling up a for with secret credential
 
-Same as above. User the public key of the resource server from the authentication token to JWE encrypt the secret credential an put the base64 encoded JWE String the value of the corresponding form field.
+_Obsolete
+Same as above. Use the public key of the resource server from the authentication token to JWE encrypt the secret credential an put the base64 encoded JWE String the value of the corresponding form field.
 
-In this case we need to specify the name of the jwt claim carrying the public key of the resource-server:
+_New Information
+Denys and i we just ell on this specification while trying to add a client public key key to the access token: https://tools.ietf.org/html/rfc7523
 
-Claim Name : **res_pub_key**
-Claim Value : 
-```json
-	{
-      "kty":"EC",
-      "kid":"i0wng",
-      "use":"sig",
-      "x":"AXYMGFO6K_R2E3RH42_5YTeGYgYTagLM-v3iaiNlPKFFvTh17CKQL_OKH5pEkj5U8mbel-0R1YrNuraRXtBztcVO",
-      "y":"AaYuq27czYSrbFQUMo3jVK2hrW8KZ75KyE8dyYS-HOB9vUC4nMvoPGbu2hE_yBTLZLpuUvTOSSv150FLaBPhPLA2",
-      "crv":"P-521"
-    }
-```
-Example JWT:
+This specification describe how an idp can obtain the public key of the client to authenticat the client with a signed JWT. We can use the same approach to access the public key of a resource server and use it to encrypt informations.
 
-```json
-{
-  "sub": "1234567890",
-  "name": "John Doe",
-  "res_pub_key": {
-      "kty":"EC",
-      "kid":"i0wng",
-      "use":"sig",
-      "x":"AXYMGFO6K_R2E3RH42_5YTeGYgYTagLM-v3iaiNlPKFFvTh17CKQL_OKH5pEkj5U8mbel-0R1YrNuraRXtBztcVO",
-      "y":"AaYuq27czYSrbFQUMo3jVK2hrW8KZ75KyE8dyYS-HOB9vUC4nMvoPGbu2hE_yBTLZLpuUvTOSSv150FLaBPhPLA2",
-      "crv":"P-521"
-    }
-}
-```
+
+For this approach the resource server must provide an endpoint that can be used by a client to retrieve the resource server public key.
 
 #### Implementation Work
 
+##### Forget this Section
 * Component to extract access token
   * The oAuthToken sent from server might contain more than just an access token.
   * AccessTokenExtractor
@@ -93,7 +72,9 @@ Example JWT:
 	  * We prefer the IdP keeping this out of the access_token or refresh_token
 	  * IdP can put this in the oAuthToken
 	  * an identity provider might decide to put it accessToken because there is nothing else send to the client.
-	  * So the public key extractor will be configured to work with the target idp
+	  * So the public key extractor will be configured to work with the target id
+
+##### Continue here: Encrypting secret infos.
 * Component to JWE encrypt a string given a public key
   * SecretCredentialEncryptor
     * encrypt(secret:String, serverPublicKey:JWK) : Base64EncodedJWT

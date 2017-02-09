@@ -1,0 +1,9 @@
+HTTP/1.1 200 OK
+Connection: keep-alive
+Cache-Control: no-cache
+X-Powered-By: Undertow/1
+Server: WildFly/10
+Content-Type: application/json
+Content-Length: 1753
+Date: Thu, 09 Feb 2017 14:27:00 GMT
+
