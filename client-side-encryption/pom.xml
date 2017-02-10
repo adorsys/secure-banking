@@ -15,6 +15,7 @@
         <module>cse-java-client</module>
         <module>cse-java-server</module>
         <module>cse-java-common</module>
+        <module>cse-java-nimbus-impl</module>
     </modules>
 
     <packaging>pom</packaging>
