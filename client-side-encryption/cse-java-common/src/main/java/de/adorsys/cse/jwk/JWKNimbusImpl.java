@@ -11,8 +11,13 @@ import java.text.ParseException;
 public class JWKNimbusImpl implements JWK {
     private static final Logger log = LoggerFactory.getLogger(JWKNimbusImpl.class);
 
-    private String originalUnencodedJWK;
+    private String unencodedJWK;
     private com.nimbusds.jose.jwk.JWK container;
+
+    JWKNimbusImpl(com.nimbusds.jose.jwk.JWK container) {
+        this.container = container;
+        this.unencodedJWK = container.toJSONString();
+    }
 
     public JWKNimbusImpl(String JWKOrBase64encodedJWK) throws ParseException {
         if (JWKOrBase64encodedJWK == null) {
@@ -21,7 +26,7 @@ public class JWKNimbusImpl implements JWK {
         }
         try {
             this.container = com.nimbusds.jose.jwk.JWK.parse(JWKOrBase64encodedJWK);
-            this.originalUnencodedJWK = JWKOrBase64encodedJWK;
+            this.unencodedJWK = JWKOrBase64encodedJWK;
         } catch (ParseException e) {
             //Failed first time, maybe the input is Base64-encoded ?
             try {
@@ -30,7 +35,7 @@ public class JWKNimbusImpl implements JWK {
 
                 this.container = com.nimbusds.jose.jwk.JWK.parse(decodedJWK);
                 //if we failed here, the given key is not a valid JWK, ParseException goes out
-                this.originalUnencodedJWK = decodedJWK;
+                this.unencodedJWK = decodedJWK;
 
             } catch (IllegalArgumentException | UnsupportedEncodingException ex) {
                 //it's not a base64-encoded string
@@ -41,12 +46,12 @@ public class JWKNimbusImpl implements JWK {
 
     @Override
     public String toJSONString() {
-        return originalUnencodedJWK;
+        return unencodedJWK;
     }
 
     @Override
     public String toBase64JSONString() {
-        return Base64.encodeBase64String(originalUnencodedJWK.getBytes());
+        return Base64.encodeBase64String(unencodedJWK.getBytes());
     }
 
     @Override
@@ -56,11 +61,11 @@ public class JWKNimbusImpl implements JWK {
 
         JWKNimbusImpl jwkNimbus = (JWKNimbusImpl) o;
 
-        return originalUnencodedJWK.equals(jwkNimbus.originalUnencodedJWK);
+        return unencodedJWK.equals(jwkNimbus.unencodedJWK);
     }
 
     @Override
     public int hashCode() {
-        return originalUnencodedJWK.hashCode();
+        return unencodedJWK.hashCode();
     }
 }

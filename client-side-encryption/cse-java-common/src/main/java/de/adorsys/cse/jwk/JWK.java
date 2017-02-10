@@ -4,4 +4,8 @@ public interface JWK {
     String toJSONString();
 
     String toBase64JSONString();
+
+    enum Algorithm {
+        RSA,
+    }
 }

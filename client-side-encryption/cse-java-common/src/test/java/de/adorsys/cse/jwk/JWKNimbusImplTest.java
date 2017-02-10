@@ -11,7 +11,7 @@ public class JWKNimbusImplTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void createWithNullThrowsIllegalArgumentException() throws Exception {
-        new JWKNimbusImpl(null);
+        new JWKNimbusImpl((String)null);
         fail("Creation of JWKNimbusImpl with null throws IllegalArgumentException");
     }
 
