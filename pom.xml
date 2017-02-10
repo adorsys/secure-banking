@@ -22,6 +22,7 @@
         <version.slf4j>1.7.22</version.slf4j>
         <version.junit>4.12</version.junit>
         <version.apache-commons-codec>1.10</version.apache-commons-codec>
+        <version.jackson-databind>2.8.6</version.jackson-databind>
     </properties>
 
     <dependencyManagement>
@@ -56,6 +57,12 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-simple</artifactId>
                 <version>${version.slf4j}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${version.jackson-databind}</version>
                 <scope>test</scope>
             </dependency>
 
