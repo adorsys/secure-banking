@@ -4,7 +4,7 @@ jdk:
   - oraclejdk8
 
 script:
-  - mvn --settings .travis/settings.xml package -am -B -V -U
+  - mvn package -am -B -V -U
 
 install:
-  - mvn --settings .travis/settings.xml install -DskipTests -Dmaven.javadoc.skip=true -B -V
+  - mvn install -DskipTests -Dmaven.javadoc.skip=true -B -V
