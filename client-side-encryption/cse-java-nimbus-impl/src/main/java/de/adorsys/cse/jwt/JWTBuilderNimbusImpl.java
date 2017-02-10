@@ -1,19 +1,26 @@
 package de.adorsys.cse.jwt;
 
+import com.nimbusds.jwt.JWTClaimsSet;
 import de.adorsys.cse.crypt.SecretCredentialEncryptor;
 import de.adorsys.cse.jwk.JWK;
 import de.adorsys.cse.nonce.NonceGenerator;
 import de.adorsys.cse.timestamp.TimestampGenerator;
 
 public class JWTBuilderNimbusImpl implements JWTBuilder {
+    private static final String CLAIM_ACCESS_TOKEN = "access_token";
 
-    private JWT jwt;
+    private JWTClaimsSet.Builder claimsSetBuilder;
 
     JWTBuilderNimbusImpl() {
+        claimsSetBuilder = new JWTClaimsSet.Builder();
     }
 
     @Override
     public JWTBuilder withAccessToken(JWT accessToken) {
+        if (accessToken == null) {
+            throw new IllegalArgumentException("accessToken cannot be null");
+        }
+        claimsSetBuilder.claim(CLAIM_ACCESS_TOKEN, accessToken.encode());
         return this;
     }
 
@@ -39,7 +46,7 @@ public class JWTBuilderNimbusImpl implements JWTBuilder {
 
     @Override
     public JWT build(String hMacKey) {
-        return null;
+        return new JWTNimbusImpl(claimsSetBuilder.build());
     }
 
 }

@@ -2,21 +2,32 @@ package de.adorsys.cse.jwt;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
+import com.nimbusds.jwt.PlainJWT;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
 import java.util.Optional;
 
 public class JWTNimbusImpl implements JWT {
-    private String originalBase64encodedToken;
+    private final static Logger log = LoggerFactory.getLogger(JWTNimbusImpl.class);
+
+    private String base64encodedToken;
     private com.nimbusds.jwt.JWT container;
 
     private JWTClaimsSet claimsSet;
+
+    JWTNimbusImpl(JWTClaimsSet claimsSet) {
+        this.claimsSet = claimsSet;
+        this.container = new PlainJWT(claimsSet);
+        this.base64encodedToken = container.serialize();
+    }
 
     public JWTNimbusImpl(String base64encodedJWT) throws ParseException {
         if (base64encodedJWT == null) {
             throw new IllegalArgumentException("base64encodedJWT must not be null");
         }
-        this.originalBase64encodedToken = base64encodedJWT;
+        this.base64encodedToken = base64encodedJWT;
         this.container = JWTParser.parse(base64encodedJWT);
         this.claimsSet = container.getJWTClaimsSet();
     }
@@ -47,11 +58,12 @@ public class JWTNimbusImpl implements JWT {
 
         JWTNimbusImpl jwtNimbus = (JWTNimbusImpl) o;
 
-        return originalBase64encodedToken.equals(jwtNimbus.originalBase64encodedToken);
+        return base64encodedToken.equals(jwtNimbus.base64encodedToken);
     }
 
     @Override
     public int hashCode() {
-        return originalBase64encodedToken.hashCode();
+        return base64encodedToken.hashCode();
     }
+
 }
