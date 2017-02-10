@@ -9,9 +9,10 @@ import org.slf4j.LoggerFactory;
 import java.text.ParseException;
 import java.util.Optional;
 
+import static de.adorsys.cse.jwt.JWT.Claims.CLAIM_SERVER_PUBLIC_KEY;
+
 public class PubicKeyExtractorImpl implements PublicKeyExtractor {
     private static final Logger log = LoggerFactory.getLogger(PubicKeyExtractorImpl.class);
-    private static final String PUBLIC_KEY_CLAIM = "res_pub_key";
 
     @Override
     public Optional<JWK> extractPublicKey(JWT token) {
@@ -19,7 +20,7 @@ public class PubicKeyExtractorImpl implements PublicKeyExtractor {
             log.error("Passed token is null");
             throw new IllegalArgumentException("Passed token is null");
         }
-        Optional<String> claim = token.getClaim(PUBLIC_KEY_CLAIM);
+        Optional<String> claim = token.getClaim(CLAIM_SERVER_PUBLIC_KEY);
         if (claim.isPresent()) {
             try {
                 return Optional.of(new JWKNimbusImpl(claim.get()));
@@ -29,7 +30,7 @@ public class PubicKeyExtractorImpl implements PublicKeyExtractor {
             }
         }
         else {
-            log.warn("No claim or empty claim \"{}\" found in token", PUBLIC_KEY_CLAIM);
+            log.warn("No claim or empty claim \"{}\" found in token", CLAIM_SERVER_PUBLIC_KEY);
         }
         return Optional.empty();
     }
