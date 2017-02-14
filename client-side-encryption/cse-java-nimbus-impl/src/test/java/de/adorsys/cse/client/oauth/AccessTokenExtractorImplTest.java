@@ -4,13 +4,12 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.PlainJWT;
 import de.adorsys.cse.jwt.JWT;
 import de.adorsys.cse.jwt.JWTNimbusImpl;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Optional;
-
-import static org.junit.Assert.*;
 
 public class AccessTokenExtractorImplTest {
     private AccessTokenExtractor accessTokenExtractor;
@@ -33,7 +32,7 @@ public class AccessTokenExtractorImplTest {
 
         Optional<JWT> actualAccessToken = accessTokenExtractor.extractAccessToken(oAuthTokenToInput);
 
-        assertFalse("Token without access_token claim returns nothing", actualAccessToken.isPresent());
+        Assert.assertFalse("Token without access_token claim returns nothing", actualAccessToken.isPresent());
     }
 
     @Test
@@ -46,8 +45,8 @@ public class AccessTokenExtractorImplTest {
 
         Optional<JWT> actualAccessToken = accessTokenExtractor.extractAccessToken(oAuthTokenToInput);
 
-        assertTrue("Access token is present", actualAccessToken.isPresent());
-        assertEquals("Access Token is extracted", expectedAccesToken, actualAccessToken.get());
+        Assert.assertTrue("Access token is present", actualAccessToken.isPresent());
+        Assert.assertEquals("Access Token is extracted", expectedAccesToken, actualAccessToken.get());
 
     }
 
