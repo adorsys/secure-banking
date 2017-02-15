@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.telephony.SmsMessage;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.util.Arrays;
@@ -29,27 +30,36 @@ public class SmsReceiver extends BroadcastReceiver {
             List<String> smsSenderNumbers = Arrays.asList(SmsConfig.SMS_SENDER_NUMBERS);
             Bundle bundle = intent.getExtras();
             SmsMessage[] smsMessages;
-            String messageFrom;
+            String messageFrom = null;
             if (bundle != null) {
                 try {
                     //PDU = protocol data unit
                     //A PDU is a “protocol data unit”, which is the industry format for an SMS message.
-                    //Because SMSMessage reads/writes them you shouldn’t need to disect them.
+                    //Because SMSMessage reads/writes them you should'nt need to dissect them.
                     //A large message might be broken into many, which is why it is an array of objects.
                     Object[] pdus = (Object[]) bundle.get("pdus");
                     if (pdus != null) {
                         smsMessages = new SmsMessage[pdus.length];
+                        // If the sent message is longer than 160 characters  it will be broken down
+                        // in to chunks of 153 characters before being received on the device.
+                        // To rectify that receivedMessage is the result of appending every single
+                        // short message into one large one for our usage. see:
+                        //http://www.textanywhere.net/faq/is-there-a-maximum-sms-message-length
+                        String receivedMessage = "";
                         for (int i = 0; i < smsMessages.length; i++) {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                                 smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i],
                                         bundle.getString("format"));
+                                receivedMessage = receivedMessage + smsMessages[i].getMessageBody();
                             } else {
                                 smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
+                                receivedMessage = receivedMessage + smsMessages[i].getMessageBody();
                             }
                             messageFrom = smsMessages[i].getOriginatingAddress();
-                            if (smsSenderNumbers.contains(messageFrom)) {
-                                sendBroadcast(context, messageFrom, smsMessages[i]);
-                            }
+                        }
+                        if (!TextUtils.isEmpty(messageFrom)
+                                && smsSenderNumbers.contains(messageFrom)) {
+                            sendBroadcast(context, messageFrom, receivedMessage);
                         }
                     }
                 } catch (Exception e) {
@@ -64,12 +74,12 @@ public class SmsReceiver extends BroadcastReceiver {
 
     private void sendBroadcast(@NonNull Context context,
                                @Nullable String messageFrom,
-                               @Nullable SmsMessage smsMessage) {
+                               @Nullable String smsMessage) {
         Intent broadcastIntent = new Intent(INTENT_ACTION_SMS);
 
         broadcastIntent.putExtra(KEY_SMS_SENDER, messageFrom);
         broadcastIntent.putExtra(KEY_SMS_MESSAGE, smsMessage != null
-                ? getSmsCode(smsMessage.getMessageBody()) : null);
+                ? getSmsCode(smsMessage) : null);
         LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
     }
 
