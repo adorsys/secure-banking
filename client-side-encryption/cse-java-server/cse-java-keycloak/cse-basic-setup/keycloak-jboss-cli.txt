@@ -1,0 +1,20 @@
+# This file provides an offline configuration of keycloak based original docker image from docker hub
+embed-server --server-config=standalone-ha.xml
+
+batch
+/extension=org.jboss.as.weld:add
+run-batch
+
+batch
+
+# Move scheduling service db to keycloak database.
+/subsystem=ee/service=default-bindings:write-attribute(name=datasource, value="java:jboss/datasources/KeycloakDS")
+# Remove the fake ExampleDS
+/subsystem=datasources/data-source=ExampleDS:remove
+
+# Move KeycloakDS data location to volumes outside of container so we can preserve data on container restart and decide when to cleanup
+/subsystem=datasources/data-source=KeycloakDS:write-attribute(name=connection-url, value="jdbc:h2:/opt/jboss/keycloak/standalone/data/h2/keycloak;AUTO_SERVER=TRUE")
+
+/subsystem=weld:add
+
+run-batch
