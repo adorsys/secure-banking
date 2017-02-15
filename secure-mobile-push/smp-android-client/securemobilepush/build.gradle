@@ -13,17 +13,6 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
-    defaultConfig {
-        buildConfigField "String", "BEGIN_INDEX", "\"BEGIN-MESSAGE\""
-        buildConfigField "String", "END_INDEX", "\"END-MESSAGE\""
-        buildConfigField "String[]", "SMS_SENDER_NUMBERS",
-                "{" +
-                        "\"0900123456\"," +
-                        "\"0900654321\"," +
-                        "\"0900900900\"" +
-                        "}"
-    }
-
     buildTypes {
         release {
             minifyEnabled true
