@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.BuildConfig;
 import android.support.v4.content.LocalBroadcastManager;
 import android.telephony.SmsMessage;
 import android.text.TextUtils;
@@ -14,8 +15,6 @@ import android.util.Log;
 
 import java.util.Arrays;
 import java.util.List;
-
-import de.adorsys.android.securemobilepush.BuildConfig;
 
 public class SmsReceiver extends BroadcastReceiver {
     public static final String INTENT_ACTION_SMS = "intent_action_sms";
@@ -60,13 +59,15 @@ public class SmsReceiver extends BroadcastReceiver {
                         if (!TextUtils.isEmpty(messageFrom)
                                 && smsSenderNumbers.contains(messageFrom)) {
                             sendBroadcast(context, messageFrom, receivedMessage);
+                        } else {
+                            sendBroadcast(context, null, null);
                         }
                     }
-                } catch (Exception e) {
+                } catch (StringIndexOutOfBoundsException e) {
                     if (BuildConfig.DEBUG) {
                         Log.d(SmsReceiver.class.getName(), e.getMessage());
                     }
-                    sendBroadcast(context, null, null);
+                    sendBroadcast(context, messageFrom, null);
                 }
             }
         }
