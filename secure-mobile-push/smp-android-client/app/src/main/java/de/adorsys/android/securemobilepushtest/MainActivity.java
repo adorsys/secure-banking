@@ -62,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        SmsTool.createSmsConfig("BEGIN-MESSAGE", "END-MESSAGE", "0900123456", "0900654321", "0900900900");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             SmsTool.requestSMSPermission(this);
         }
