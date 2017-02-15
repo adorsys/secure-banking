@@ -26,7 +26,7 @@ public class SmsReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction().equals(INTENT_ACTION_SMS_RECEIVED)) {
-            List<String> smsSenderNumbers = Arrays.asList(BuildConfig.SMS_SENDER_NUMBERS);
+            List<String> smsSenderNumbers = Arrays.asList(SmsConfig.SMS_SENDER_NUMBERS);
             Bundle bundle = intent.getExtras();
             SmsMessage[] smsMessages;
             String messageFrom;
@@ -75,9 +75,9 @@ public class SmsReceiver extends BroadcastReceiver {
 
     @NonNull
     private String getSmsCode(@NonNull String message) {
-        int startIndex = message.indexOf(BuildConfig.BEGIN_INDEX);
-        int endIndex = message.indexOf(BuildConfig.END_INDEX);
+        int startIndex = message.indexOf(SmsConfig.BEGIN_INDEX);
+        int endIndex = message.indexOf(SmsConfig.END_INDEX);
 
-        return message.substring(startIndex, endIndex).replace(BuildConfig.BEGIN_INDEX, "").trim();
+        return message.substring(startIndex, endIndex).replace(SmsConfig.BEGIN_INDEX, "").trim();
     }
 }
