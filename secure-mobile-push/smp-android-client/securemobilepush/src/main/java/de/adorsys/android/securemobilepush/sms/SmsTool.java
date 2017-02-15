@@ -21,4 +21,12 @@ public final class SmsTool {
                     REQUEST_CODE_ASK_PERMISSIONS);
         }
     }
+
+    public static void createSmsConfig(@NonNull String BEGIN_INDEX,
+                                       @NonNull String END_INDEX,
+                                       @NonNull String... SMS_SENDER_NUMBERS) {
+        SmsConfig.BEGIN_INDEX = BEGIN_INDEX;
+        SmsConfig.END_INDEX = END_INDEX;
+        SmsConfig.SMS_SENDER_NUMBERS = SMS_SENDER_NUMBERS;
+    }
 }
