@@ -44,7 +44,7 @@ public class SmsReceiver extends BroadcastReceiver {
                         // To rectify that receivedMessage is the result of appending every single
                         // short message into one large one for our usage. see:
                         //http://www.textanywhere.net/faq/is-there-a-maximum-sms-message-length
-                        String receivedMessage = "";
+
                         for (int i = 0; i < smsMessages.length; i++) {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                                 smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i],
@@ -53,10 +53,13 @@ public class SmsReceiver extends BroadcastReceiver {
                                 smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
                             }
                             messageFrom = smsMessages[i].getOriginatingAddress();
-                            receivedMessage = receivedMessage + smsMessages[i].getMessageBody();
                         }
                         if (!TextUtils.isEmpty(messageFrom)
                                 && smsSenderNumbers.contains(messageFrom)) {
+                            String receivedMessage = "";
+                            for (SmsMessage smsMessage : smsMessages) {
+                                receivedMessage = receivedMessage + smsMessage.getMessageBody();
+                            }
                             sendBroadcast(context, messageFrom, receivedMessage);
                         } else {
                             sendBroadcast(context, null, null);
