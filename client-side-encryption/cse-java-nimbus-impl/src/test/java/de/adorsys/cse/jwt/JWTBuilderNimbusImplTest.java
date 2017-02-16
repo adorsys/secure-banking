@@ -1,5 +1,8 @@
 package de.adorsys.cse.jwt;
 
+import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jose.crypto.MACVerifier;
+import com.nimbusds.jwt.SignedJWT;
 import de.adorsys.cse.client.oauth.AccessTokenExtractor;
 import de.adorsys.cse.client.oauth.AccessTokenExtractorImpl;
 import de.adorsys.cse.crypt.SecretCredentialEncryptor;
@@ -7,10 +10,12 @@ import de.adorsys.cse.nonce.NonceGenerator;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.Random;
 
 import static de.adorsys.cse.Base64StringGenerator.generateRandomBase64String;
+import static java.time.temporal.ChronoUnit.MILLIS;
 import static org.junit.Assert.*;
 
 public class JWTBuilderNimbusImplTest {
@@ -100,9 +105,11 @@ public class JWTBuilderNimbusImplTest {
     }
 
     @Test
-    public void build() {
-        JWT jwt = jwtBuilder.buildAndSign("any secret key");
+    public void buildReturnsJWTObject() {
+        JWT jwt = jwtBuilder.build();
         assertNotNull("Builder returns valuable jwt", jwt);
+        JWT signedJWT = jwtBuilder.buildAndSign("any secret key");
+        assertNotNull("Builder returns valuable jwt", signedJWT);
     }
 
     @Test
@@ -110,7 +117,7 @@ public class JWTBuilderNimbusImplTest {
         final String expectedBase64EncodedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpZCI6IjYzMjIwNzg0YzUzODA3ZjVmZTc2Yjg4ZjZkNjdlMmExZTIxODlhZTEiLCJjbGllbnRfaWQiOiJUZXN0IENsaWVudCBJRCIsInVzZXJfaWQiOm51bGwsImV4cGlyZXMiOjEzODAwNDQ1NDIsInRva2VuX3R5cGUiOiJiZWFyZXIiLCJzY29wZSI6bnVsbH0.PcC4k8Q_etpU-J4yGFEuBUdeyMJhtpZFkVQ__sXpe78eSi7xTniqOOtgfWa62Y4sj5Npta8xPuDglH8Fueh_APZX4wGCiRE1P4nT4APQCOTbgcuCNXwjmP8znk9F76ID2WxThaMbmpsTTEkuyyUYQKCCdxlIcSbVvcLZUGKZ6-g";
 
         JWT accessToken = new JWTNimbusImpl(expectedBase64EncodedAccessToken);
-        JWT resultToken = jwtBuilder.withAccessToken(accessToken).buildAndSign("some hMacKey");
+        JWT resultToken = jwtBuilder.withAccessToken(accessToken).build();
 
         AccessTokenExtractor accessTokenExtractor = new AccessTokenExtractorImpl();
         Optional<JWT> actualAccessToken = accessTokenExtractor.extractAccessToken(resultToken);
@@ -122,8 +129,76 @@ public class JWTBuilderNimbusImplTest {
     public void build_withNonceGenerator() throws Exception {
         NonceGenerator dummyNonceGenerator = () -> generateRandomBase64String(20);
 
-        JWT resultToken = jwtBuilder.withNonceGenerator(dummyNonceGenerator).buildAndSign("some hMacKey");
+        JWT resultToken = jwtBuilder.withNonceGenerator(dummyNonceGenerator).build();
 
         assertTrue("token contains nonce", resultToken.getClaim("jti").isPresent());
+        assertEquals("token contains nonce with specified length", 20, resultToken.getClaim("jti").get().length());
+    }
+
+    @Test
+    public void build_withExpirationTime() {
+        final Random random = new Random(Instant.now().toEpochMilli());
+
+        //Since internally object is several times converted between various data types,
+        //i.e. Instant -> Date -> long -> String -> long -> Date -> Instant
+        //some milliseconds difference occur. This is not relevant for productive use of expiration time use-case
+        //To handle with this we use this delta in our comparisons
+        final long DELTA_MS = 5;
+
+        for (int i = 0; i < 1000; i++) {
+            long randomExpirationTime = Math.abs(random.nextLong());
+
+            JWTBuilder builder = new JWTBuilderNimbusImpl().withExpirationTimeInMs(randomExpirationTime);
+
+            Instant startTime = Instant.now();
+            JWTNimbusImpl resultToken = (JWTNimbusImpl) builder.build();
+            Instant finishTime = Instant.now();
+
+            Instant expectedExpirationTime = startTime.plus(randomExpirationTime, MILLIS);
+
+            assertTrue("start time claim is present", resultToken.getTokenIssueTime().isPresent());
+            assertTrue("expiration time claim is present", resultToken.getTokenExpirationTime().isPresent());
+
+            Instant actualIssueTime = resultToken.getTokenIssueTime().get();
+            assertTrue("token start time is between start and finish time", actualIssueTime.isAfter(startTime.minus(DELTA_MS, MILLIS)) && actualIssueTime.isBefore(finishTime.plus(DELTA_MS, MILLIS)));
+
+            Instant actualExpirationTime = resultToken.getTokenExpirationTime().get();
+
+            long actualDeltaMs = Math.abs(actualExpirationTime.toEpochMilli() - expectedExpirationTime.toEpochMilli());
+
+            assertTrue("expiration time is set as provided", actualDeltaMs < DELTA_MS);
+        }
+
+    }
+
+    @Test
+    public void providingNotLongEnoughSecretLeadToExtendingItToMinimalLength() throws Exception {
+        String notLongEnoughString = generateRandomBase64String(54);
+        //we need a string with length of 64 chars, so we add 10 chars
+        String expectedSecret = "AAAAAAAAAA".concat(notLongEnoughString);
+
+        JWT actualJWT = jwtBuilder.buildAndSign(notLongEnoughString);
+
+        assertEquals("jwt is signed", 3, actualJWT.encode().split("\\.").length);
+
+        JWSVerifier verifier = new MACVerifier(expectedSecret);
+
+        SignedJWT expectedInternalJWT = SignedJWT.parse(actualJWT.encode());
+        assertTrue("signature pass verification", expectedInternalJWT.verify(verifier));
+
+    }
+
+    @Test
+    public void buildWithHMACSecretReturnsSignedToken() throws Exception {
+        String longSecretString = generateRandomBase64String(2454);
+
+        JWT actualJWT = jwtBuilder.buildAndSign(longSecretString);
+
+        assertEquals("jwt is signed", 3, actualJWT.encode().split("\\.").length);
+
+        JWSVerifier verifier = new MACVerifier(longSecretString);
+
+        SignedJWT expectedInternalJWT = SignedJWT.parse(actualJWT.encode());
+        assertTrue("signature pass verification", expectedInternalJWT.verify(verifier));
     }
 }

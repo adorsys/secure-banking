@@ -1,17 +1,25 @@
 package de.adorsys.cse.jwt;
 
+import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jwt.JWTClaimsSet;
 import de.adorsys.cse.crypt.SecretCredentialEncryptor;
 import de.adorsys.cse.nonce.NonceGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.Date;
 
 import static de.adorsys.cse.jwt.JWT.Claims.CLAIM_ACCESS_TOKEN;
 import static de.adorsys.cse.jwt.JWT.Claims.CLAIM_PUBLIC_KEY_ENCRYPTED_HMAC_SECRET;
 
 public class JWTBuilderNimbusImpl implements JWTBuilder {
+    private static final Logger log = LoggerFactory.getLogger(JWTBuilderNimbusImpl.class);
+
+    private static final char CHARACTER_TO_FILL = 'A';
+    private static final int MINIMAL_KEY_LENGTH = 64; //minimal key length for HS512 - 512 bytes
 
     private NonceGenerator nonceGenerator;
     private long expirationTimeInMs;
@@ -60,11 +68,23 @@ public class JWTBuilderNimbusImpl implements JWTBuilder {
             throw new IllegalArgumentException("hmacSecret cannot be null or empty");
         }
 
-        return build();
+        JWTClaimsSet.Builder claimsSetBuilder = buildClaimsSet();
+        if (hmacSecret.length() < MINIMAL_KEY_LENGTH) {
+            log.warn("provided hmacSecret is less then {} bytes and will be extended with '{}'", MINIMAL_KEY_LENGTH*8, CHARACTER_TO_FILL);
+            hmacSecret = extendStringToLength(hmacSecret);
+        }
+
+        return new JWTNimbusImpl(claimsSetBuilder.build(), hmacSecret, JWSAlgorithm.HS512);
     }
 
     @Override
     public JWT build() {
+        JWTClaimsSet.Builder claimsSetBuilder = buildClaimsSet();
+
+        return new JWTNimbusImpl(claimsSetBuilder.build());
+    }
+
+    private JWTClaimsSet.Builder buildClaimsSet() {
         JWTClaimsSet.Builder claimsSetBuilder = new JWTClaimsSet.Builder();
 
         if (accessToken != null) {
@@ -83,8 +103,7 @@ public class JWTBuilderNimbusImpl implements JWTBuilder {
         Instant expirationTime = currentTime.plus(expirationTimeInMs, ChronoUnit.MILLIS);
         claimsSetBuilder.issueTime(Date.from(currentTime));
         claimsSetBuilder.expirationTime(Date.from(expirationTime));
-
-        return new JWTNimbusImpl(claimsSetBuilder.build());
+        return claimsSetBuilder;
     }
 
     NonceGenerator getNonceGenerator() {
@@ -101,5 +120,11 @@ public class JWTBuilderNimbusImpl implements JWTBuilder {
 
     JWT getAccessToken() {
         return accessToken;
+    }
+
+    private String extendStringToLength(String hmacSecret) {
+        char[] array = new char[MINIMAL_KEY_LENGTH - hmacSecret.length()];
+        Arrays.fill(array, CHARACTER_TO_FILL);
+        return new String(array).concat(hmacSecret);
     }
 }
