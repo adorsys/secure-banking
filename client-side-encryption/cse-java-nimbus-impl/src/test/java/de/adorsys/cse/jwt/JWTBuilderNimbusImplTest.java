@@ -142,6 +142,6 @@ public class JWTBuilderNimbusImplTest {
 
         JWT resultToken = jwtBuilder.withNonceGenerator(dummyNonceGenerator).build("some hMacKey");
 
-        assertTrue("token contains nonce", resultToken.getClaim("nonce").isPresent());
+        assertTrue("token contains nonce", resultToken.getClaim("jti").isPresent());
     }
 }

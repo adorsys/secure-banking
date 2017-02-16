@@ -10,7 +10,8 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
-import static de.adorsys.cse.jwt.JWT.Claims.*;
+import static de.adorsys.cse.jwt.JWT.Claims.CLAIM_ACCESS_TOKEN;
+import static de.adorsys.cse.jwt.JWT.Claims.CLAIM_SERVER_PUBLIC_KEY;
 
 public class JWTBuilderNimbusImpl implements JWTBuilder {
 
@@ -85,7 +86,7 @@ public class JWTBuilderNimbusImpl implements JWTBuilder {
         }
 
         if (nonceGenerator != null) {
-            claimsSetBuilder.claim(CLAIM_NONCE, nonceGenerator.generateNonce());
+            claimsSetBuilder.jwtID(nonceGenerator.generateNonce());
         }
 
         Instant currentTime = Instant.now();

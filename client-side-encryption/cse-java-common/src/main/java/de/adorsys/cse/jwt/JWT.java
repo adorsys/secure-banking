@@ -31,7 +31,13 @@ public interface JWT {
          * Claims according to section 10.1 of https://tools.ietf.org/html/rfc7519#section-10.1
          * The whole list is available at https://www.iana.org/assignments/jwt/jwt.xhtml
          */
-        public static final String CLAIM_NONCE = "nonce"; // https://www.iana.org/assignments/jwt/jwt.xhtml
+        public static final String CLAIM_JWT_ID = "jti";
+        public static final String CLAIM_ISSUER = "iss";
+        public static final String CLAIM_SUBJECT = "sub";
+        public static final String CLAIM_AUDIENCE = "aud";
+        public static final String CLAIM_ISSUED_AT = "iat";
+        public static final String CLAIM_EXPIRATION_TIME = "exp";
+        public static final String CLAIM_NOT_BEFORE = "nbf";
 
         // Other claims
         public static final String CLAIM_ACCESS_TOKEN = "access_token";
