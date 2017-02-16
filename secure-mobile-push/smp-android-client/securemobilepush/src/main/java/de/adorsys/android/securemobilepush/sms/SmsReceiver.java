@@ -25,8 +25,9 @@ public class SmsReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (intent.getAction().equals(INTENT_ACTION_SMS_RECEIVED)) {
-            List<String> smsSenderNumbers = Arrays.asList(SmsConfig.SMS_SENDER_NUMBERS);
+        String[] senderArray = SmsConfig.INSTANCE.getSmsSenderNumbers();
+        if (intent.getAction().equals(INTENT_ACTION_SMS_RECEIVED) && senderArray != null) {
+            List<String> smsSenderNumbers = Arrays.asList(senderArray);
             Bundle bundle = intent.getExtras();
             SmsMessage[] smsMessages;
             String messageFrom = null;
@@ -81,16 +82,27 @@ public class SmsReceiver extends BroadcastReceiver {
         Intent broadcastIntent = new Intent(INTENT_ACTION_SMS);
 
         broadcastIntent.putExtra(KEY_SMS_SENDER, messageFrom);
-        broadcastIntent.putExtra(KEY_SMS_MESSAGE, smsMessage != null
-                ? getSmsCode(smsMessage) : null);
+        String smsCode = null;
+        if (smsMessage != null) {
+            smsCode = getSmsCode(smsMessage);
+        }
+        broadcastIntent.putExtra(KEY_SMS_MESSAGE, smsCode != null
+                ? smsCode : null);
         LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
     }
 
-    @NonNull
+    @Nullable
     private String getSmsCode(@NonNull String message) {
-        int startIndex = message.indexOf(SmsConfig.BEGIN_INDEX);
-        int endIndex = message.indexOf(SmsConfig.END_INDEX);
+        String beginIndexSingleton = SmsConfig.INSTANCE.getBeginIndex();
+        String endIndexSingleton = SmsConfig.INSTANCE.getEndIndex();
 
-        return message.substring(startIndex, endIndex).replace(SmsConfig.BEGIN_INDEX, "").trim();
+        if (beginIndexSingleton != null && endIndexSingleton != null) {
+            int startIndex = message.indexOf(beginIndexSingleton);
+            int endIndex = message.indexOf(endIndexSingleton);
+
+            return message.substring(startIndex, endIndex).replace(beginIndexSingleton, "").trim();
+        } else {
+            return null;
+        }
     }
 }
