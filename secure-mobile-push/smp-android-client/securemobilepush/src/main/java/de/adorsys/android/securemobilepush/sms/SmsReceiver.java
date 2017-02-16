@@ -32,45 +32,38 @@ public class SmsReceiver extends BroadcastReceiver {
             SmsMessage[] smsMessages;
             String messageFrom = null;
             if (bundle != null) {
-                try {
-                    //PDU = protocol data unit
-                    //A PDU is a “protocol data unit”, which is the industry format for an SMS message.
-                    //Because SMSMessage reads/writes them you shouldn't need to dissect them.
-                    //A large message might be broken into many, which is why it is an array of objects.
-                    Object[] pdus = (Object[]) bundle.get("pdus");
-                    if (pdus != null) {
-                        smsMessages = new SmsMessage[pdus.length];
-                        // If the sent message is longer than 160 characters  it will be broken down
-                        // in to chunks of 153 characters before being received on the device.
-                        // To rectify that receivedMessage is the result of appending every single
-                        // short message into one large one for our usage. see:
-                        //http://www.textanywhere.net/faq/is-there-a-maximum-sms-message-length
+                //PDU = protocol data unit
+                //A PDU is a “protocol data unit”, which is the industry format for an SMS message.
+                //Because SMSMessage reads/writes them you shouldn't need to dissect them.
+                //A large message might be broken into many, which is why it is an array of objects.
+                Object[] pdus = (Object[]) bundle.get("pdus");
+                if (pdus != null) {
+                    smsMessages = new SmsMessage[pdus.length];
+                    // If the sent message is longer than 160 characters  it will be broken down
+                    // in to chunks of 153 characters before being received on the device.
+                    // To rectify that receivedMessage is the result of appending every single
+                    // short message into one large one for our usage. see:
+                    //http://www.textanywhere.net/faq/is-there-a-maximum-sms-message-length
 
-                        for (int i = 0; i < smsMessages.length; i++) {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i],
-                                        bundle.getString("format"));
-                            } else {
-                                smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
-                            }
-                            messageFrom = smsMessages[i].getOriginatingAddress();
-                        }
-                        if (!TextUtils.isEmpty(messageFrom)
-                                && smsSenderNumbers.contains(messageFrom)) {
-                            String receivedMessage = "";
-                            for (SmsMessage smsMessage : smsMessages) {
-                                receivedMessage = receivedMessage + smsMessage.getMessageBody();
-                            }
-                            sendBroadcast(context, messageFrom, receivedMessage);
+                    for (int i = 0; i < smsMessages.length; i++) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i],
+                                    bundle.getString("format"));
                         } else {
-                            sendBroadcast(context, null, null);
+                            smsMessages[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
                         }
+                        messageFrom = smsMessages[i].getOriginatingAddress();
                     }
-                } catch (StringIndexOutOfBoundsException e) {
-                    if (BuildConfig.DEBUG) {
-                        Log.d(SmsReceiver.class.getName(), e.getMessage());
+                    if (!TextUtils.isEmpty(messageFrom)
+                            && smsSenderNumbers.contains(messageFrom)) {
+                        String receivedMessage = "";
+                        for (SmsMessage smsMessage : smsMessages) {
+                            receivedMessage = receivedMessage + smsMessage.getMessageBody();
+                        }
+                        sendBroadcast(context, messageFrom, receivedMessage);
+                    } else {
+                        sendBroadcast(context, null, null);
                     }
-                    sendBroadcast(context, messageFrom, null);
                 }
             }
         }
@@ -81,13 +74,19 @@ public class SmsReceiver extends BroadcastReceiver {
                                @Nullable String smsMessage) {
         Intent broadcastIntent = new Intent(INTENT_ACTION_SMS);
 
-        broadcastIntent.putExtra(KEY_SMS_SENDER, messageFrom);
         String smsCode = null;
         if (smsMessage != null) {
-            smsCode = getSmsCode(smsMessage);
+            try {
+                smsCode = getSmsCode(smsMessage);
+            } catch (StringIndexOutOfBoundsException e) {
+                if (BuildConfig.DEBUG) {
+                    Log.d(SmsReceiver.class.getName(), e.getMessage());
+                }
+            }
         }
-        broadcastIntent.putExtra(KEY_SMS_MESSAGE, smsCode != null
-                ? smsCode : null);
+
+        broadcastIntent.putExtra(KEY_SMS_SENDER, messageFrom);
+        broadcastIntent.putExtra(KEY_SMS_MESSAGE, smsCode);
         LocalBroadcastManager.getInstance(context).sendBroadcast(broadcastIntent);
     }
 
