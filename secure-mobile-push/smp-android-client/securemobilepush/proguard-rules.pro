@@ -15,19 +15,5 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
--keepclasseswithmembers public class de.adorsys.android.securemobilepush.sms.SmsTool {
-    public <fields>;
-    public <methods>;
-}
-
--keepclasseswithmembers public class de.adorsys.android.securemobilepush.sms.SmsReceiver {
-    public <fields>;
-    public <methods>;
-}
-
--keepclasseswithmembers public class de.adorsys.android.securemobilepush.sms.SmsConfig {
-    public <fields>;
-    public <methods>;
-}
 
 
