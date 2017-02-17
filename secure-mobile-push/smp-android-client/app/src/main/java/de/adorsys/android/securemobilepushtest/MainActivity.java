@@ -15,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import de.adorsys.android.securemobilepush.sms.SmsConfig;
 import de.adorsys.android.securemobilepush.sms.SmsReceiver;
 import de.adorsys.android.securemobilepush.sms.SmsTool;
 
@@ -62,6 +63,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        SmsConfig.INSTANCE.initializeSmsConfig(
+                "BEGIN-MESSAGE",
+                "END-MESSAGE",
+                "0900123456", "0900654321", "0900900900");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             SmsTool.requestSMSPermission(this);
         }

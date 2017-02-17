@@ -25,4 +25,9 @@
     public <methods>;
 }
 
+-keepclasseswithmembers public class de.adorsys.android.securemobilepush.sms.SmsConfig {
+    public <fields>;
+    public <methods>;
+}
+
 
