@@ -1,4 +1,4 @@
-package de.adorsys.android.securemobilepush.sms;
+package de.adorsys.android.smsparser;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
