@@ -1,6 +1,6 @@
 # Add project specific ProGuard rules here.
 # By default, the flags in this file are appended to flags specified
-# in /Users/Shared/Android/sdk/tools/proguard/proguard-android.txt
+# in /Users/drilonrecica/Library/Android/sdk/tools/proguard/proguard-android.txt
 # You can edit the include path and order by changing the proguardFiles
 # directive in build.gradle.
 #
@@ -15,5 +15,17 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+-keepclasseswithmembers public class de.adorsys.android.smsparser.SmsTool {
+    public <fields>;
+    public <methods>;
+}
 
+-keepclasseswithmembers public class de.adorsys.android.smsparser.SmsReceiver {
+    public <fields>;
+    public <methods>;
+}
 
+-keepclasseswithmembers public class de.adorsys.android.smsparser.SmsConfig {
+    public <fields>;
+    public <methods>;
+}
