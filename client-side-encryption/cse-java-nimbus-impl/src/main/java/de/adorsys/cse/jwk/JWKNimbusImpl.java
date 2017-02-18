@@ -1,11 +1,14 @@
 package de.adorsys.cse.jwk;
 
 
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.jwk.RSAKey;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
+import java.security.PublicKey;
 import java.text.ParseException;
 
 public class JWKNimbusImpl implements JWK {
@@ -67,5 +70,23 @@ public class JWKNimbusImpl implements JWK {
     @Override
     public int hashCode() {
         return unencodedJWK.hashCode();
+    }
+
+    @Override
+    public String getKeyType() {
+        return container.getKeyType().getValue().toUpperCase();
+    }
+
+    @Override
+    public PublicKey toRSAPublicKey() throws IllegalStateException {
+        if (container instanceof RSAKey) {
+            try {
+                return ((RSAKey)container).toPublicKey();
+            }
+            catch (JOSEException e) {
+                throw new IllegalStateException("This JWK is not a RSA-key");
+            }
+        }
+        throw new IllegalStateException("This JWK is not a RSA-key");
     }
 }

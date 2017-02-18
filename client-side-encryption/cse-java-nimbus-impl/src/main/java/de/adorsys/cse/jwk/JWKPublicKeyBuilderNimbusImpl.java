@@ -6,7 +6,6 @@ import org.apache.commons.codec.binary.Base64;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
@@ -31,15 +30,8 @@ public class JWKPublicKeyBuilderNimbusImpl implements JWKPublicKeyBuilder {
             RSAPublicKey publicKey = (RSAPublicKey) keyFactory.generatePublic(pubKeySpec);
             return build(publicKey);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            //we failed with RSA, trying EC
-            try {
-                KeyFactory keyFactory = KeyFactory.getInstance("DSA");
-                DSAPublicKey publicKey = (DSAPublicKey) keyFactory.generatePublic(pubKeySpec);
-                return build(publicKey);
-            }
-            catch (NoSuchAlgorithmException | InvalidKeySpecException e1) {
-                throw new IllegalArgumentException("Provided pemEncodedPublicKey is not a correct RSA/DSA public key: " + e1.getMessage());
-            }
+            //TODO we failed with RSA, try EC
+            throw new IllegalArgumentException("Provided pemEncodedPublicKey is not a correct RSA public key: " + e.getMessage());
         }
     }
 
@@ -48,7 +40,7 @@ public class JWKPublicKeyBuilderNimbusImpl implements JWKPublicKeyBuilder {
         if (publicKey == null) {
             throw new IllegalArgumentException("publicKey cannot be null");
         }
-        if (JWK.Algorithm.RSA.name().equals(publicKey.getAlgorithm())) {
+        if (JWK.Algorythm.RSA.name().equals(publicKey.getAlgorithm())) {
             return build((RSAPublicKey) publicKey);
         }
 
@@ -72,4 +64,6 @@ public class JWKPublicKeyBuilderNimbusImpl implements JWKPublicKeyBuilder {
         }
         return sourceString;
     }
+
+
 }
