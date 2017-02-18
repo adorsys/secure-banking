@@ -36,12 +36,14 @@ import javax.crypto.CipherOutputStream;
 import javax.crypto.NoSuchPaddingException;
 import javax.security.auth.x500.X500Principal;
 
-public class KeystoreTool {
+import static android.os.Build.VERSION_CODES.M;
 
+public class KeystoreTool {
     private static final String KEY_ALIAS = "adorsysKeyPair";
     private static final String KEY_ENCRYPTION_ALGORITHM = "RSA";
     private static final String KEY_KEYSTORE_NAME = "AndroidKeyStore";
-    private static final String KEY_CIPHER_NAME = "AndroidOpenSSL";
+    private static final String KEY_CIPHER_JELLYBEAN_PROVIDER = "AndroidOpenSSL";
+    private static final String KEY_CIPHER_MARSHMALLOW_PROVIDER = "AndroidKeyStoreBCWorkaround";
     private static final String KEY_TRANSFORMATION_ALGORITHM = "RSA/ECB/PKCS1Padding";
     private static final String KEY_X500PRINCIPAL = "CN=SecureDeviceStorage, O=Adorsys, C=Germany";
 
@@ -65,10 +67,7 @@ public class KeystoreTool {
 
         // Create new key if needed
         if (!keyPairExists()) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                generateMarshmallowKeyPair();
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
-                    && Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            if (Build.VERSION.SDK_INT >= M) {
                 generateJellyBeanKeyPair(context);
             } else {
                 Log.e(KeystoreTool.class.getName(), context.getString(R.string.message_supported_api));
@@ -123,19 +122,6 @@ public class KeystoreTool {
         }
     }
 
-    private static KeyStore getKeyStoreInstance() throws KeyStoreException, CertificateException,
-            NoSuchAlgorithmException, IOException {
-
-        // Get the AndroidKeyStore instance
-        KeyStore keyStore = KeyStore.getInstance(KEY_KEYSTORE_NAME);
-
-        // Relict of the JCA API - you have to call load even
-        // if you do not have an input stream you want to load or it'll crash
-        keyStore.load(null);
-
-        return keyStore;
-    }
-
     @RequiresApi(api = Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     @Nullable
     static String encryptMessage(@NonNull Context context, @NonNull String plainMessage)
@@ -143,7 +129,16 @@ public class KeystoreTool {
             IOException, UnrecoverableEntryException, KeyStoreException,
             CertificateException, InvalidKeyException {
 
-        Cipher input = Cipher.getInstance(KEY_TRANSFORMATION_ALGORITHM, KEY_CIPHER_NAME);
+
+        Cipher input;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
+                && Build.VERSION.SDK_INT < M) {
+            input = Cipher.getInstance(KEY_TRANSFORMATION_ALGORITHM, KEY_CIPHER_JELLYBEAN_PROVIDER);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            input = Cipher.getInstance(KEY_TRANSFORMATION_ALGORITHM, KEY_CIPHER_MARSHMALLOW_PROVIDER);
+        } else {
+            return null;
+        }
         input.init(Cipher.ENCRYPT_MODE, getPublicKey(context));
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -162,7 +157,16 @@ public class KeystoreTool {
             IOException, UnrecoverableEntryException, KeyStoreException,
             CertificateException, InvalidKeyException {
 
-        Cipher output = Cipher.getInstance(KEY_TRANSFORMATION_ALGORITHM, KEY_CIPHER_NAME);
+        Cipher output;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
+                && Build.VERSION.SDK_INT < M) {
+            output = Cipher.getInstance(KEY_TRANSFORMATION_ALGORITHM, KEY_CIPHER_JELLYBEAN_PROVIDER);
+        } else if (Build.VERSION.SDK_INT >= M) {
+            output = Cipher.getInstance(KEY_TRANSFORMATION_ALGORITHM, KEY_CIPHER_MARSHMALLOW_PROVIDER);
+        } else {
+            return null;
+        }
+
         output.init(Cipher.DECRYPT_MODE, getPrivateKey(context));
 
         CipherInputStream cipherInputStream = new CipherInputStream(
@@ -181,7 +185,7 @@ public class KeystoreTool {
         return new String(bytes, 0, bytes.length, "UTF-8");
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
+    @RequiresApi(api = M)
     private static void generateMarshmallowKeyPair()
             throws NoSuchProviderException, NoSuchAlgorithmException,
             InvalidAlgorithmParameterException {
@@ -189,19 +193,22 @@ public class KeystoreTool {
         Calendar start = Calendar.getInstance();
         Calendar end = Calendar.getInstance();
         end.add(Calendar.MONTH, 1);
-        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(
-                KeyProperties.KEY_ALGORITHM_RSA, KEY_KEYSTORE_NAME);
-        keyPairGenerator.initialize(new KeyGenParameterSpec.Builder(
+
+        KeyGenParameterSpec spec = new KeyGenParameterSpec.Builder(
                 KEY_ALIAS, KeyProperties.PURPOSE_SIGN)
                 .setKeyValidityStart(start.getTime())
                 .setKeyValidityEnd(end.getTime())
                 .setCertificateSerialNumber(BigInteger.ONE)
                 .setCertificateSubject(new X500Principal(KEY_X500PRINCIPAL))
-                .setDigests(KeyProperties.DIGEST_SHA256)
+                .setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
                 .setSignaturePaddings(KeyProperties.SIGNATURE_PADDING_RSA_PSS)
-                .build());
+                .build();
 
-        keyPairGenerator.generateKeyPair();
+        KeyPairGenerator generator
+                = KeyPairGenerator.getInstance(KEY_ENCRYPTION_ALGORITHM, KEY_KEYSTORE_NAME);
+        generator.initialize(spec);
+
+        generator.generateKeyPair();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -225,5 +232,19 @@ public class KeystoreTool {
         generator.initialize(spec);
 
         generator.generateKeyPair();
+    }
+
+    @NonNull
+    private static KeyStore getKeyStoreInstance() throws KeyStoreException, CertificateException,
+            NoSuchAlgorithmException, IOException {
+
+        // Get the AndroidKeyStore instance
+        KeyStore keyStore = KeyStore.getInstance(KEY_KEYSTORE_NAME);
+
+        // Relict of the JCA API - you have to call load even
+        // if you do not have an input stream you want to load or it'll crash
+        keyStore.load(null);
+
+        return keyStore;
     }
 }
