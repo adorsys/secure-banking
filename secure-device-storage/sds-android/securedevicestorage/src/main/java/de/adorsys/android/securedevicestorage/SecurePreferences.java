@@ -30,6 +30,17 @@ public class SecurePreferences {
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     public static void setValue(@NonNull String key, @NonNull String value, @NonNull Context context) {
+        try {
+            if (!KeystoreTool.keyPairExists()) {
+                KeystoreTool.generateKeyPair(context);
+            }
+        } catch (CertificateException | NoSuchAlgorithmException | IOException
+                | KeyStoreException | UnrecoverableKeyException
+                | InvalidAlgorithmParameterException | NoSuchProviderException e) {
+            Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
+            return;
+        }
+
         String transformedValue = null;
         try {
             transformedValue = KeystoreTool.encryptMessage(context, value);
@@ -40,16 +51,7 @@ public class SecurePreferences {
             Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
         }
         if (transformedValue != null) {
-            try {
-                if (!KeystoreTool.keyPairExists()) {
-                    KeystoreTool.generateKeyPair(context);
-                }
-                setSecureValue(key, transformedValue, context);
-            } catch (CertificateException | NoSuchAlgorithmException | IOException
-                    | KeyStoreException | UnrecoverableKeyException
-                    | InvalidAlgorithmParameterException | NoSuchProviderException e) {
-                Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
-            }
+            setSecureValue(key, transformedValue, context);
         } else {
             Log.e(SecurePreferences.class.getName(),
                     context.getString(R.string.message_problem_encryption));
@@ -94,7 +96,7 @@ public class SecurePreferences {
     }
 
     @Nullable
-    private static String getSecureValue(@NonNull String key, @NonNull Context context) {
+    public static String getSecureValue(@NonNull String key, @NonNull Context context) {
         SharedPreferences preferences = context
                 .getSharedPreferences(KEY_SHARED_PREFERENCES_NAME, MODE_PRIVATE);
         return preferences.getString(key, null);
