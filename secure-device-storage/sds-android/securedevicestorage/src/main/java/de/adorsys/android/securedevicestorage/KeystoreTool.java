@@ -20,12 +20,13 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.UnrecoverableEntryException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
@@ -33,7 +34,7 @@ import javax.crypto.CipherOutputStream;
 import javax.crypto.NoSuchPaddingException;
 import javax.security.auth.x500.X500Principal;
 
-class KeystoreTool {
+public class KeystoreTool {
 
     private static final String KEY_ALIAS = "adorsysKeyPair";
     private static final String KEY_ENCRYPTION_ALGORITHM = "RSA";
@@ -41,29 +42,29 @@ class KeystoreTool {
     private static final String KEY_CIPHER_NAME = "AndroidOpenSSL";
     private static final String KEY_TRANSFORMATION_ALGORITHM = "RSA/ECB/PKCS1Padding";
 
-    static boolean keyPairExists() throws CertificateException, NoSuchAlgorithmException,
+    public static boolean keyPairExists() throws CertificateException, NoSuchAlgorithmException,
             IOException, KeyStoreException, UnrecoverableKeyException {
 
         return getKeyStoreInstance().getKey(KEY_ALIAS, null) != null;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
-    static void generateKeyPair(@NonNull Context context)
+    public static void generateKeyPair(@NonNull Context context)
             throws InvalidAlgorithmParameterException,
             NoSuchProviderException, NoSuchAlgorithmException, UnrecoverableKeyException,
             CertificateException, KeyStoreException, IOException {
 
         // Create new key if needed
         if (!keyPairExists()) {
-//            Calendar start = Calendar.getInstance();
-//            Calendar end = Calendar.getInstance();
-//            end.add(Calendar.MONTH, 1);
+            Calendar start = Calendar.getInstance();
+            Calendar end = Calendar.getInstance();
+            end.add(Calendar.MONTH, 1);
             KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(context)
                     .setAlias(KEY_ALIAS)
                     .setSubject(new X500Principal("CN=SecureDeviceStorage, O=Adorsys, C=Germany"))
                     .setSerialNumber(BigInteger.ONE)
-//                    .setStartDate(start.getTime())
-//                    .setEndDate(end.getTime())
+                    .setStartDate(start.getTime())
+                    .setEndDate(end.getTime())
                     .build();
             KeyPairGenerator generator
                     = KeyPairGenerator.getInstance(KEY_ENCRYPTION_ALGORITHM, KEY_KEYSTORE_NAME);
@@ -79,12 +80,12 @@ class KeystoreTool {
     }
 
     @Nullable
-    private static RSAPublicKey getPublicKey(@NonNull Context context) throws UnrecoverableEntryException,
+    private static PublicKey getPublicKey(@NonNull Context context) throws UnrecoverableEntryException,
             CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
 
         if (keyPairExists()) {
             KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) getKeyStoreInstance().getEntry(KEY_ALIAS, null);
-            return (RSAPublicKey) privateKeyEntry.getCertificate().getPublicKey();
+            return privateKeyEntry.getCertificate().getPublicKey();
         } else {
             if (BuildConfig.DEBUG) {
                 Log.e(KeystoreTool.class.getName(), context.getString(R.string.message_keypair_does_not_exist));
@@ -94,12 +95,12 @@ class KeystoreTool {
     }
 
     @Nullable
-    private static RSAPrivateKey getPrivateKey(@NonNull Context context) throws UnrecoverableEntryException,
+    private static PrivateKey getPrivateKey(@NonNull Context context) throws UnrecoverableEntryException,
             CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
 
         if (keyPairExists()) {
             KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) getKeyStoreInstance().getEntry(KEY_ALIAS, null);
-            return (RSAPrivateKey) privateKeyEntry.getPrivateKey();
+            return privateKeyEntry.getPrivateKey();
         } else {
             if (BuildConfig.DEBUG) {
                 Log.e(KeystoreTool.class.getName(), context.getString(R.string.message_keypair_does_not_exist));
