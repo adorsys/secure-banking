@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
@@ -23,7 +22,11 @@ import java.security.cert.CertificateException;
 
 import javax.crypto.NoSuchPaddingException;
 
+import static android.content.Context.MODE_PRIVATE;
+
 public class SecurePreferences {
+
+    private static final String KEY_SHARED_PREFERENCES_NAME = "SecurePreferences";
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     public static void setValue(@NonNull String key, @NonNull String value, @NonNull Context context) {
@@ -70,7 +73,6 @@ public class SecurePreferences {
     }
 
     public static void clearAllValues(@NonNull Context context) {
-
         try {
             if (KeystoreTool.keyPairExists()) {
                 KeystoreTool.deleteKeyPair(context);
@@ -81,24 +83,27 @@ public class SecurePreferences {
                 Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
             }
         }
-        clearAllValues(context);
+        clearAllSecureValues(context);
     }
 
     @SuppressLint("CommitPrefEdits")
     private static void setSecureValue(@NonNull String key, @NonNull String value, @NonNull Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putString(key, value).commit();
+        SharedPreferences preferences = context
+                .getSharedPreferences(KEY_SHARED_PREFERENCES_NAME, MODE_PRIVATE);
+        preferences.edit().putString(key, value).commit();
     }
 
     @Nullable
     private static String getSecureValue(@NonNull String key, @NonNull Context context) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences preferences = context
+                .getSharedPreferences(KEY_SHARED_PREFERENCES_NAME, MODE_PRIVATE);
         return preferences.getString(key, null);
     }
 
     @SuppressLint("CommitPrefEdits")
     private static void clearAllSecureValues(@NonNull Context context) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences preferences = context
+                .getSharedPreferences(KEY_SHARED_PREFERENCES_NAME, MODE_PRIVATE);
         preferences.edit().clear().commit();
     }
 }
