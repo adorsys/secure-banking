@@ -3,48 +3,61 @@ package de.adorsys.android.securedevicestoragetest;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import de.adorsys.android.securedevicestorage.KeystoreTool;
 import de.adorsys.android.securedevicestorage.SecurePreferences;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String KEY = "TEMPTAG";
+    private static final String TAG = "LOGTAG";
+    private String encryptedMessage;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        final EditText input = (EditText) findViewById(R.id.plain_message_edit_text);
         final TextView keyInfoTextView = (TextView) findViewById(R.id.key_info_text_view);
         final Button generateKeyButton = (Button) findViewById(R.id.generate_key_button);
 
         if (KeystoreTool.keyPairExists()) {
-            generateKeyButton.setText("Start Encryption/Decryption");
+            generateKeyButton.setText(R.string.button_encrypt);
         } else {
-            generateKeyButton.setText("Generate Key and Start Encryption/Decryption");
+            generateKeyButton.setText(R.string.button_generate_encrypt);
         }
 
         generateKeyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                    if (generateKeyButton.getText().toString().equals("Generate Key and Start Encryption/Decryption")) {
-                        generateKeyButton.setText("Start Encryption/Decryption");
+                if (!TextUtils.isEmpty(input.getText())) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                        if (generateKeyButton.getText().toString()
+                                .equals(getString(R.string.button_generate_encrypt))) {
+                            generateKeyButton.setText(R.string.button_encrypt);
+                        }
+                        SecurePreferences.setValue(KEY, input.getText().toString(), MainActivity.this);
+                        encryptedMessage = SecurePreferences.getSecureValue(KEY, MainActivity.this);
+                        if (BuildConfig.DEBUG) {
+                            Log.d(TAG, encryptedMessage + " ");
+                        }
+                        String decryptedMessage = SecurePreferences.getValue(KEY, MainActivity.this);
+                        if (BuildConfig.DEBUG) {
+                            Log.d(TAG, decryptedMessage + " ");
+                        }
+                        keyInfoTextView.setText(getString(R.string.message_encrypted_decrypted,
+                                input.getText().toString(), encryptedMessage, decryptedMessage));
                     }
-                    SecurePreferences.setValue("TAG", "TEST", MainActivity.this);
-                    String encryptedMessage = SecurePreferences.getSecureValue("TAG", MainActivity.this);
-                    if (BuildConfig.DEBUG) {
-                        Log.d("LOGTAG", encryptedMessage + " ");
-                    }
-                    String decryptedMessage = SecurePreferences.getValue("TAG", MainActivity.this);
-                    if (BuildConfig.DEBUG) {
-                        Log.d("LOGTAG", decryptedMessage + " ");
-                    }
-                    keyInfoTextView.setText(getString(R.string.message_encrypted_decrypted,
-                            "Test", encryptedMessage, decryptedMessage));
+                } else {
+                    Toast.makeText(MainActivity.this, "Field cannot be empty", Toast.LENGTH_SHORT).show();
                 }
             }
         });
