@@ -6,9 +6,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import de.adorsys.android.securedevicestorage.KeystoreTool;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,12 +20,8 @@ public class MainActivity extends AppCompatActivity {
         generateKeyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (KeystoreTool.keyPairExists()) {
-                    Toast.makeText(MainActivity.this, "EXISTS", Toast.LENGTH_SHORT).show();
-                } else {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                        KeystoreTool.generateKeyPair(MainActivity.this);
-                    }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+
                 }
             }
         });
