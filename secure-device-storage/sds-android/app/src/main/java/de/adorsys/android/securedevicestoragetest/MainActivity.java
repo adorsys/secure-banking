@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import de.adorsys.android.securedevicestorage.BuildConfig;
 import de.adorsys.android.securedevicestorage.KeystoreTool;
 import de.adorsys.android.securedevicestorage.SecurePreferences;
 
@@ -36,9 +37,13 @@ public class MainActivity extends AppCompatActivity {
                     }
                     SecurePreferences.setValue("TAG", "TEST", MainActivity.this);
                     String encryptedMessage = SecurePreferences.getSecureValue("TAG", MainActivity.this);
-                    Log.d("LOGTAG", encryptedMessage);
+                    if (BuildConfig.DEBUG) {
+                        Log.d("LOGTAG", encryptedMessage + " ");
+                    }
                     String decryptedMessage = SecurePreferences.getValue("TAG", MainActivity.this);
-                    Log.d("LOGTAG", decryptedMessage);
+                    if (BuildConfig.DEBUG) {
+                        Log.d("LOGTAG", decryptedMessage + " ");
+                    }
                     keyInfoTextView.setText(getString(R.string.message_encrypted_decrypted,
                             "Test", encryptedMessage, decryptedMessage));
                 }
