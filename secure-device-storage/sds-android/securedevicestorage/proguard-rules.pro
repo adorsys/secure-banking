@@ -15,3 +15,7 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+-keepclasseswithmembers public class de.adorsys.android.securedevicestorage.SecurePreferences {
+    public <fields>;
+    public <methods>;
+}
