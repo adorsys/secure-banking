@@ -3,6 +3,8 @@ package de.adorsys.android.securedevicestorage;
 import android.content.Context;
 import android.os.Build;
 import android.security.KeyPairGeneratorSpec;
+import android.security.keystore.KeyGenParameterSpec;
+import android.security.keystore.KeyProperties;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
@@ -41,12 +43,14 @@ public class KeystoreTool {
     private static final String KEY_KEYSTORE_NAME = "AndroidKeyStore";
     private static final String KEY_CIPHER_NAME = "AndroidOpenSSL";
     private static final String KEY_TRANSFORMATION_ALGORITHM = "RSA/ECB/PKCS1Padding";
+    private static final String KEY_X500PRINCIPAL = "CN=SecureDeviceStorage, O=Adorsys, C=Germany";
 
     public static boolean keyPairExists() {
-
         try {
             return getKeyStoreInstance().getKey(KEY_ALIAS, null) != null;
-        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException | IOException e) {
+        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException
+                | UnrecoverableKeyException | IOException e) {
+
             if (BuildConfig.DEBUG) {
                 Log.e(KeystoreTool.class.getName(), e.getMessage(), e);
             }
@@ -54,7 +58,6 @@ public class KeystoreTool {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     static void generateKeyPair(@NonNull Context context)
             throws InvalidAlgorithmParameterException,
             NoSuchProviderException, NoSuchAlgorithmException, UnrecoverableKeyException,
@@ -62,21 +65,14 @@ public class KeystoreTool {
 
         // Create new key if needed
         if (!keyPairExists()) {
-            Calendar start = Calendar.getInstance();
-            Calendar end = Calendar.getInstance();
-            end.add(Calendar.MONTH, 1);
-            KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(context)
-                    .setAlias(KEY_ALIAS)
-                    .setSubject(new X500Principal("CN=SecureDeviceStorage, O=Adorsys, C=Germany"))
-                    .setSerialNumber(BigInteger.ONE)
-                    .setStartDate(start.getTime())
-                    .setEndDate(end.getTime())
-                    .build();
-            KeyPairGenerator generator
-                    = KeyPairGenerator.getInstance(KEY_ENCRYPTION_ALGORITHM, KEY_KEYSTORE_NAME);
-            generator.initialize(spec);
-
-            generator.generateKeyPair();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                generateMarshmallowKeyPair();
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2
+                    && Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                generateJellyBeanKeyPair(context);
+            } else {
+                Log.e(KeystoreTool.class.getName(), context.getString(R.string.message_supported_api));
+            }
         } else {
             if (BuildConfig.DEBUG) {
                 Log.e(KeystoreTool.class.getName(),
@@ -183,5 +179,51 @@ public class KeystoreTool {
         }
 
         return new String(bytes, 0, bytes.length, "UTF-8");
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private static void generateMarshmallowKeyPair()
+            throws NoSuchProviderException, NoSuchAlgorithmException,
+            InvalidAlgorithmParameterException {
+
+        Calendar start = Calendar.getInstance();
+        Calendar end = Calendar.getInstance();
+        end.add(Calendar.MONTH, 1);
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(
+                KeyProperties.KEY_ALGORITHM_RSA, KEY_KEYSTORE_NAME);
+        keyPairGenerator.initialize(new KeyGenParameterSpec.Builder(
+                KEY_ALIAS, KeyProperties.PURPOSE_SIGN)
+                .setKeyValidityStart(start.getTime())
+                .setKeyValidityEnd(end.getTime())
+                .setCertificateSerialNumber(BigInteger.ONE)
+                .setCertificateSubject(new X500Principal(KEY_X500PRINCIPAL))
+                .setDigests(KeyProperties.DIGEST_SHA256)
+                .setSignaturePaddings(KeyProperties.SIGNATURE_PADDING_RSA_PSS)
+                .build());
+
+        keyPairGenerator.generateKeyPair();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+    private static void generateJellyBeanKeyPair(@NonNull Context context)
+            throws NoSuchProviderException, NoSuchAlgorithmException,
+            InvalidAlgorithmParameterException {
+
+        Calendar start = Calendar.getInstance();
+        Calendar end = Calendar.getInstance();
+        end.add(Calendar.MONTH, 1);
+        KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(context)
+                .setAlias(KEY_ALIAS)
+                .setSubject(new X500Principal(KEY_X500PRINCIPAL))
+                .setSerialNumber(BigInteger.ONE)
+                .setStartDate(start.getTime())
+                .setEndDate(end.getTime())
+                .build();
+
+        KeyPairGenerator generator
+                = KeyPairGenerator.getInstance(KEY_ENCRYPTION_ALGORITHM, KEY_KEYSTORE_NAME);
+        generator.initialize(spec);
+
+        generator.generateKeyPair();
     }
 }
