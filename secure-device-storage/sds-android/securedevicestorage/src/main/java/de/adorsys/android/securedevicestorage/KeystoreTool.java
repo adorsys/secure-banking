@@ -42,14 +42,20 @@ public class KeystoreTool {
     private static final String KEY_CIPHER_NAME = "AndroidOpenSSL";
     private static final String KEY_TRANSFORMATION_ALGORITHM = "RSA/ECB/PKCS1Padding";
 
-    public static boolean keyPairExists() throws CertificateException, NoSuchAlgorithmException,
-            IOException, KeyStoreException, UnrecoverableKeyException {
+    public static boolean keyPairExists() {
 
-        return getKeyStoreInstance().getKey(KEY_ALIAS, null) != null;
+        try {
+            return getKeyStoreInstance().getKey(KEY_ALIAS, null) != null;
+        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | UnrecoverableKeyException | IOException e) {
+            if (BuildConfig.DEBUG) {
+                Log.e(KeystoreTool.class.getName(), e.getMessage(), e);
+            }
+            return false;
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
-    public static void generateKeyPair(@NonNull Context context)
+    static void generateKeyPair(@NonNull Context context)
             throws InvalidAlgorithmParameterException,
             NoSuchProviderException, NoSuchAlgorithmException, UnrecoverableKeyException,
             CertificateException, KeyStoreException, IOException {
