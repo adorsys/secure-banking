@@ -25,7 +25,6 @@ import javax.crypto.NoSuchPaddingException;
 import static android.content.Context.MODE_PRIVATE;
 
 public class SecurePreferences {
-
     private static final String KEY_SHARED_PREFERENCES_NAME = "SecurePreferences";
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -96,7 +95,7 @@ public class SecurePreferences {
     }
 
     @Nullable
-    public static String getSecureValue(@NonNull String key, @NonNull Context context) {
+    private static String getSecureValue(@NonNull String key, @NonNull Context context) {
         SharedPreferences preferences = context
                 .getSharedPreferences(KEY_SHARED_PREFERENCES_NAME, MODE_PRIVATE);
         return preferences.getString(key, null);

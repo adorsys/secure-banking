@@ -11,14 +11,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import de.adorsys.android.securedevicestorage.KeystoreTool;
 import de.adorsys.android.securedevicestorage.SecurePreferences;
 
 public class MainActivity extends AppCompatActivity {
-
     private static final String KEY = "TEMPTAG";
     private static final String TAG = "LOGTAG";
-    private String encryptedMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,12 +25,6 @@ public class MainActivity extends AppCompatActivity {
         final EditText input = (EditText) findViewById(R.id.plain_message_edit_text);
         final TextView keyInfoTextView = (TextView) findViewById(R.id.key_info_text_view);
         final Button generateKeyButton = (Button) findViewById(R.id.generate_key_button);
-
-        if (KeystoreTool.keyPairExists()) {
-            generateKeyButton.setText(R.string.button_encrypt);
-        } else {
-            generateKeyButton.setText(R.string.button_generate_encrypt);
-        }
 
         generateKeyButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -45,16 +36,12 @@ public class MainActivity extends AppCompatActivity {
                             generateKeyButton.setText(R.string.button_encrypt);
                         }
                         SecurePreferences.setValue(KEY, input.getText().toString(), MainActivity.this);
-                        encryptedMessage = SecurePreferences.getSecureValue(KEY, MainActivity.this);
-                        if (BuildConfig.DEBUG) {
-                            Log.d(TAG, encryptedMessage + " ");
-                        }
                         String decryptedMessage = SecurePreferences.getValue(KEY, MainActivity.this);
                         if (BuildConfig.DEBUG) {
                             Log.d(TAG, decryptedMessage + " ");
                         }
                         keyInfoTextView.setText(getString(R.string.message_encrypted_decrypted,
-                                input.getText().toString(), encryptedMessage, decryptedMessage));
+                                input.getText().toString(), decryptedMessage));
                     }
                 } else {
                     Toast.makeText(MainActivity.this, "Field cannot be empty", Toast.LENGTH_SHORT).show();

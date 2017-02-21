@@ -48,7 +48,7 @@ public class KeystoreTool {
     private static final String KEY_TRANSFORMATION_ALGORITHM = "RSA/ECB/PKCS1Padding";
     private static final String KEY_X500PRINCIPAL = "CN=SecureDeviceStorage, O=Adorsys, C=Germany";
 
-    public static boolean keyPairExists() {
+    static boolean keyPairExists() {
         try {
             return getKeyStoreInstance().getKey(KEY_ALIAS, null) != null;
         } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException
