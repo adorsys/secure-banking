@@ -24,10 +24,15 @@ public class JWKBuilderNimbusImplTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void passingNullCausesIllegalArgumentException() throws Exception {
+    public void passingNullStringCausesIllegalArgumentException() throws Exception {
         jwkBuilder.build((String) null);
-        jwkBuilder.build((PublicKey) null);
         fail("Passing null-String causes IllegalArgumentException");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void passingNullKeyCausesIllegalArgumentException() throws Exception {
+        jwkBuilder.build((PublicKey) null);
+        fail("Passing null-key causes IllegalArgumentException");
     }
 
     @Test(expected = IllegalArgumentException.class)
