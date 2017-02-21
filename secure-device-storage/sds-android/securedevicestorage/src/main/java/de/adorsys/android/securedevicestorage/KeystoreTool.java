@@ -122,7 +122,7 @@ public class KeystoreTool {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+    @RequiresApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     @Nullable
     static String encryptMessage(@NonNull Context context, @NonNull String plainMessage)
             throws NoSuchPaddingException, NoSuchAlgorithmException, NoSuchProviderException,
@@ -185,7 +185,7 @@ public class KeystoreTool {
         return new String(bytes, 0, bytes.length, "UTF-8");
     }
 
-    @RequiresApi(api = M)
+    @RequiresApi(M)
     private static void generateMarshmallowKeyPair()
             throws NoSuchProviderException, NoSuchAlgorithmException,
             InvalidAlgorithmParameterException {
@@ -211,7 +211,7 @@ public class KeystoreTool {
         generator.generateKeyPair();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     private static void generateJellyBeanKeyPair(@NonNull Context context)
             throws NoSuchProviderException, NoSuchAlgorithmException,
             InvalidAlgorithmParameterException {

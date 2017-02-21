@@ -28,7 +28,7 @@ public class SecurePreferences {
 
     private static final String KEY_SHARED_PREFERENCES_NAME = "SecurePreferences";
 
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     public static void setValue(@NonNull String key, @NonNull String value, @NonNull Context context) {
         try {
             if (!KeystoreTool.keyPairExists()) {
