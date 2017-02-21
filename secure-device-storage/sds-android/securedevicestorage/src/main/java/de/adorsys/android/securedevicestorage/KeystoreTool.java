@@ -39,7 +39,7 @@ import javax.security.auth.x500.X500Principal;
 
 import static android.os.Build.VERSION_CODES.M;
 
-public class KeystoreTool {
+class KeystoreTool {
     private static final String KEY_ALIAS = "adorsysKeyPair";
     private static final String KEY_ENCRYPTION_ALGORITHM = "RSA";
     private static final String KEY_KEYSTORE_NAME = "AndroidKeyStore";
