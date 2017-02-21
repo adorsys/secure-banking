@@ -15,3 +15,12 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+-keepclasseswithmembers class de.adorsys.android.securedevicestorage.SecurePreferences {
+    static <fields>;
+    static <methods>;
+}
+
+-keepclasseswithmembers class de.adorsys.android.securedevicestorage.KeystoreTool {
+    static <fields>;
+    static <methods>;
+}
