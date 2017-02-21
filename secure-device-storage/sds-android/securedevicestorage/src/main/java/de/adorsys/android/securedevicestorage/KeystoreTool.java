@@ -29,6 +29,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
@@ -68,6 +69,11 @@ public class KeystoreTool {
         // Create new key if needed
         if (!keyPairExists()) {
             if (Build.VERSION.SDK_INT >= M) {
+//                generateMarshmallowKeyPair();
+                //Temporarily use JellyBean KeyPair generation until Marshmallow methods are implemented
+                generateJellyBeanKeyPair(context);
+            } else if (Build.VERSION.SDK_INT < M
+                    && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                 generateJellyBeanKeyPair(context);
             } else {
                 Log.e(KeystoreTool.class.getName(), context.getString(R.string.message_supported_api));
@@ -137,6 +143,7 @@ public class KeystoreTool {
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             input = Cipher.getInstance(KEY_TRANSFORMATION_ALGORITHM, KEY_CIPHER_MARSHMALLOW_PROVIDER);
         } else {
+            Log.e(KeystoreTool.class.getName(), context.getString(R.string.message_supported_api));
             return null;
         }
         input.init(Cipher.ENCRYPT_MODE, getPublicKey(context));
@@ -164,6 +171,7 @@ public class KeystoreTool {
         } else if (Build.VERSION.SDK_INT >= M) {
             output = Cipher.getInstance(KEY_TRANSFORMATION_ALGORITHM, KEY_CIPHER_MARSHMALLOW_PROVIDER);
         } else {
+            Log.e(KeystoreTool.class.getName(), context.getString(R.string.message_supported_api));
             return null;
         }
 
@@ -171,7 +179,7 @@ public class KeystoreTool {
 
         CipherInputStream cipherInputStream = new CipherInputStream(
                 new ByteArrayInputStream(Base64.decode(encryptedMessage, Base64.DEFAULT)), output);
-        ArrayList<Byte> values = new ArrayList<>();
+        List<Byte> values = new ArrayList<>();
         int nextByte;
         while ((nextByte = cipherInputStream.read()) != -1) {
             values.add((byte) nextByte);
