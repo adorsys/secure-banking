@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
         final EditText input = (EditText) findViewById(R.id.plain_message_edit_text);
         final TextView keyInfoTextView = (TextView) findViewById(R.id.key_info_text_view);
         final Button generateKeyButton = (Button) findViewById(R.id.generate_key_button);
+        final Button clearPreferencesButton = (Button) findViewById(R.id.clear_preferences_button);
 
         generateKeyButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -46,6 +47,14 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     Toast.makeText(MainActivity.this, "Field cannot be empty", Toast.LENGTH_SHORT).show();
                 }
+            }
+        });
+
+        clearPreferencesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SecurePreferences.clearAllValues(MainActivity.this);
+                Toast.makeText(MainActivity.this, "SecurePreferences cleared and KeyPair deleted", Toast.LENGTH_SHORT).show();
             }
         });
     }

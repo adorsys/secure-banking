@@ -6,4 +6,5 @@
     <string name="text_to_encrypt">Text to Encrypt</string>
     <string name="button_encrypt">Encrypt</string>
     <string name="button_generate_encrypt">Generate Key and Start Encryption</string>
+    <string name="button_clear_preferences"><![CDATA[Clear Preferences & Delete KeyPair]]></string>
 </resources>
