@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import de.adorsys.android.securedevicestorage.SecureMethod;
 import de.adorsys.android.securedevicestorage.SecurePreferences;
 
 public class MainActivity extends AppCompatActivity {
@@ -36,8 +37,13 @@ public class MainActivity extends AppCompatActivity {
                                 .equals(getString(R.string.button_generate_encrypt))) {
                             generateKeyButton.setText(R.string.button_encrypt);
                         }
-                        SecurePreferences.setValue(KEY, input.getText().toString(), MainActivity.this);
-                        String decryptedMessage = SecurePreferences.getValue(KEY, MainActivity.this);
+                        SecurePreferences.setValue(KEY, input.getText().toString(),
+                                MainActivity.this,
+                                SecureMethod.METHOD_ENCRYPT);
+
+                        String decryptedMessage = SecurePreferences.getValue(KEY,
+                                MainActivity.this,
+                                SecureMethod.METHOD_ENCRYPT);
                         if (BuildConfig.DEBUG) {
                             Log.d(TAG, decryptedMessage + " ");
                         }

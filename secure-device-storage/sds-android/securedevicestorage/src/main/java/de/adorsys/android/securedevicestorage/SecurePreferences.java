@@ -28,47 +28,60 @@ public class SecurePreferences {
     private static final String KEY_SHARED_PREFERENCES_NAME = "SecurePreferences";
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    public static void setValue(@NonNull String key, @NonNull String value, @NonNull Context context) {
-        try {
-            if (!KeystoreTool.keyPairExists()) {
-                KeystoreTool.generateKeyPair(context);
+    public static void setValue(@NonNull String key, @NonNull String value,
+                                @NonNull Context context,
+                                @NonNull SecureMethod secureMethod) {
+        if (secureMethod.equals(SecureMethod.METHOD_ENCRYPT)) {
+            try {
+                if (!KeystoreTool.keyPairExists()) {
+                    KeystoreTool.generateKeyPair(context);
+                }
+            } catch (CertificateException | NoSuchAlgorithmException | IOException
+                    | KeyStoreException | UnrecoverableKeyException
+                    | InvalidAlgorithmParameterException | NoSuchProviderException e) {
+                Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
+                return;
             }
-        } catch (CertificateException | NoSuchAlgorithmException | IOException
-                | KeyStoreException | UnrecoverableKeyException
-                | InvalidAlgorithmParameterException | NoSuchProviderException e) {
-            Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
-            return;
-        }
 
-        String transformedValue = null;
-        try {
-            transformedValue = KeystoreTool.encryptMessage(context, value);
-        } catch (NoSuchPaddingException | NoSuchAlgorithmException | NoSuchProviderException
-                | IOException | UnrecoverableEntryException | KeyStoreException
-                | InvalidKeyException | CertificateException e) {
+            String transformedValue = null;
+            try {
+                transformedValue = KeystoreTool.encryptMessage(context, value);
+            } catch (NoSuchPaddingException | NoSuchAlgorithmException | NoSuchProviderException
+                    | IOException | UnrecoverableEntryException | KeyStoreException
+                    | InvalidKeyException | CertificateException e) {
 
-            Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
-        }
-        if (transformedValue != null) {
-            setSecureValue(key, transformedValue, context);
+                Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
+            }
+            if (transformedValue != null) {
+                setSecureValue(key, transformedValue, context);
+            } else {
+                Log.e(SecurePreferences.class.getName(),
+                        context.getString(R.string.message_problem_encryption));
+            }
         } else {
-            Log.e(SecurePreferences.class.getName(),
-                    context.getString(R.string.message_problem_encryption));
+            // TODO Implement hashing procedure
         }
     }
 
     @Nullable
-    public static String getValue(@NonNull String key, @NonNull Context context) {
+    public static String getValue(@NonNull String key,
+                                  @NonNull Context context,
+                                  @NonNull SecureMethod secureMethod) {
 
-        String result = getSecureValue(key, context);
-        try {
-            return KeystoreTool.decryptMessage(context, result != null
-                    ? result : context.getString(R.string.message_nothing_found));
-        } catch (NoSuchPaddingException | NoSuchAlgorithmException | NoSuchProviderException |
-                UnrecoverableEntryException | IOException | CertificateException |
-                InvalidKeyException | KeyStoreException e) {
+        if (secureMethod.equals(SecureMethod.METHOD_ENCRYPT)) {
+            String result = getSecureValue(key, context);
+            try {
+                return KeystoreTool.decryptMessage(context, result != null
+                        ? result : context.getString(R.string.message_nothing_found));
+            } catch (NoSuchPaddingException | NoSuchAlgorithmException | NoSuchProviderException |
+                    UnrecoverableEntryException | IOException | CertificateException |
+                    InvalidKeyException | KeyStoreException e) {
 
-            Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
+                Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
+                return null;
+            }
+        } else {
+            // TODO Implement hashing procedure
             return null;
         }
     }
