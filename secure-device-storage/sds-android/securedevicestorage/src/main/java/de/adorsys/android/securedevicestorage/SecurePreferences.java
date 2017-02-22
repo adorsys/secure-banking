@@ -81,8 +81,7 @@ public class SecurePreferences {
                 return null;
             }
         } else {
-            // TODO Implement hashing procedure
-            return null;
+            return getSecureValue(key, context);
         }
     }
 
