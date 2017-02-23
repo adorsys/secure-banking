@@ -14,12 +14,14 @@ import android.util.Log;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
@@ -42,6 +44,8 @@ import static android.os.Build.VERSION_CODES.M;
 class KeystoreTool {
     private static final String KEY_ALIAS = "adorsysKeyPair";
     private static final String KEY_ENCRYPTION_ALGORITHM = "RSA";
+    private static final String KEY_HASHING_ALGORITHM = "SHA-512";
+    private static final String KEY_CHARSET = "UTF-8";
     private static final String KEY_KEYSTORE_NAME = "AndroidKeyStore";
     private static final String KEY_CIPHER_JELLYBEAN_PROVIDER = "AndroidOpenSSL";
     private static final String KEY_CIPHER_MARSHMALLOW_PROVIDER = "AndroidKeyStoreBCWorkaround";
@@ -151,7 +155,7 @@ class KeystoreTool {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         CipherOutputStream cipherOutputStream = new CipherOutputStream(
                 outputStream, input);
-        cipherOutputStream.write(plainMessage.getBytes("UTF-8"));
+        cipherOutputStream.write(plainMessage.getBytes(KEY_CHARSET));
         cipherOutputStream.close();
 
         byte[] values = outputStream.toByteArray();
@@ -190,7 +194,7 @@ class KeystoreTool {
             bytes[i] = values.get(i);
         }
 
-        return new String(bytes, 0, bytes.length, "UTF-8");
+        return new String(bytes, 0, bytes.length, KEY_CHARSET);
     }
 
     @RequiresApi(M)
@@ -254,5 +258,36 @@ class KeystoreTool {
         keyStore.load(null);
 
         return keyStore;
+    }
+
+    @Nullable
+    static String getSHA512(String passwordToHash, String salt) {
+        try {
+            MessageDigest md = MessageDigest.getInstance(KEY_HASHING_ALGORITHM);
+            md.update(salt.getBytes(KEY_CHARSET));
+            byte[] bytes = md.digest(passwordToHash.getBytes(KEY_CHARSET));
+            StringBuilder sb = new StringBuilder();
+            for (byte aByte : bytes) {
+                sb.append(Integer.toString((aByte & 0xff) + 0x100, 16).substring(1));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            if (BuildConfig.DEBUG) {
+                Log.e(KeystoreTool.class.getName(), e.getMessage(), e);
+            }
+            return null;
+        }
+    }
+
+    @Nullable
+    static byte[] calculateSalt(@NonNull String credentialToBeSalted) {
+        try {
+            return credentialToBeSalted.getBytes(KEY_CHARSET);
+        } catch (UnsupportedEncodingException e) {
+            if (BuildConfig.DEBUG) {
+                Log.e(KeystoreTool.class.getName(), e.getMessage(), e);
+            }
+            return null;
+        }
     }
 }
