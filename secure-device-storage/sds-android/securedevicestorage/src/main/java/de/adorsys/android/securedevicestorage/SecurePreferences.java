@@ -11,6 +11,7 @@ import android.support.annotation.RequiresApi;
 import android.util.Log;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
@@ -26,6 +27,7 @@ import static android.content.Context.MODE_PRIVATE;
 
 public class SecurePreferences {
     private static final String KEY_SHARED_PREFERENCES_NAME = "SecurePreferences";
+    private static final String KEY_CHARSET = "UTF-8";
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     public static void setValue(@NonNull String key, @NonNull String value,
@@ -59,7 +61,29 @@ public class SecurePreferences {
                         context.getString(R.string.message_problem_encryption));
             }
         } else {
-            // TODO Implement hashing procedure
+            byte[] saltBytes = KeystoreTool.calculateSalt(value);
+            String salt;
+            try {
+                if (saltBytes != null) {
+                    salt = new String(saltBytes, 0, saltBytes.length, KEY_CHARSET);
+                } else {
+                    Log.e(SecurePreferences.class.getName(),
+                            context.getString(R.string.message_problem_salt_creation));
+                    return;
+                }
+            } catch (UnsupportedEncodingException e) {
+                if (BuildConfig.DEBUG) {
+                    Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
+                }
+                return;
+            }
+            String hashedValue = KeystoreTool.getSHA512(value, salt);
+            if (hashedValue != null) {
+                setSecureValue(key, hashedValue, context);
+            } else {
+                Log.e(SecurePreferences.class.getName(),
+                        context.getString(R.string.message_problem_hashing));
+            }
         }
     }
 
@@ -97,6 +121,37 @@ public class SecurePreferences {
             }
         }
         clearAllSecureValues(context);
+    }
+
+    public static boolean compareHashedCredential(@NonNull String currentCredential,
+                                                  @NonNull String securedCredential,
+                                                  @NonNull Context context) {
+
+        byte[] saltBytes = KeystoreTool.calculateSalt(currentCredential);
+        String salt;
+        try {
+            if (saltBytes != null) {
+                salt = new String(saltBytes, 0, saltBytes.length, KEY_CHARSET);
+            } else {
+                return false;
+            }
+        } catch (UnsupportedEncodingException e) {
+            if (BuildConfig.DEBUG) {
+                Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
+            }
+            return false;
+        }
+
+        String hashedCurrentCredential = KeystoreTool.getSHA512(currentCredential, salt);
+        if (hashedCurrentCredential != null) {
+            return hashedCurrentCredential.equals(securedCredential);
+        } else {
+            if (BuildConfig.DEBUG) {
+                Log.e(SecurePreferences.class.getName(),
+                        context.getString(R.string.message_problem_hashing));
+            }
+            return false;
+        }
     }
 
     @SuppressLint("CommitPrefEdits")

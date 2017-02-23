@@ -6,4 +6,6 @@
     <string name="message_problem_encryption">Problem during Encryption</string>
     <string name="message_problem_decryption">Problem during Decryption</string>
     <string name="message_supported_api">Android Keystore only works on Android Jelly Bean and higher</string>
+    <string name="message_problem_salt_creation">Problem during Salt creation</string>
+    <string name="message_problem_hashing">Problem during Hashing</string>
 </resources>
