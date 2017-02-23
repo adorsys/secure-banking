@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.nimbusds.jose.jwk.JWK;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * This interface represents a JWT confimatio claim.
  * <p>
@@ -12,6 +15,7 @@ import com.nimbusds.jose.jwk.JWK;
  * @author fpo
  */
 @JsonInclude(Include.NON_NULL)
+@ApiModel(value="JwtCnf", description="By including a \"cnf\" (confirmation) claim in a JWT, the issuer of the JWT declares that the presenter possesses a particular key and that the recipient can cryptographically confirm that the presenter has possession of that key. The value of the \"cnf\" claim is a JSON object and the members of that object identify the proof-of-possession key. \nThe presenter can be identified in one of several ways by the JWT depending upon the application requirements. If the JWT contains a \"sub\" (subject) claim [JWT], the presenter is normally the subject identified by the JWT. (In some applications, the subject identifier will be relative to the issuer identified by the \"iss\" (issuer) claim [JWT].) If the JWT contains no \"sub\" claim, the presenter is normally the issuer identified by the JWT using the \"iss\" claim. The case in which the presenter is the subject of the JWT is analogous to Security Assertion Markup Language (SAML) 2.0.")
 public class JwtCnf {
     private JWK jwk;
     private String jku;
@@ -50,6 +54,7 @@ public class JwtCnf {
      *
      * @return
      */
+    @ApiModelProperty(value = "When the key held by the presenter is an asymmetric private key, the \"jwk\" member is a JSON Web Key [JWK] representing the corresponding asymmetric public key.")
     public JWK getJwk() {
         return jwk;
     }
@@ -84,6 +89,7 @@ public class JwtCnf {
      *
      * @return
      */
+    @ApiModelProperty(value = "The proof-of-possession key can be passed by reference instead of being passed by value. This is done using the \"jku\" member. Its value is a URI [RFC3986] that refers to a resource for a set of JSON-encoded public keys represented as a JWK Set [JWK], one of which is the proof-of-possession key. If there are multiple keys in the referenced JWK Set document, a \"kid\" member MUST also be included with the referenced key's JWK also containing the same \"kid\" value.")
     public String getJku() {
         return jku;
     }
@@ -116,6 +122,7 @@ public class JwtCnf {
      *
      * @return
      */
+    @ApiModelProperty(value = "The proof-of-possession key can also be identified by the use of a Key ID instead of communicating the actual key, provided the recipient is able to obtain the identified key using the Key ID. In this case, the issuer of a JWT declares that the presenter possesses a particular key and that the recipient can cryptographically confirm proof of possession of the key by the presenter by including a \"cnf\" claim in the JWT whose value is a JSON object with the JSON object containing a \"kid\" member identifying the key.")
     public String getKid() {
         return kid;
     }
