@@ -14,6 +14,11 @@ import android.widget.Toast;
 import de.adorsys.android.securedevicestorage.SecureMethod;
 import de.adorsys.android.securedevicestorage.SecurePreferences;
 
+/**
+ * @author Drilon Reçica
+ * @since 2/17/17.
+ */
+
 public class MainActivity extends AppCompatActivity {
     private static final String KEY = "TEMPTAG";
     private static final String TAG = "LOGTAG";

@@ -42,6 +42,11 @@ import javax.security.auth.x500.X500Principal;
 
 import static android.os.Build.VERSION_CODES.M;
 
+/**
+ * @author Drilon Reçica
+ * @since 2/9/17.
+ */
+
 class KeystoreTool {
     private static final String KEY_ALIAS = "adorsysKeyPair";
     private static final String KEY_ENCRYPTION_ALGORITHM = "RSA";

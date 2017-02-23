@@ -1,6 +1,5 @@
 package de.adorsys.android.securedevicestorage;
 
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -24,6 +23,11 @@ import java.security.cert.CertificateException;
 import javax.crypto.NoSuchPaddingException;
 
 import static android.content.Context.MODE_PRIVATE;
+
+/**
+ * @author Drilon Reçica
+ * @since 2/17/17.
+ */
 
 public class SecurePreferences {
     private static final String KEY_SHARED_PREFERENCES_NAME = "SecurePreferences";
