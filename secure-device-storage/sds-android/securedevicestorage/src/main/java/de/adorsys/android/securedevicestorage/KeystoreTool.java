@@ -211,7 +211,7 @@ class KeystoreTool {
 
         Calendar start = Calendar.getInstance();
         Calendar end = Calendar.getInstance();
-        end.add(Calendar.MONTH, 1);
+        end.add(Calendar.YEAR, 99);
 
         KeyGenParameterSpec spec = new KeyGenParameterSpec.Builder(
                 KEY_ALIAS, KeyProperties.PURPOSE_SIGN)
