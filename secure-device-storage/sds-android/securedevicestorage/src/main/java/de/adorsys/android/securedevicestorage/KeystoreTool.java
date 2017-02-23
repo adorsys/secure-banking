@@ -1,5 +1,6 @@
 package de.adorsys.android.securedevicestorage;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 import android.security.KeyPairGeneratorSpec;
@@ -197,6 +198,7 @@ class KeystoreTool {
         return new String(bytes, 0, bytes.length, KEY_CHARSET);
     }
 
+    @SuppressLint("TrulyRandom")
     @RequiresApi(M)
     private static void generateMarshmallowKeyPair()
             throws NoSuchProviderException, NoSuchAlgorithmException,
