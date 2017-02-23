@@ -4,37 +4,43 @@ import java.util.Date;
 import java.util.HashMap;
 
 public class Jwt {
-	private HashMap<String, String> headers = new HashMap<>();
-	private String iss;
-	private String sub;
-	private String aud;
-	private Date exp;
-	private Date nbf;
-	private Date iat;
-	private String jti;
-	private JwtCnf cnf;
+    private HashMap<String, String> headers = new HashMap<>();
+    private String iss;
+    private String sub;
+    private String aud;
+    private Date exp;
+    private Date nbf;
+    private Date iat;
+    private String jti;
+    private JwtCnf cnf;
+
     /**
      * Returns a header param included in the Jwt
+     *
      * @param name
      * @return
      */
-    public String getHeader(String name){
-    	return headers.get(name);
+    public String getHeader(String name) {
+        return headers.get(name);
     }
-    
+
     /**
      * Returns the issuer of this JWT.
      * The "iss" (issuer) claim identifies the principal that issued the
      * JWT.  The processing of this claim is generally application specific.
      * The "iss" value is a case-sensitive string containing a StringOrURI
      * value.  Use of this claim is OPTIONAL.
-     * 
+     *
      * @return
      */
-    public String getIss(){
-    	return iss;
+    public String getIss() {
+        return iss;
     }
-    
+
+    public void setIss(String iss) {
+        this.iss = iss;
+    }
+
     /**
      * The "sub" (subject) claim identifies the principal that is the
      * subject of the JWT.  The claims in a JWT are normally statements
@@ -43,12 +49,17 @@ public class Jwt {
      * The processing of this claim is generally application specific.  The
      * "sub" value is a case-sensitive string containing a StringOrURI
      * value.  Use of this claim is OPTIONAL.
+     *
      * @return
      */
-    public String getSub(){
-    	return sub;
+    public String getSub() {
+        return sub;
     }
-    
+
+    public void setSub(String sub) {
+        this.sub = sub;
+    }
+
     /**
      * The "aud" (audience) claim identifies the recipients that the JWT is
      * intended for.  Each principal intended to process the JWT MUST
@@ -61,10 +72,15 @@ public class Jwt {
      * single case-sensitive string containing a StringOrURI value.  The
      * interpretation of audience values is generally application specific.
      * Use of this claim is OPTIONAL.
+     *
      * @return
      */
-    public String getAud(){
-    	return aud;
+    public String getAud() {
+        return aud;
+    }
+
+    public void setAud(String aud) {
+        this.aud = aud;
     }
 
     /**
@@ -75,12 +91,17 @@ public class Jwt {
      * Implementers MAY provide for some small leeway, usually no more than
      * a few minutes, to account for clock skew.  Its value MUST be a number
      * containing a NumericDate value.  Use of this claim is OPTIONAL.
+     *
      * @return
      */
-    public Date getExp(){
-    	return exp;
+    public Date getExp() {
+        return exp;
     }
-    
+
+    public void setExp(Date exp) {
+        this.exp = exp;
+    }
+
     /**
      * The "nbf" (not before) claim identifies the time before which the JWT
      * MUST NOT be accepted for processing.  The processing of the "nbf"
@@ -89,23 +110,33 @@ public class Jwt {
      * provide for some small leeway, usually no more than a few minutes, to
      * account for clock skew.  Its value MUST be a number containing a
      * NumericDate value.  Use of this claim is OPTIONAL.
+     *
      * @return
      */
-    public Date getNbf(){
-    	return nbf;
+    public Date getNbf() {
+        return nbf;
     }
-    
+
+    public void setNbf(Date nbf) {
+        this.nbf = nbf;
+    }
+
     /**
      * The "iat" (issued at) claim identifies the time at which the JWT was
      * issued.  This claim can be used to determine the age of the JWT.  Its
      * value MUST be a number containing a NumericDate value.  Use of this
      * claim is OPTIONAL.
+     *
      * @return
      */
-    public Date getIat(){
-    	return iat;
+    public Date getIat() {
+        return iat;
     }
-    
+
+    public void setIat(Date iat) {
+        this.iat = iat;
+    }
+
     /**
      * The "jti" (JWT ID) claim provides a unique identifier for the JWT.
      * The identifier value MUST be assigned in a manner that ensures that
@@ -115,49 +146,27 @@ public class Jwt {
      * produced by different issuers as well.  The "jti" claim can be used
      * to prevent the JWT from being replayed.  The "jti" value is a case-
      * sensitive string.  Use of this claim is OPTIONAL.
+     *
      * @return
      */
-    public String getJti(){
-    	return jti;
+    public String getJti() {
+        return jti;
     }
-    
+
+    public void setJti(String jti) {
+        this.jti = jti;
+    }
+
     /**
      * The confirmation claim.
+     *
      * @return
      */
-    public JwtCnf getCnf(){
-    	return cnf;
+    public JwtCnf getCnf() {
+        return cnf;
     }
 
-	public void setIss(String iss) {
-		this.iss = iss;
-	}
-
-	public void setSub(String sub) {
-		this.sub = sub;
-	}
-
-	public void setAud(String aud) {
-		this.aud = aud;
-	}
-
-	public void setExp(Date exp) {
-		this.exp = exp;
-	}
-
-	public void setNbf(Date nbf) {
-		this.nbf = nbf;
-	}
-
-	public void setIat(Date iat) {
-		this.iat = iat;
-	}
-
-	public void setJti(String jti) {
-		this.jti = jti;
-	}
-
-	public void setCnf(JwtCnf cnf) {
-		this.cnf = cnf;
-	}
+    public void setCnf(JwtCnf cnf) {
+        this.cnf = cnf;
+    }
 }
