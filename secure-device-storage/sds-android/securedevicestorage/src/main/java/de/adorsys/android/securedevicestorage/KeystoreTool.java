@@ -237,7 +237,7 @@ class KeystoreTool {
 
         Calendar start = Calendar.getInstance();
         Calendar end = Calendar.getInstance();
-        end.add(Calendar.MONTH, 1);
+        end.add(Calendar.YEAR, 99);
         KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(context)
                 .setAlias(KEY_ALIAS)
                 .setSubject(new X500Principal(KEY_X500PRINCIPAL))
