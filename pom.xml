@@ -23,6 +23,7 @@
         <version.junit>4.12</version.junit>
         <version.apache-commons-codec>1.10</version.apache-commons-codec>
         <version.jackson-databind>2.8.6</version.jackson-databind>
+        <version.wildfly.swarm>2017.2.0</version.wildfly.swarm>
     </properties>
 
     <dependencyManagement>
