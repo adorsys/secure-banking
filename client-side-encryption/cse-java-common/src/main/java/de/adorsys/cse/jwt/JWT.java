@@ -43,5 +43,6 @@ public interface JWT {
         public static final String CLAIM_ACCESS_TOKEN = "access_token";
         public static final String CLAIM_SERVER_PUBLIC_KEY = "res_pub_key";
         public static final String CLAIM_PUBLIC_KEY_ENCRYPTED_HMAC_SECRET = "pke_hmac";
+        public static final String CLAIM_PAYLOAD = "pay";
     }
 }

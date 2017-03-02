@@ -3,6 +3,8 @@ package de.adorsys.cse.jwt;
 import de.adorsys.cse.crypt.SecretCredentialEncryptor;
 import de.adorsys.cse.nonce.NonceGenerator;
 
+import java.io.InvalidObjectException;
+
 public interface JWTBuilder {
     /**
      * Checks if the provided token is valid and if yes, includes the claim "access_token" to the resulting token's payload
@@ -29,13 +31,32 @@ public interface JWTBuilder {
     JWTBuilder withExpirationTimeInMs(long expirationTimeInMs);
 
     /**
-     * Strores encrypted hmacSecret in the token
+     * Stores encrypted hmacSecret in the token
      *
      * @param encryptor - an encryptor instance that will encrypt the secret
      * @param hmacSecret - a secret to transfer
      * @return an instance of builder with stored encrypted secret
      */
     JWTBuilder withEncryptedHMacSecretKey(SecretCredentialEncryptor encryptor, String hmacSecret);
+
+    /**
+     * Stores in payload a JSON-serialized object
+     *
+     * @param payload - a payload object to store
+     * @return an instance of builder with stored JSON-serialized payload
+     * @throws java.io.InvalidObjectException when object' serializaion to JSON failed
+     */
+    JWTBuilder withPayload(Object payload) throws InvalidObjectException;
+
+    /**
+     * Stores in payload a JSON-serialized object in defined claim
+     *
+     * @param claim name of claim to store the payload
+     * @param payload a payload object to store
+     * @return an instance of builder with stored JSON-serialized payload
+     * @throws java.io.InvalidObjectException when object' serializaion to JSON failed
+     */
+    JWTBuilder withPayload(String claim, Object payload) throws InvalidObjectException;
 
     /**
      * Builds JWT and signs it with HMAC Alghorythm.
