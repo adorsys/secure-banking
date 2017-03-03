@@ -1,9 +1,9 @@
 package de.adorsys.cse.crypt;
 
 import de.adorsys.cse.jwk.JWK;
-import de.adorsys.cse.jwk.JWKBuilder;
-import de.adorsys.cse.jwk.JWKBuilderNimbusImpl;
 import de.adorsys.cse.jwk.JWKNimbusImpl;
+import de.adorsys.cse.jwk.JWKPublicKeyBuilder;
+import de.adorsys.cse.jwk.JWKPublicKeyBuilderNimbusImpl;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
 
 public class SecretCredentialEncryptorImplTest {
 
-    private static final JWKBuilder JWK_BUILDER = new JWKBuilderNimbusImpl();
+    private static final JWKPublicKeyBuilder JWK_BUILDER = new JWKPublicKeyBuilderNimbusImpl();
 
     @Test(expected = IllegalArgumentException.class)
     public void createWithNullThrowsIllegalArgumentException() {

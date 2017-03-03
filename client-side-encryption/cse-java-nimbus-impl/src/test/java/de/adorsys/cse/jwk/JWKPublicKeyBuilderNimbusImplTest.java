@@ -131,7 +131,7 @@ public class JWKPublicKeyBuilderNimbusImplTest {
 
             X509EncodedKeySpec spec = keyFactory.getKeySpec(keyPair.getPublic(),
                     X509EncodedKeySpec.class);
-            String key = Base64.encodeBase64String(spec.getEncoded());
+            String key = Base64.encodeBase64URLSafeString(spec.getEncoded());
 
             JWK jwk = jwkPublicKeyBuilder.build(key);
             assertNotNull("Returned key is provided", jwk);

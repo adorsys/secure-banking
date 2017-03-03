@@ -54,7 +54,7 @@ public class JWKNimbusImpl implements JWK {
 
     @Override
     public String toBase64JSONString() {
-        return Base64.encodeBase64String(unencodedJWK.getBytes());
+        return Base64.encodeBase64URLSafeString(unencodedJWK.getBytes());
     }
 
     @Override
