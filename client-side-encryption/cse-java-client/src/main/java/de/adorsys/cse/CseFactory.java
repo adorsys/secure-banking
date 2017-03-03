@@ -3,13 +3,15 @@ package de.adorsys.cse;
 import de.adorsys.cse.client.oauth.AccessTokenExtractor;
 import de.adorsys.cse.client.oauth.PublicKeyExtractor;
 import de.adorsys.cse.jwt.JWTBuilder;
+import de.adorsys.cse.jwt.JWTEncryptor;
+import de.adorsys.cse.jwt.JWTSigner;
 
-public interface CseJwtClient {
-    static CseJwtClient init() throws ClassNotFoundException {
-        CseJwtClient factory;
+public interface CseFactory {
+    static CseFactory init() throws ClassNotFoundException {
+        CseFactory factory;
         try {
             Class c = Class.forName("de.adorsys.cse.NimbusClientFactory");
-            factory = (CseJwtClient) c.newInstance();
+            factory = (CseFactory) c.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
             throw new ClassNotFoundException("Can't instantiate of any known implementations", e);
         }
@@ -21,4 +23,8 @@ public interface CseJwtClient {
     PublicKeyExtractor publicKeyExtractor();
 
     AccessTokenExtractor accessTokenExtractor();
+
+    JWTSigner jwtHMacSigner();
+
+    JWTEncryptor jwtEncryptor();
 }

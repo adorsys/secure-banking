@@ -217,6 +217,7 @@ public class JWTBuilderNimbusImplTest {
         JWT actualJWT = jwtBuilder.buildAndSign(notLongEnoughString);
 
         assertEquals("jwt is signed", 3, actualJWT.encode().split("\\.").length);
+        assertTrue("jwt is signed", actualJWT.isSigned());
 
         JWSVerifier verifier = new MACVerifier(expectedSecret);
 
@@ -232,6 +233,7 @@ public class JWTBuilderNimbusImplTest {
         JWT actualJWT = jwtBuilder.buildAndSign(longSecretString);
 
         assertEquals("jwt is signed", 3, actualJWT.encode().split("\\.").length);
+        assertTrue("jwt is signed", actualJWT.isSigned());
 
         JWSVerifier verifier = new MACVerifier(longSecretString);
 

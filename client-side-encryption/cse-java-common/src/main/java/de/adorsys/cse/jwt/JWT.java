@@ -1,5 +1,6 @@
 package de.adorsys.cse.jwt;
 
+import java.util.Map;
 import java.util.Optional;
 
 public interface JWT {
@@ -18,6 +19,22 @@ public interface JWT {
      * @return String with a value of claim. Empty if a claim is not found
      */
     Optional<String> getClaim(String claimName);
+
+    /**
+     * Checks if token contains signature. Doesn't check signature validity
+     *
+     * @return true if signature block present,
+     *         false otherwise
+     */
+    boolean isSigned();
+
+
+    /**
+     * Provides all claims registered in JWT payload
+     *
+     * @return a map of claims (name->value)
+     */
+    Map<String, Object> getClaims();
 
     /**
      * Claims declared according to sections 4.1 and 10.1 of RFC 7519

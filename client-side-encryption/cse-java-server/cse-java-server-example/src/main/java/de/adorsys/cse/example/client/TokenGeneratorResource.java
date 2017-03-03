@@ -1,6 +1,6 @@
 package de.adorsys.cse.example.client;
 
-import de.adorsys.cse.CseJwtClient;
+import de.adorsys.cse.CseFactory;
 import de.adorsys.cse.example.token.JwtResponse;
 import de.adorsys.cse.example.token.SecretRequest;
 import de.adorsys.cse.example.util.UUIDNonceGenerator;
@@ -35,7 +35,7 @@ public class TokenGeneratorResource {
         try {
             System.out.println("secret = " + ToStringBuilder.reflectionToString(secret));
 
-            JWTBuilder builder = CseJwtClient.init().jwtBuilder();
+            JWTBuilder builder = CseFactory.init().jwtBuilder();
 
             builder = builder
                     .withNonceGenerator(new UUIDNonceGenerator());
