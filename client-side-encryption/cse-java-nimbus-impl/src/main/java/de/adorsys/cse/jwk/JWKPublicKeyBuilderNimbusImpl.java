@@ -12,7 +12,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.IllegalFormatException;
 
-public class JWKBuilderNimbusImpl implements JWKBuilder {
+public class JWKPublicKeyBuilderNimbusImpl implements JWKPublicKeyBuilder {
 
     private static final String PUBLIC_KEY_PREFIX = "-----BEGIN PUBLIC KEY-----";
     private static final String PUBLIC_KEY_SUFFIX = "-----END PUBLIC KEY-----";

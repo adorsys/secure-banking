@@ -92,6 +92,43 @@ public class JWTBuilderNimbusImplTest {
         assertEquals("Stores encrypted server public key for a future use in buildAndSign", someHmacSecret + "whatever", actualBuilder.getHmacEncryptedSecret());
     }
 
+    @Test
+    public void withPayloadWithoutClaimNameStoresAnIndexedClaim() throws Exception {
+        String secret = generateRandomBase64String(20);
+        JWTBuilderNimbusImpl actualBuilder = (JWTBuilderNimbusImpl) jwtBuilder.withPayload(secret);
+        assertEquals("stored in payload claims", 1, actualBuilder.getPayloadClaims().size());
+        assertTrue("key is an index", actualBuilder.getPayloadClaims().containsKey("0"));
+        assertEquals("Stores a secret as JSON object", secret, actualBuilder.getPayloadClaims().get("0"));
+
+        String secret2 = generateRandomBase64String(20);
+        actualBuilder = (JWTBuilderNimbusImpl) actualBuilder.withPayload(secret2);
+        assertEquals("stored in payload claims", 2, actualBuilder.getPayloadClaims().size());
+        assertTrue("key is an index", actualBuilder.getPayloadClaims().containsKey("0"));
+        assertTrue("key is an index", actualBuilder.getPayloadClaims().containsKey("1"));
+        assertEquals("Stores a secret as JSON object", secret, actualBuilder.getPayloadClaims().get("0"));
+        assertEquals("Stores a secret as JSON object", secret2, actualBuilder.getPayloadClaims().get("1"));
+
+    }
+
+    @Test
+    public void withPayloadWithClaimNameStoresAnNamedClaim() throws Exception {
+        String secret = generateRandomBase64String(20);
+        JWTBuilderNimbusImpl actualBuilder = (JWTBuilderNimbusImpl) jwtBuilder.withPayload("First claim name", secret);
+        assertEquals("stored in payload claims", 1, actualBuilder.getPayloadClaims().size());
+        assertTrue("key is an claim name", actualBuilder.getPayloadClaims().containsKey("First claim name"));
+        assertEquals("Stores a secret as JSON object", secret, actualBuilder.getPayloadClaims().get("First claim name"));
+
+        String secret2 = generateRandomBase64String(20);
+        actualBuilder = (JWTBuilderNimbusImpl) actualBuilder.withPayload(secret2);
+        assertEquals("stored in payload claims", 2, actualBuilder.getPayloadClaims().size());
+        assertTrue("key is an claim name", actualBuilder.getPayloadClaims().containsKey("First claim name"));
+        assertTrue("key is an index", actualBuilder.getPayloadClaims().containsKey("1"));
+        assertEquals("Stores a secret as JSON object", secret, actualBuilder.getPayloadClaims().get("First claim name"));
+        assertEquals("Stores a secret as JSON object", secret2, actualBuilder.getPayloadClaims().get("1"));
+
+    }
+
+
     @Test(expected = IllegalArgumentException.class)
     public void build_passingNullCausesIllegalArgumentException() {
         jwtBuilder.buildAndSign(null);
@@ -173,8 +210,8 @@ public class JWTBuilderNimbusImplTest {
 
     @Test
     public void providingNotLongEnoughSecretLeadToExtendingItToMinimalLength() throws Exception {
-        String notLongEnoughString = generateRandomBase64String(54);
-        //we need a string with length of 64 chars, so we add 10 chars
+        String notLongEnoughString = generateRandomBase64String(22);
+        //we need a string with length of 32 chars, so we add 10 chars
         String expectedSecret = "AAAAAAAAAA".concat(notLongEnoughString);
 
         JWT actualJWT = jwtBuilder.buildAndSign(notLongEnoughString);
