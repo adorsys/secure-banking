@@ -4,7 +4,9 @@ The client side encryption provide many feature to help protect sensitive inform
 With client side encryption, we want to address following issues:
 
 * Encrypting sensitive information in the client before sending it to the server
-* Sign and nonce oAuth Bearer token from being reused from inside the institution's own network
+* Sign and nonce oAuth Bearer token to prevent replay attack from inside the institution's own network
+
+Measures describe here might be ineffective against men in the middle attacks.
 
 ## Similar references
 
@@ -15,17 +17,17 @@ We use this approach to prevent disclosure of the sensitive information inside i
 
 We see transport of a sensitive information and secret credentials in following situations:
 
-* Client is authenticating with a site. The side can be either a standard server application or an identity provider. 
+* Client is authenticating with a site. The site can be either a standard server application or an identity provider. 
 * Client is filling up a form with some sensitive information. This can be a registration form (in this case the password) or a form collecting credentials used for order services (an online banking PIN, a data encryption key).
 
-In some cases, server will want to stored the credential in a way not recoverable in the server environment. For such a use case, we can also apply procedures called client hashing as shown in https://github.com/dxa4481/clientHashing.
+In some cases, server will want to store the credential in a way not recoverable in the server environment. For such a use case, we can also apply procedures called client hashing as shown in https://github.com/dxa4481/clientHashing.
 
 In some other cases, credential will want to be recoverable by the server, because the server is:
 *  Either no the final consumer of the credential (online banking PIN used by an AISP to access a legacy banking application)
 * Or the client uses the credential to encrypt further data on the server and thus need to know the value of the credential. See https://github.com/adorsys/secure-key-storage/tree/master/private-key-recovery. This is generally called a credential encryption key. A credential encryption key is a key we use to encrypt client's critical information while storing them in recoverable manner in the institution's data center. Credential encryption keys allow the encryption of user information on an individual key basis. Means each user critical information is encrypted with a user specific secret key.
 
 ## Client can sign and nonce a token
-A big problem a encounter in the world of oAuth2 is that the Bearer token is just a Bearer token. it is simply like cash. Who ever has access to the Bearer token can claim ownership of the Bearer. A Bearer token can be leaked in following situations:
+A big problem we encounter in the world of oAuth2 is that the bearer token is just a bearer token. It is simply like cash. Who ever has access to the bearer token can claim ownership of the Bearer. A bearer token can be leaked in following situations:
 
 * The internal network on the institution does not use SSL to exchange data among components. See https://en.wikipedia.org/wiki/TLS_termination_proxy
 * Some component like reverse proxies write http request information into log files. Including the bearer token. With all the advanced logging capabilities provided by tools (like https://www.graylog.org/) it is obvious for some institution internal entities to have access to those token without any effort.
@@ -42,7 +44,7 @@ Below is a sample workflow on how to nonce and sign a token:
   * repeated request nonce is identified by the server as a replay.
 If the server is deployed in a stateless clustered environment, it is sufficient to use the timestamp as a nonce and make sure expiration time is sufficiently short.
 
-## Server Publi Key
+## Server PubliC Key
 
 In most of those cases, the client encrypting data for the server will have to be in possession the public key of the server. A client can access the public key of the server by the mean of:
 
