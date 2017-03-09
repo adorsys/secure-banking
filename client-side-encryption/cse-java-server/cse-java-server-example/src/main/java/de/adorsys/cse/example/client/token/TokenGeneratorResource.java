@@ -1,8 +1,8 @@
-package de.adorsys.cse.example.client;
+package de.adorsys.cse.example.client.token;
 
-import de.adorsys.cse.CseJwtClient;
-import de.adorsys.cse.example.token.JwtResponse;
-import de.adorsys.cse.example.token.SecretRequest;
+import de.adorsys.cse.CseFactory;
+import de.adorsys.cse.example.client.token.bean.JwtResponse;
+import de.adorsys.cse.example.client.token.bean.SecretRequest;
 import de.adorsys.cse.example.util.UUIDNonceGenerator;
 import de.adorsys.cse.jwt.JWT;
 import de.adorsys.cse.jwt.JWTBuilder;
@@ -35,7 +35,7 @@ public class TokenGeneratorResource {
         try {
             System.out.println("secret = " + ToStringBuilder.reflectionToString(secret));
 
-            JWTBuilder builder = CseJwtClient.init().jwtBuilder();
+            JWTBuilder builder = CseFactory.init().jwtBuilder();
 
             builder = builder
                     .withNonceGenerator(new UUIDNonceGenerator());
@@ -61,6 +61,7 @@ public class TokenGeneratorResource {
 
             JwtResponse jwtResponse = new JwtResponse();
             jwtResponse.setJwt(base64EncodedJWT);
+            jwtResponse.setHmacSecret(secret.getHmacSecret());
             return Response.ok().entity(jwtResponse).build();
         } catch (Exception e) {
             throw new ServerErrorException(500, e);

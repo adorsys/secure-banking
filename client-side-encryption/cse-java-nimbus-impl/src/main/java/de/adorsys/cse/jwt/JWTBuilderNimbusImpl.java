@@ -2,18 +2,14 @@ package de.adorsys.cse.jwt;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jwt.JWTClaimsSet;
 import de.adorsys.cse.crypt.SecretCredentialEncryptor;
 import de.adorsys.cse.nonce.NonceGenerator;
 import net.minidev.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.InvalidObjectException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,10 +18,7 @@ import static de.adorsys.cse.jwt.JWT.Claims.CLAIM_ACCESS_TOKEN;
 import static de.adorsys.cse.jwt.JWT.Claims.CLAIM_PUBLIC_KEY_ENCRYPTED_HMAC_SECRET;
 
 public class JWTBuilderNimbusImpl implements JWTBuilder {
-    private static final Logger log = LoggerFactory.getLogger(JWTBuilderNimbusImpl.class);
 
-    private static final char CHARACTER_TO_FILL = 'A';
-    private static final int MINIMAL_KEY_LENGTH = 32; //minimal key length for HS256 - 256 bytes
     private static final long ONE_HOUR_MS = 60 * 60 * 1000;
 
     private NonceGenerator nonceGenerator;
@@ -89,18 +82,10 @@ public class JWTBuilderNimbusImpl implements JWTBuilder {
     }
 
     @Override
-    public JWT buildAndSign(String hmacSecret) {
-        if (hmacSecret == null || hmacSecret.length() == 0) {
-            throw new IllegalArgumentException("hmacSecret cannot be null or empty");
-        }
-
-        JWTClaimsSet.Builder claimsSetBuilder = buildClaimsSet();
-        if (hmacSecret.length() < MINIMAL_KEY_LENGTH) {
-            log.warn("provided hmacSecret is less then {} bytes and will be extended with '{}'", MINIMAL_KEY_LENGTH * 8, CHARACTER_TO_FILL);
-            hmacSecret = extendStringToLength(hmacSecret);
-        }
-
-        return new JWTNimbusImpl(claimsSetBuilder.build(), hmacSecret, JWSAlgorithm.HS256);
+    public JWS buildAndSign(String hmacSecret) {
+        JWT jwt = build();
+        JWTSigner jwtSigner = new JWTSignerNimbusImpl();
+        return jwtSigner.sign(jwt, hmacSecret);
     }
 
     @Override
@@ -155,9 +140,4 @@ public class JWTBuilderNimbusImpl implements JWTBuilder {
         return payloadClaims;
     }
 
-    private String extendStringToLength(String hmacSecret) {
-        char[] array = new char[MINIMAL_KEY_LENGTH - hmacSecret.length()];
-        Arrays.fill(array, CHARACTER_TO_FILL);
-        return new String(array).concat(hmacSecret);
-    }
 }

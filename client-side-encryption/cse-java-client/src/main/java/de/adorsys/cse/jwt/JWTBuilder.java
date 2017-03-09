@@ -66,7 +66,7 @@ public interface JWTBuilder {
      * @param hmacSecret - a secret used to sign token
      * @return builded JWT with HMAC signature
      */
-    JWT buildAndSign(String hmacSecret);
+    JWS buildAndSign(String hmacSecret);
 
     /**
      * Builds unsigned JWT
