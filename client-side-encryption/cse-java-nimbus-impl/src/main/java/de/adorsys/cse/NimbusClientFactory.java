@@ -31,7 +31,7 @@ public class NimbusClientFactory implements CseFactory {
 
     @Override
     public JWTEncryptor jwtEncryptor() {
-        return null;
+        return new JWTEncryptorNimbusImpl();
     }
 
     @Override

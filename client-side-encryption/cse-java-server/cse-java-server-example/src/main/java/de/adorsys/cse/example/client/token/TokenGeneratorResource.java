@@ -61,6 +61,7 @@ public class TokenGeneratorResource {
 
             JwtResponse jwtResponse = new JwtResponse();
             jwtResponse.setJwt(base64EncodedJWT);
+            jwtResponse.setHmacSecret(secret.getHmacSecret());
             return Response.ok().entity(jwtResponse).build();
         } catch (Exception e) {
             throw new ServerErrorException(500, e);
