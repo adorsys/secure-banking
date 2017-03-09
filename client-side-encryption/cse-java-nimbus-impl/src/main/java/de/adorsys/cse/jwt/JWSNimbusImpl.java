@@ -7,8 +7,14 @@ import com.nimbusds.jwt.SignedJWT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class JWSNimbusImpl extends JWTNimbusImpl implements JWS {
+import java.text.ParseException;
+
+public class JWSNimbusImpl extends JWTNimbusImpl implements JWS {
     private static final Logger log = LoggerFactory.getLogger(JWSNimbusImpl.class);
+
+    public JWSNimbusImpl(String base64encodedJWT) throws ParseException {
+        super(base64encodedJWT);
+    }
 
     JWSNimbusImpl(JWTClaimsSet claimsSet, String hmacSecret, JWSAlgorithm signAlgorithm) {
         super(claimsSet);

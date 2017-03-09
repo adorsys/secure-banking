@@ -4,10 +4,9 @@ import de.adorsys.cse.client.oauth.AccessTokenExtractor;
 import de.adorsys.cse.client.oauth.AccessTokenExtractorImpl;
 import de.adorsys.cse.client.oauth.PubicKeyExtractorImpl;
 import de.adorsys.cse.client.oauth.PublicKeyExtractor;
-import de.adorsys.cse.jwt.JWTBuilder;
-import de.adorsys.cse.jwt.JWTBuilderNimbusImpl;
-import de.adorsys.cse.jwt.JWTEncryptor;
-import de.adorsys.cse.jwt.JWTSigner;
+import de.adorsys.cse.jwt.*;
+
+import java.text.ParseException;
 
 public class NimbusClientFactory implements CseFactory {
     @Override
@@ -27,11 +26,23 @@ public class NimbusClientFactory implements CseFactory {
 
     @Override
     public JWTSigner jwtHMacSigner() {
-        return null;
+        return new JWTSignerNimbusImpl();
     }
 
     @Override
     public JWTEncryptor jwtEncryptor() {
         return null;
+    }
+
+    @Override
+    public JWT parseToken(String base64encodedToken) throws ParseException {
+        if (base64encodedToken == null || base64encodedToken.length() == 0) {
+            throw new IllegalArgumentException("base64encodedToken cannot be null or empty");
+        }
+
+        if (base64encodedToken.split("\\.").length == 3) {
+            return new JWSNimbusImpl(base64encodedToken);
+        }
+        return new JWTNimbusImpl(base64encodedToken);
     }
 }

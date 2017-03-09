@@ -2,9 +2,12 @@ package de.adorsys.cse;
 
 import de.adorsys.cse.client.oauth.AccessTokenExtractor;
 import de.adorsys.cse.client.oauth.PublicKeyExtractor;
+import de.adorsys.cse.jwt.JWT;
 import de.adorsys.cse.jwt.JWTBuilder;
 import de.adorsys.cse.jwt.JWTEncryptor;
 import de.adorsys.cse.jwt.JWTSigner;
+
+import java.text.ParseException;
 
 public interface CseFactory {
     static CseFactory init() throws ClassNotFoundException {
@@ -27,4 +30,6 @@ public interface CseFactory {
     JWTSigner jwtHMacSigner();
 
     JWTEncryptor jwtEncryptor();
+
+    JWT parseToken(String base64encodedToken) throws ParseException;
 }
