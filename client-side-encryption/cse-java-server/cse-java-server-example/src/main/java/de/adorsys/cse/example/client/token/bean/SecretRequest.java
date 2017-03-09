@@ -1,4 +1,4 @@
-package de.adorsys.cse.example.token;
+package de.adorsys.cse.example.client.token.bean;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

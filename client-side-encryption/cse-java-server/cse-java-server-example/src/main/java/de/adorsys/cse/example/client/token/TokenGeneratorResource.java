@@ -1,8 +1,8 @@
-package de.adorsys.cse.example.client;
+package de.adorsys.cse.example.client.token;
 
 import de.adorsys.cse.CseFactory;
-import de.adorsys.cse.example.token.JwtResponse;
-import de.adorsys.cse.example.token.SecretRequest;
+import de.adorsys.cse.example.client.token.bean.JwtResponse;
+import de.adorsys.cse.example.client.token.bean.SecretRequest;
 import de.adorsys.cse.example.util.UUIDNonceGenerator;
 import de.adorsys.cse.jwt.JWT;
 import de.adorsys.cse.jwt.JWTBuilder;

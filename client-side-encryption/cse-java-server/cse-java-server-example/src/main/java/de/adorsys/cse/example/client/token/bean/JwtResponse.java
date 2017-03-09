@@ -1,4 +1,4 @@
-package de.adorsys.cse.example.token;
+package de.adorsys.cse.example.client.token.bean;
 
 public class JwtResponse {
     private String jwt;
