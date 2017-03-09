@@ -21,6 +21,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.text.ParseException;
+import java.util.Date;
 
 @Api(value = "/v1/tokenEndpoint")
 @Path("/v1/tokenEndpoint")
@@ -39,6 +40,16 @@ public class TokenReceiverResource {
             CseFactory factory = CseFactory.init();
             TokenStatusResponse tokenStatusResponse = new TokenStatusResponse();
 
+            if (StringUtils.isNotEmpty(tokenRequest.getJwt())) {
+                JWT jwt = factory.parseToken(tokenRequest.getJwt());
+
+                tokenStatusResponse.setTokenExpired(jwt.isExpired());
+                tokenStatusResponse.setTokenExpirationTime((Date) jwt.getClaims().get(JWT.Claims.CLAIM_EXPIRATION_TIME));
+
+                tokenStatusResponse.setTokenClaims(jwt.getClaims());
+            } else {
+                return Response.serverError().entity("Token is empty").build();
+            }
 
             if (StringUtils.isNotEmpty(tokenRequest.getHmacSecret())) {
                 JWS jws = (JWS) factory.parseToken(tokenRequest.getJwt());
@@ -49,11 +60,9 @@ public class TokenReceiverResource {
 
             return Response.ok(tokenStatusResponse).build();
 
-        }
-        catch (ParseException e) {
+        } catch (ParseException e) {
             return Response.serverError().entity("Invalid token provided" + e.getMessage()).build();
-        }
-        catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
             return Response.serverError().entity("Cannot initialize library" + e.getMessage()).build();
         }
 

@@ -37,6 +37,20 @@ public interface JWT {
     Map<String, Object> getClaims();
 
     /**
+     * Checks token expiration time provided by "exp" claim
+     *
+     * @return true if token contains expiration time and expired
+     */
+    boolean isExpired();
+
+    /**
+     * Checks token expiration time provided by "exp" claim
+     *
+     * @return true if token contains expiration time and is not expired or token contains no expiration time claim
+     */
+    boolean isNotExpired();
+
+    /**
      * Claims declared according to sections 4.1 and 10.1 of RFC 7519
      * Details at https://tools.ietf.org/html/rfc7519#section-4.1
      * and https://tools.ietf.org/html/rfc7519#section-10.1

@@ -85,6 +85,24 @@ public class JWTNimbusImpl implements JWT {
         return claimsSet.getClaims();
     }
 
+    @Override
+    public boolean isExpired() {
+        Instant now = Instant.now();
+        try {
+            Date expirationTime = claimsSet.getDateClaim(Claims.CLAIM_EXPIRATION_TIME);
+            return expirationTime != null && now.isAfter(expirationTime.toInstant());
+        }
+        catch (ParseException e) {
+            //invalid claim content => token is invalid
+            return true;
+        }
+    }
+
+    @Override
+    public boolean isNotExpired() {
+        return !isExpired();
+    }
+
     Optional<Instant> getTokenIssueTime() {
         Date issueTime = claimsSet.getIssueTime();
         if (issueTime == null) {

@@ -2,19 +2,21 @@ package de.adorsys.cse.example.server.token.bean;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class TokenStatusResponse {
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 
     private Boolean signatureValid;
 
     private boolean tokenExpired;
 
-    private Date tokenExpirationTime;
+    private String tokenExpirationTime;
 
-    private Map<String, String> tokenClaims;
+    private Map<String, Object> tokenClaims;
 
 
     public boolean isSignatureValid() {
@@ -33,19 +35,19 @@ public class TokenStatusResponse {
         this.tokenExpired = tokenExpired;
     }
 
-    public Date getTokenExpirationTime() {
+    public String getTokenExpirationTime() {
         return tokenExpirationTime;
     }
 
     public void setTokenExpirationTime(Date tokenExpirationTime) {
-        this.tokenExpirationTime = tokenExpirationTime;
+        this.tokenExpirationTime = dateFormat.format(tokenExpirationTime);
     }
 
-    public Map<String, String> getTokenClaims() {
+    public Map<String, Object> getTokenClaims() {
         return tokenClaims;
     }
 
-    public void setTokenClaims(Map<String, String> tokenClaims) {
+    public void setTokenClaims(Map<String, Object> tokenClaims) {
         this.tokenClaims = tokenClaims;
     }
 }
