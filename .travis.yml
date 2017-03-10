@@ -9,7 +9,7 @@ script:
 install:
   - mvn install -DskipTests -Dmaven.javadoc.skip=true -B -V
 
-  android:
+android:
   components:
   - tools
   - platform-tools
