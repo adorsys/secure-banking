@@ -13,6 +13,8 @@ script:
   - mvn package -am -B -V -U
   - android list target
   - cd secure-device-storage/sds-android/ && ./gradlew connectedAndroidTest
+  - cd secure-mobile-push/smp-android-client/ && ./gradlew connectedAndroidTest
+  - cd sms-parser/android-sms-parser/ && ./gradlew connectedAndroidTest
 
 install:
   - mvn install -DskipTests -Dmaven.javadoc.skip=true -B -V
