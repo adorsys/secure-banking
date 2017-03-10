@@ -12,14 +12,14 @@ import org.slf4j.LoggerFactory;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
 
 public class JWTNimbusImpl implements JWT {
     private final static Logger log = LoggerFactory.getLogger(JWTNimbusImpl.class);
 
-
-    private String base64encodedToken;
-    private com.nimbusds.jwt.JWT container;
+    String base64encodedToken;
+    com.nimbusds.jwt.JWT container;
 
     private JWTClaimsSet claimsSet;
 
@@ -45,6 +45,12 @@ public class JWTNimbusImpl implements JWT {
         }
     }
 
+    JWTNimbusImpl(SignedJWT signedJWT) throws Exception {
+        this.claimsSet = signedJWT.getJWTClaimsSet();
+        this.container = signedJWT;
+        this.base64encodedToken = container.serialize();
+    }
+
     public JWTNimbusImpl(String base64encodedJWT) throws ParseException {
         if (base64encodedJWT == null) {
             throw new IllegalArgumentException("base64encodedJWT must not be null");
@@ -67,6 +73,34 @@ public class JWTNimbusImpl implements JWT {
         }
 
         return Optional.ofNullable(String.valueOf(claimValue));
+    }
+
+    @Override
+    public boolean isSigned() {
+        return false;
+    }
+
+    @Override
+    public Map<String, Object> getClaims() {
+        return claimsSet.getClaims();
+    }
+
+    @Override
+    public boolean isExpired() {
+        Instant now = Instant.now();
+        try {
+            Date expirationTime = claimsSet.getDateClaim(Claims.CLAIM_EXPIRATION_TIME);
+            return expirationTime != null && now.isAfter(expirationTime.toInstant());
+        }
+        catch (ParseException e) {
+            //invalid claim content => token is invalid
+            return true;
+        }
+    }
+
+    @Override
+    public boolean isNotExpired() {
+        return !isExpired();
     }
 
     Optional<Instant> getTokenIssueTime() {
@@ -103,5 +137,9 @@ public class JWTNimbusImpl implements JWT {
     @Override
     public int hashCode() {
         return base64encodedToken.hashCode();
+    }
+
+    JWTClaimsSet getClaimsSet() {
+        return claimsSet;
     }
 }

@@ -1,30 +1,31 @@
 package de.adorsys.cse.jwt;
 
-import com.nimbusds.jose.JWSAlgorithm;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jwt.JWTClaimsSet;
 import de.adorsys.cse.crypt.SecretCredentialEncryptor;
 import de.adorsys.cse.nonce.NonceGenerator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.minidev.json.JSONObject;
 
+import java.io.InvalidObjectException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import static de.adorsys.cse.jwt.JWT.Claims.CLAIM_ACCESS_TOKEN;
 import static de.adorsys.cse.jwt.JWT.Claims.CLAIM_PUBLIC_KEY_ENCRYPTED_HMAC_SECRET;
 
 public class JWTBuilderNimbusImpl implements JWTBuilder {
-    private static final Logger log = LoggerFactory.getLogger(JWTBuilderNimbusImpl.class);
 
-    private static final char CHARACTER_TO_FILL = 'A';
-    private static final int MINIMAL_KEY_LENGTH = 64; //minimal key length for HS512 - 512 bytes
+    private static final long ONE_HOUR_MS = 60 * 60 * 1000;
 
     private NonceGenerator nonceGenerator;
-    private long expirationTimeInMs;
+    private long expirationTimeInMs = ONE_HOUR_MS;
     private String hmacEncryptedSecret;
     private JWT accessToken;
+    private Map<String, Object> payloadClaims = new HashMap<>();
 
     @Override
     public JWTBuilder withAccessToken(JWT accessToken) {
@@ -51,6 +52,24 @@ public class JWTBuilderNimbusImpl implements JWTBuilder {
     }
 
     @Override
+    public JWTBuilder withPayload(Object payload) throws InvalidObjectException {
+        return withPayload(String.valueOf(payloadClaims.size()), payload);
+    }
+
+    @Override
+    public JWTBuilder withPayload(String claim, Object payload) throws InvalidObjectException {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValueAsString(payload);
+        } catch (JsonProcessingException e) {
+            throw new InvalidObjectException("Error by serializing payload object to JSON: " + e.getMessage());
+        }
+        payloadClaims.put(claim, payload);
+
+        return this;
+    }
+
+    @Override
     public JWTBuilder withEncryptedHMacSecretKey(SecretCredentialEncryptor encryptor, String hmacSecret) {
         if (encryptor == null) {
             throw new IllegalArgumentException("encryptor cannot be null");
@@ -63,18 +82,10 @@ public class JWTBuilderNimbusImpl implements JWTBuilder {
     }
 
     @Override
-    public JWT buildAndSign(String hmacSecret) {
-        if (hmacSecret == null || hmacSecret.length() == 0) {
-            throw new IllegalArgumentException("hmacSecret cannot be null or empty");
-        }
-
-        JWTClaimsSet.Builder claimsSetBuilder = buildClaimsSet();
-        if (hmacSecret.length() < MINIMAL_KEY_LENGTH) {
-            log.warn("provided hmacSecret is less then {} bytes and will be extended with '{}'", MINIMAL_KEY_LENGTH*8, CHARACTER_TO_FILL);
-            hmacSecret = extendStringToLength(hmacSecret);
-        }
-
-        return new JWTNimbusImpl(claimsSetBuilder.build(), hmacSecret, JWSAlgorithm.HS512);
+    public JWS buildAndSign(String hmacSecret) {
+        JWT jwt = build();
+        JWTSigner jwtSigner = new JWTSignerNimbusImpl();
+        return jwtSigner.sign(jwt, hmacSecret);
     }
 
     @Override
@@ -99,6 +110,9 @@ public class JWTBuilderNimbusImpl implements JWTBuilder {
             claimsSetBuilder.jwtID(nonceGenerator.generateNonce());
         }
 
+        JSONObject payloadClaimsArray = new JSONObject(payloadClaims);
+        claimsSetBuilder.claim(JWT.Claims.CLAIM_PAYLOAD, payloadClaimsArray);
+
         Instant currentTime = Instant.now();
         Instant expirationTime = currentTime.plus(expirationTimeInMs, ChronoUnit.MILLIS);
         claimsSetBuilder.issueTime(Date.from(currentTime));
@@ -122,9 +136,8 @@ public class JWTBuilderNimbusImpl implements JWTBuilder {
         return accessToken;
     }
 
-    private String extendStringToLength(String hmacSecret) {
-        char[] array = new char[MINIMAL_KEY_LENGTH - hmacSecret.length()];
-        Arrays.fill(array, CHARACTER_TO_FILL);
-        return new String(array).concat(hmacSecret);
+    Map<String, Object> getPayloadClaims() {
+        return payloadClaims;
     }
+
 }

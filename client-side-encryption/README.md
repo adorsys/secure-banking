@@ -1,127 +1,57 @@
 # Client Side Encryption
-Following functionality is to be provided by this modue.
+The client side encryption provide many feature to help protect sensitive information against infrastructure hazard. See https://en.wikipedia.org/wiki/TLS_termination_proxy .
+
+With client side encryption, we want to address following issues:
+
+* Encrypting sensitive information in the client before sending it to the server
+* Sign and nonce oAuth Bearer token to prevent replay attack from inside the institution's own network
+
+Measures describe here might be ineffective against men in the middle attacks.
+
+## Similar references
+
+https://github.com/dxa4481/clientHashing
 
 ## Client can encrypt a secret credential
-  * This is to prevent disclosure of the credential on the way between the client and the server.
-  * We assume the transport of a secret credential in following situations
-    * Client is authenticating with an idp (identity provider): 
-      In this case we assume the client knows the public key of the identity provider. This can be given to the client :
-      * by configuration. This is the case of keycloak where the client is built with a keycloak.json file or can download this file from the server.
-      * by dowloading the idp server configuration from a known registry.
-      
-    * Client is filling up a form with secret credentials or sending some secret credentials to the resource server (password, PIN, credential encryption key)
-      For example an online banking PIN to the server for processing. In this case the client has a security token provided by an idp. A credential encryption key is a seed we use to encrypt client's critical information while storing them i a recoverable manner on the server. These credential encryption keys allow the encryption of user information on an individual key basis. Means each user critical information is encrypted with a user specific secret key.
-      Then client is sending the information to a resource server.
-      Resource server public key must be available to the client application. Client can obtain public key from a public key endpoint provided by the resource server. The endpoint can look like: https://mydomain/context-root/k_jwks. A call to this endpoint will return the resource server's public key in jwk or pem format.
-      
-    In both cases client will use the public key of the resource server/idp to encrypt the secret information.
-    * Idp Managed Credential Encryption Keys
-    A credential encryption key is an secret key that can be use in a computing environment to protect critical user information. The credential encryption key is generally crentrally managed by the idp. Critical information that are encrypted by the credential encryption key are thus stored in the resource environment.
-    When the idp server is producing a token for a resource server, the idp server can use the public key of the resource server to encrypt the credential encryption key of the user on that resource server.
-	This generally does not fall into the domain of client side encryption. Encryption and decryption of the credential encryption key occurs on the server side. Encryption is done by the idp. Decryption is done by the resource server       
+We use this approach to prevent disclosure of the sensitive information inside institutions internal networks. https://en.wikipedia.org/wiki/TLS_termination_proxy.
+
+We see transport of a sensitive information and secret credentials in following situations:
+
+* Client is authenticating with a site. The site can be either a standard server application or an identity provider. 
+* Client is filling up a form with some sensitive information. This can be a registration form (in this case the password) or a form collecting credentials used for order services (an online banking PIN, a data encryption key).
+
+In some cases, server will want to store the credential in a way not recoverable in the server environment. For such a use case, we can also apply procedures called client hashing as shown in https://github.com/dxa4481/clientHashing.
+
+In some other cases, credential will want to be recoverable by the server, because the server is:
+*  Either no the final consumer of the credential (online banking PIN used by an AISP to access a legacy banking application)
+* Or the client uses the credential to encrypt further data on the server and thus need to know the value of the credential. See https://github.com/adorsys/secure-key-storage/tree/master/private-key-recovery. This is generally called a credential encryption key. A credential encryption key is a key we use to encrypt client's critical information while storing them in recoverable manner in the institution's data center. Credential encryption keys allow the encryption of user information on an individual key basis. Means each user critical information is encrypted with a user specific secret key.
 
 ## Client can sign and nonce a token
-  * This is done to prevent replay of access token used by a client to access the resource server.
-  * For the purpose of performance, signature must be done with a symetric key (MAC) 
-  * The client uses the known public key of the resource server to register a MAC SecretKey with the with the resource server.
-    * Each request sent by the client to the server is signed with the secret key and a nonce
-    * repeated requests nonce is identified by the server as a replay.
-    
-### Message Format
+A big problem we encounter in the world of oAuth2 is that the bearer token is just a bearer token. It is simply like cash. Who ever has access to the bearer token can claim ownership of the Bearer. A bearer token can be leaked in following situations:
 
-Generally JOSE - JWS - JWE
+* The internal network on the institution does not use SSL to exchange data among components. See https://en.wikipedia.org/wiki/TLS_termination_proxy
+* Some component like reverse proxies write http request information into log files. Including the bearer token. With all the advanced logging capabilities provided by tools (like https://www.graylog.org/) it is obvious for some institution internal entities to have access to those token without any effort.
 
-### Client Encrypted Secret Credential
+Additionally, we have no control on the expiration time of the access token. 
 
-#### CLient authentication with an IdP
+To respond to those thread, we can extends server functionalities not to access tokens (and cookies) without verifying the authenticity of the request sender. If we can allow client to provide the server with a HMAC-Key on the first request, subsequent use of the token can be nonced and signed by the HMAC-Secret to avoid those replay attacks.
 
-In this case the client knows the public key of the idp.
+Below is a sample workflow on how to nonce and sign a token:       
 
-The is no specific additional protocol message needed. Use the public key of the idp to JWE encrypt the secret credential and put the base64 encoded JWE String in value of that form field.
+* For the purpose of performance, signature must be done with a symetric key (MAC) 
+* The client uses the known public key of the resource server to register a MAC SecretKey with the resource server.
+  * Each request sent by the client to the server is nonced (timestamped) and signed with the secret key
+  * repeated request nonce is identified by the server as a replay.
+If the server is deployed in a stateless clustered environment, it is sufficient to use the timestamp as a nonce and make sure expiration time is sufficiently short.
 
-#### CLient Filling up a form with secret credential
+## Server PubliC Key
 
-For this approach the resource server must provide an endpoint that can be used by a client to retrieve the resource server public key. The public key of a resource server can be obtained at that resource server endpoint site like: https://mydomain/context-root/k_jwks
+In most of those cases, the client encrypting data for the server will have to be in possession the public key of the server. A client can access the public key of the server by the mean of:
 
-#### Implementation Work
-* Component to JWE encrypt a string given a public key
-  * SecretCredentialEncryptor
-    * encrypt(secret:String, serverPublicKey:JWK) : Base64EncodedJWT
+### Configuration
+* The client is statically compiled with the public key of the server. This approach bears the problem, that client code will break when the server renews his public key.
+* Client is compiled with a static registry where server public key can be downloaded.
+* The client is compile with the address of the server. The server provides an end point where client can download the server's public key. For example: https://keys.example.net/pop-keys.json
 
-* Component to transform a PEM public key into a JWK
-  * Some server will publish their pulic key just in a PEM encoded format.
-  * JWKBuilder
-    * build(publicKey:PemEcnodedPublicKey):JWK
-
-### Client signed and nonced Token
-
-Like described above, the purpose is to make sure a token sent by the client to the server can not be resent as result of a replay.
-
-#### Workflow
-
-In order to do this, the client must:
-
-* For each new token
-  * Generate a HMAC Key to be sent to the server
-  * Encrypt the HMAC Key with the public key of the server
-  * Generate a ClientJWT wrapping the Access Token with the following structure
-  * Generate the first nonce and add to ClientJWT (use jwi claim to store nonce)
-  * Generate a timestamp and add to ClientJWT (use the iat claim to store timestamp)
-  * Add very short expiration to ClientJWT (use exp claim to store the expiration time)
-  * Include the encrypted HMAC Key in the first request to the server
-  ```json
-  {
-  	"access_token":"access.token.from.idp",
-  	"jwi":2341234,
-  	"iat":45654674657,
-  	"hamac_key":"jwe.encrypted.hamac.key",
-  	"exp":141234231
-  }
-  ```
-  * HashMac sign and send ClientJWT to server : "Authorisation: Bearer hamac.sign.client.jwt"
-  
-* For each subsequent service request
-  * Generate a ClientJWT wrapping the Access Token with the following structure
-  * Generate the a nonce and add to ClientJWT (use jwi claim to store nonce)
-  * Generate a timestamp and add to ClientJWT (use the iat claim to store timestamp)
-  * Add very short exiration to ClientJWT (use exp claim to store the expiration time)
-  ```json
-  {
-  	"access_token":"access.token.from.idp",
-  	"jwi":2341234,
-  	"iat":45654674657,
-  	"exp":45654674957
-  }
-  ```
-  * HashMac sign and send ClientJWT to server : "Authorisation: Bearer hamac.sign.client.jwt"
-  
-#### Formal specification of Implementation Work
-* Component to Generate HMACKey
-  * HMACKeyGenerator
-    * generateHMACKey(): JWK
-* Component to Encrypt the HMACKey with public key of the server (We might add this to the secret credential encryptor class)
-  * SecretCredentialEncryptor
-    * encrypt(hmacKey:JWK, serverPublicKey:JWK) : Base64EncodedJWE
-    * This is only used to encrypt the HMAC-Key in the first request. Do not encrypt the jwt.
-* Component to generate a nonce
-  * NonceGenerator
-    * generateNonce():Number
-    * This shall be availbe everywhere.
-    
-* Component to generate the timestamp
-  * TimestamGenerator
-    * generateTimeStamp():Number
-    * This shall be availbe everywhere.
-    
-* Component to build the ClientJWT object
-  * ClientJWTBuilder
-    * newClientJWT() : ClientJWT
-    * withAccessToken(accessToken Base64EncodedJWT) : ClientJWT // 
-    * withJWI(NonceGenerator) : ClientJWT
-    * withIAT(TimestamGenerator) : ClientJWT
-    * withEXP(Number) : ClientJWT// The number of milliseconds of the validity
-    * includeEncryptedHMAC(SecretCredentialEncryptor, serverPublicKey:JWK, hmacKey:JWK) : ClientJWT // used to encrypt the HMAC
-    * build(hmacKey:JWK):Base64EncodedJWT
- 
-
-
+### Proof of Possession (RFC7800)
+The public key of the server (in this case an oAuth2 relying party) can be embedded into the access token issued to the client. See https://github.com/adorsys/secure-key-storage/tree/master/client-side-encryption/cse-pop-spec

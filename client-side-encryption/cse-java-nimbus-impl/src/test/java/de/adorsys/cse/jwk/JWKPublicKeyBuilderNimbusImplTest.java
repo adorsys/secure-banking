@@ -14,30 +14,30 @@ import java.security.spec.X509EncodedKeySpec;
 
 import static org.junit.Assert.*;
 
-public class JWKBuilderNimbusImplTest {
+public class JWKPublicKeyBuilderNimbusImplTest {
 
-    private JWKBuilder jwkBuilder;
+    private JWKPublicKeyBuilder jwkPublicKeyBuilder;
 
     @Before
     public void setUp() {
-        jwkBuilder = new JWKBuilderNimbusImpl();
+        jwkPublicKeyBuilder = new JWKPublicKeyBuilderNimbusImpl();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void passingNullStringCausesIllegalArgumentException() throws Exception {
-        jwkBuilder.build((String) null);
+        jwkPublicKeyBuilder.build((String) null);
         fail("Passing null-String causes IllegalArgumentException");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void passingNullKeyCausesIllegalArgumentException() throws Exception {
-        jwkBuilder.build((PublicKey) null);
+        jwkPublicKeyBuilder.build((PublicKey) null);
         fail("Passing null-key causes IllegalArgumentException");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void passingInvalidKeyCausesIllegalArgumentException() throws Exception {
-        jwkBuilder.build("bla-bla-bla");
+        jwkPublicKeyBuilder.build("bla-bla-bla");
         fail("Passing invalid key-string causes IllegalArgumentException");
     }
 
@@ -55,7 +55,7 @@ public class JWKBuilderNimbusImplTest {
                 //+ "-----END PUBLIC KEY-----"
                 ;
 
-        JWK jwk = jwkBuilder.build(pem);
+        JWK jwk = jwkPublicKeyBuilder.build(pem);
         assertNotNull("Returned key is provided", jwk);
         assertNotNull("Returned key is provided", jwk.toJSONString());
         assertTrue("Returned key is not empty", isJSONValid(jwk.toJSONString()));
@@ -98,7 +98,7 @@ public class JWKBuilderNimbusImplTest {
                         "vA==\n" +
                         "-----END CERTIFICATE-----";
 
-        JWK jwk = jwkBuilder.build(pem);
+        JWK jwk = jwkPublicKeyBuilder.build(pem);
         assertNotNull("Returned key is provided", jwk);
         assertNotNull("Returned key is provided", jwk.toJSONString());
         assertTrue("Returned key is not empty", isJSONValid(jwk.toJSONString()));
@@ -131,9 +131,9 @@ public class JWKBuilderNimbusImplTest {
 
             X509EncodedKeySpec spec = keyFactory.getKeySpec(keyPair.getPublic(),
                     X509EncodedKeySpec.class);
-            String key = Base64.encodeBase64String(spec.getEncoded());
+            String key = Base64.encodeBase64URLSafeString(spec.getEncoded());
 
-            JWK jwk = jwkBuilder.build(key);
+            JWK jwk = jwkPublicKeyBuilder.build(key);
             assertNotNull("Returned key is provided", jwk);
             assertNotNull("Returned key is provided", jwk.toJSONString());
             assertTrue("Returned key is not empty", isJSONValid(jwk.toJSONString()));

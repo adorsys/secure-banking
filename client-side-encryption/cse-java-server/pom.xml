@@ -15,6 +15,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>cse-java-keycloak</module>
+        <module>cse-java-server-example</module>
     </modules>
 
 
