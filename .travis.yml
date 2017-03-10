@@ -49,3 +49,14 @@ cache:
   - $HOME/.android/build-cache
 after_success:
 - sh zip-apks.sh
+
+# deploy:
+  # provider: releases
+  # api_key:
+    # secure: R/dS4ZItycLWILoPidUm8lk0SR9ru4GMHpm3N2xdYkp2+7or3mO7Twu18a1SbPkPAaWT/mqDheEYzDYpufb3cLCG0rR368D/qqXg1/OhZ0Cwna0f1JglCQexi0WXFZeWUHP6A/iki1t+ahPtRMPxGWWUm1ZMyAhjxY2Abi/xcpyuLH6zjk5bGjtnaI8RAjfzlC4lExEBWX82nnsYJmQrt3V+5fUIu/IQGypSsyW2fghc5DJXiweRjIgnGizFqG4KweXvnZV1fcy79S2YAcVHirROZlDj5+LvRRNZKwwv18ZJm/IKH3cccAxIADTNp8tWlOAoRT8zplLC4mdkD+JSLOK7E+yPO7nKZ8Mtw7n+kQL2/jQixhh5GJfvYXw14vBr6PySRQt+Dq4zIUHMB+lVsi+cpqAlz0T9KbUcoVG/+8B6b955yb516fVe68+k/sM2zTRUZU3LrInB1cMirBq2yifRGeQzDVA18wF8rksCH5fyiSIElAC/URDCGrGdlpzIONrf3YnyRKh4vjQIz35uELd28WZAnvLExvcvGhD9teVWNZiiPVVBDgDFVZ5cEKdZzB0N26gnw+s8C/vsqE0YlqVqilCxXusGt71eKyIc79uB3rbjsfngWXP6yQasMvFJX83lQ3NTqadxSxdHyPb1ewTZP+hsKiBH+Sy/MSTYX78=
+  # file: generated-apks.zip
+  # skip_cleanup: true
+  # file_glob: true
+  # overwrite: true
+  # on:
+    # repo: adorsys/secure-key-storage
