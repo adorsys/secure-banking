@@ -40,8 +40,10 @@ public class JWKPublicKeyBuilderNimbusImpl implements JWKPublicKeyBuilder {
         if (publicKey == null) {
             throw new IllegalArgumentException("publicKey cannot be null");
         }
-        if (JWK.Algorythm.RSA.name().equals(publicKey.getAlgorithm())) {
-            return build((RSAPublicKey) publicKey);
+        for (JWK.Algorythm alg: JWK.Algorythm.values()) {
+            if (alg.getAlgName().equals(publicKey.getAlgorithm())) {
+                return build((RSAPublicKey) publicKey);
+            }
         }
 
         throw new IllegalArgumentException("Unknown public key algorithm: " + publicKey.getAlgorithm());

@@ -34,7 +34,7 @@ public class JWTSignerNimbusImpl implements JWTSigner {
         }
 
         JWTClaimsSet.Builder builder = new JWTClaimsSet.Builder();
-        jwt.getClaims().forEach(builder::claim);
+        jwt.getAllClaims().forEach(builder::claim);
 
 
         return new JWSNimbusImpl(builder.build(), normalizeHmacSecretLength(hmacSecret), JWSAlgorithm.HS256);

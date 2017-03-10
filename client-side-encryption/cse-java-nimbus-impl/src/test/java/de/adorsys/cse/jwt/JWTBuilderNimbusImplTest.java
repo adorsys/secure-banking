@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
@@ -240,4 +241,26 @@ public class JWTBuilderNimbusImplTest {
         SignedJWT expectedInternalJWT = SignedJWT.parse(actualJWT.encode());
         assertTrue("signature pass verification", expectedInternalJWT.verify(verifier));
     }
+
+    @Test
+    public void signedAndUnsignedVersionContainSameClaimsSet() throws Exception {
+        JWS someSignedJWT = new JWTBuilderNimbusImpl().withPayload("Some Payload").buildAndSign("hmacSecret");
+        JWT someUnsignedJWT = new JWTBuilderNimbusImpl().withPayload("Some Payload").build();
+
+        assertEquals("Payload claims are same", someSignedJWT.getPayloadClaims(), someUnsignedJWT.getPayloadClaims());
+
+
+        Map<String, Object> allClaimsFromSignedJWT = someSignedJWT.getAllClaims();
+        Map<String, Object> allClaimsFromUnsignedJWT = someUnsignedJWT.getAllClaims();
+
+        assertEquals("All claims sets contain same number of claims", allClaimsFromSignedJWT.size(), allClaimsFromUnsignedJWT.size());
+
+        allClaimsFromSignedJWT.forEach( (k, v) -> {
+            if ( !k.equals("iat") && !k.equals("exp") ) {
+                assertEquals("All claims are same except time claims", v, allClaimsFromUnsignedJWT.get(k));
+            }
+        });
+
+    }
+
 }
