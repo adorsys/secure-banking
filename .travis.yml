@@ -15,7 +15,7 @@ before_script:
   - adb shell input keyevent 82 &
 
 script:
-  - mvn package -am -B -V -U
+  - mvn package -fae -am -B -V -U
   - android list target
   - bash -c 'cd secure-device-storage/sds-android/ && ./gradlew connectedAndroidTest'
   - bash -c 'cd secure-mobile-push/smp-android-client/ && ./gradlew connectedAndroidTest'
