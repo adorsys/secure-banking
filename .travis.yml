@@ -12,7 +12,7 @@ before_script:
 script:
   - mvn package -am -B -V -U
   - android list target
-  - ./gradlew connectedAndroidTest
+  - cd secure-device-storage/sds-android/ && ./gradlew connectedAndroidTest
 
 install:
   - mvn install -DskipTests -Dmaven.javadoc.skip=true -B -V
