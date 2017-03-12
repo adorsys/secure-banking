@@ -3,7 +3,7 @@ This is a transitional API mapping the PSD2 requirement that each account servic
 
 The service uses hbci in the background to access PSU banking information.
 
-To build the project:
+## Building and running
 
 ### hbci4java fork 
 
@@ -12,15 +12,23 @@ To build the project:
  mvn clean install -f hbci4java/pom.xml
  ```
 
-## Build the multibanking adapter
+### Build the multibanking adapter
 
  ```
  git clone https://github.com/adorsys/multibanking.git
  mvn clean install -f multibanking/onlinebanking-adapter/pom.xml
  ```
 
-## Build this project and start with wildfly swarm
+### Build this project and start with wildfly swarm
 
  ```
  mvn clean install wildfly-swarm:run
  ```
+
+## Testing
+
+### Swagger UI
+
+locate your browser at: http://localhost:8080/swagger-ui/#/
+
+In the swagger url field, enter: http://localhost:8080/swagger.json and click explore.

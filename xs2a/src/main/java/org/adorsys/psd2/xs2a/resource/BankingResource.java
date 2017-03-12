@@ -2,6 +2,7 @@ package org.adorsys.psd2.xs2a.resource;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -28,7 +29,7 @@ public class BankingResource {
 
 	OnlineBankingService onlineBankingService = new Hbci4JavaBanking();
 	
-	@GET
+	@POST
 	@Path("accounts")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -39,7 +40,7 @@ public class BankingResource {
 		return Response.ok().entity(new EncryptedAccountReport()).build();
 	}
 
-	@GET
+	@POST
 	@Path("statement")
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -54,7 +55,7 @@ public class BankingResource {
 	@GET
 	@Path("pop-keys.json")
 	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Read public keys", notes = "Reqd public keys of this object. See RFC7800")
+	@ApiOperation(value = "Read public keys", notes = "Fetches publick keys of the target server. Keys are used to encrypt data sent to the server and also send a response encrytpion key to the server. See RFC7800")
 	@ApiResponses(value = { @ApiResponse (code = 200, message = "Ok"),
 			@ApiResponse(code = 400, message = "Bad request", responseHeaders=@ResponseHeader(name="ERROR_KEY", description="BAD_REQUEST"))})
 	public Response getPublicKeys(){
