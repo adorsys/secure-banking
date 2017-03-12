@@ -1,4 +1,26 @@
-# Secure Credential Management
-This project deals with all issues surrounding the secure management of credentials in web based application environments.
+# PSD2 Access 2 Account
+This is a transitional API mapping the PSD2 requirement that each account servicing payment service provider (ASPSP) must provide an interface for account information service providers (AISP) to read payment service users (PSU) account information and account statements.
 
-Our principal intention is to make a thourough analisys of the architecture of common web based application, address weaknesses that can lead to the leakage of credentials and work on components that can be reused to reduce the vulnerability of to applications.
+The service uses hbci in the background to access PSU banking information.
+
+To build the project:
+
+### hbci4java fork 
+
+ ```
+ git clone https://github.com/tadschik/hbci4java.git
+ mvn clean install -f hbci4java/pom.xml
+ ```
+
+## Build the multibanking adapter
+
+ ```
+ git clone https://github.com/adorsys/multibanking.git
+ mvn clean install -f multibanking/onlinebanking-adapter/pom.xml
+ ```
+
+## Build this project and start with wildfly swarm
+
+ ```
+ mvn clean install wildfly-swarm:run
+ ```

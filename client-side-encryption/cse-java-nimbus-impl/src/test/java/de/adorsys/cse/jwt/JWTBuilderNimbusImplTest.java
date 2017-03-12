@@ -180,7 +180,7 @@ public class JWTBuilderNimbusImplTest {
         //i.e. Instant -> Date -> long -> String -> long -> Date -> Instant
         //some milliseconds difference occur. This is not relevant for productive use of expiration time use-case
         //To handle with this we use this delta in our comparisons
-        final long DELTA_MS = 5;
+        final long DELTA_MS = 10;
 
         for (int i = 0; i < 1000; i++) {
             long randomExpirationTime = Math.abs(random.nextLong());
@@ -217,6 +217,7 @@ public class JWTBuilderNimbusImplTest {
         JWT actualJWT = jwtBuilder.buildAndSign(notLongEnoughString);
 
         assertEquals("jwt is signed", 3, actualJWT.encode().split("\\.").length);
+        assertTrue("jwt is signed", actualJWT.isSigned());
 
         JWSVerifier verifier = new MACVerifier(expectedSecret);
 
@@ -232,6 +233,7 @@ public class JWTBuilderNimbusImplTest {
         JWT actualJWT = jwtBuilder.buildAndSign(longSecretString);
 
         assertEquals("jwt is signed", 3, actualJWT.encode().split("\\.").length);
+        assertTrue("jwt is signed", actualJWT.isSigned());
 
         JWSVerifier verifier = new MACVerifier(longSecretString);
 
