@@ -49,7 +49,7 @@ cache:
   - $HOME/.android/build-cache
 after_success:
 - sh zip-apks.sh
-- sh set_tags.sh
+- sh set-tags.sh
 
 deploy:
   provider: releases
