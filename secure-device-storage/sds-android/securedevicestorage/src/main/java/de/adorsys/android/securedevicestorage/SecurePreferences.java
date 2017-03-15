@@ -31,6 +31,7 @@ import static android.content.Context.MODE_PRIVATE;
 
 public class SecurePreferences {
     private static final String KEY_SHARED_PREFERENCES_NAME = "SecurePreferences";
+    private static final String SALT_PREFIX = "SALT OF ";
     private static final String KEY_CHARSET = "UTF-8";
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -84,6 +85,7 @@ public class SecurePreferences {
             String hashedValue = KeystoreTool.getSHA512(value, salt);
             if (hashedValue != null) {
                 setSecureValue(key, hashedValue, context);
+                setSecureValue(SALT_PREFIX + key, salt, context);
             } else {
                 Log.e(SecurePreferences.class.getName(),
                         context.getString(R.string.message_problem_hashing));
@@ -128,25 +130,13 @@ public class SecurePreferences {
     }
 
     public static boolean compareHashedCredential(@NonNull String currentCredential,
-                                                  @NonNull String securedCredential,
+                                                  @NonNull String keyOfSecureCredential,
                                                   @NonNull Context context) {
 
-        byte[] saltBytes = KeystoreTool.calculateSalt(currentCredential);
-        String salt;
-        try {
-            if (saltBytes != null) {
-                salt = new String(saltBytes, 0, saltBytes.length, KEY_CHARSET);
-            } else {
-                return false;
-            }
-        } catch (UnsupportedEncodingException e) {
-            if (BuildConfig.DEBUG) {
-                Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
-            }
-            return false;
-        }
-
+        String securedCredential = getValue(keyOfSecureCredential, context, SecureMethod.METHOD_HASH);
+        String salt = getValue(SALT_PREFIX + keyOfSecureCredential, context, SecureMethod.METHOD_HASH);
         String hashedCurrentCredential = KeystoreTool.getSHA512(currentCredential, salt);
+
         if (hashedCurrentCredential != null) {
             return hashedCurrentCredential.equals(securedCredential);
         } else {
@@ -158,7 +148,7 @@ public class SecurePreferences {
         }
     }
 
-    @SuppressLint("CommitPrefEdits")
+    @SuppressLint({"CommitPrefEdits", "ApplySharedPref"})
     private static void setSecureValue(@NonNull String key, @NonNull String value, @NonNull Context context) {
         SharedPreferences preferences = context
                 .getSharedPreferences(KEY_SHARED_PREFERENCES_NAME, MODE_PRIVATE);
@@ -172,7 +162,7 @@ public class SecurePreferences {
         return preferences.getString(key, null);
     }
 
-    @SuppressLint("CommitPrefEdits")
+    @SuppressLint({"CommitPrefEdits", "ApplySharedPref"})
     private static void clearAllSecureValues(@NonNull Context context) {
         SharedPreferences preferences = context
                 .getSharedPreferences(KEY_SHARED_PREFERENCES_NAME, MODE_PRIVATE);

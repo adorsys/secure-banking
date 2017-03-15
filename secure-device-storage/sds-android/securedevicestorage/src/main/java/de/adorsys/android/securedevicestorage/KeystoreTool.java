@@ -27,6 +27,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.UnrecoverableEntryException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
@@ -296,5 +297,14 @@ class KeystoreTool {
             }
             return null;
         }
+    }
+
+
+    @Nullable
+    static String generateIV(Cipher cipher) {
+        byte[] iv = new byte[cipher.getBlockSize()];
+        new SecureRandom().nextBytes(iv);
+
+        return Base64.encodeToString(iv, Base64.NO_WRAP);
     }
 }

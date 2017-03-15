@@ -44,14 +44,18 @@ public class MainActivity extends AppCompatActivity {
                         }
                         SecurePreferences.setValue(KEY, input.getText().toString(),
                                 MainActivity.this,
-                                SecureMethod.METHOD_ENCRYPT);
+                                SecureMethod.METHOD_HASH);
 
                         String decryptedMessage = SecurePreferences.getValue(KEY,
                                 MainActivity.this,
-                                SecureMethod.METHOD_ENCRYPT);
+                                SecureMethod.METHOD_HASH);
                         if (BuildConfig.DEBUG) {
                             Log.d(TAG, decryptedMessage + " ");
                         }
+
+                        Log.d("LOGTAG", "" +SecurePreferences.compareHashedCredential("test", KEY, MainActivity.this));
+                        Log.d("LOGTAG", "" +SecurePreferences.compareHashedCredential("teSt", KEY, MainActivity.this));
+
                         keyInfoTextView.setText(getString(R.string.message_encrypted_decrypted,
                                 input.getText().toString(), decryptedMessage));
                     }
