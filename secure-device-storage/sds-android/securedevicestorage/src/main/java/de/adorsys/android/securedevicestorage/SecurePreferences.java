@@ -66,7 +66,7 @@ public class SecurePreferences {
                         context.getString(R.string.message_problem_encryption));
             }
         } else {
-            byte[] saltBytes = KeystoreTool.calculateSalt(value);
+            byte[] saltBytes = KeystoreTool.calculateSalt();
             String salt;
             try {
                 if (saltBytes != null) {

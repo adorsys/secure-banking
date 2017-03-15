@@ -288,23 +288,11 @@ class KeystoreTool {
     }
 
     @Nullable
-    static byte[] calculateSalt(@NonNull String credentialToBeSalted) {
-        try {
-            return credentialToBeSalted.getBytes(KEY_CHARSET);
-        } catch (UnsupportedEncodingException e) {
-            if (BuildConfig.DEBUG) {
-                Log.e(KeystoreTool.class.getName(), e.getMessage(), e);
-            }
-            return null;
-        }
-    }
+    static byte[] calculateSalt() {
+        SecureRandom random = new SecureRandom();
+        byte[] salt = new byte[128];
+        random.nextBytes(salt);
 
-
-    @Nullable
-    static String generateIV(Cipher cipher) {
-        byte[] iv = new byte[cipher.getBlockSize()];
-        new SecureRandom().nextBytes(iv);
-
-        return Base64.encodeToString(iv, Base64.NO_WRAP);
+        return salt;
     }
 }
