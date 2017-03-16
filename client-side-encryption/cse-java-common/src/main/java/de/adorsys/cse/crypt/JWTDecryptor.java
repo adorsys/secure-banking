@@ -5,7 +5,7 @@ import de.adorsys.cse.jwt.JWS;
 import de.adorsys.cse.jwt.JWT;
 
 public interface JWTDecryptor {
-    JWS decryptSigned(JWE encrypted);
+    JWS decryptSigned(JWE encrypted) throws JWTEncryptionException;
 
-    JWT decryptUnsigned(JWE encrypted);
+    JWT decryptUnsigned(JWE encrypted) throws JWTEncryptionException;
 }
