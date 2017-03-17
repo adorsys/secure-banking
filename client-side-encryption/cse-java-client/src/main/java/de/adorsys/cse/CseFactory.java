@@ -3,6 +3,7 @@ package de.adorsys.cse;
 import de.adorsys.cse.client.oauth.AccessTokenExtractor;
 import de.adorsys.cse.client.oauth.PublicKeyExtractor;
 import de.adorsys.cse.jwk.JWK;
+import de.adorsys.cse.jwk.JWKPublicKeyBuilder;
 import de.adorsys.cse.jwt.JWT;
 import de.adorsys.cse.jwt.JWTBuilder;
 import de.adorsys.cse.crypt.JWTEncryptor;
@@ -21,6 +22,8 @@ public interface CseFactory {
         }
         return factory;
     }
+
+    JWKPublicKeyBuilder jwkPublicKeyBuilder();
 
     JWTBuilder jwtBuilder();
 

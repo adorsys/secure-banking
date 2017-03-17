@@ -6,11 +6,18 @@ import de.adorsys.cse.client.oauth.PubicKeyExtractorImpl;
 import de.adorsys.cse.client.oauth.PublicKeyExtractor;
 import de.adorsys.cse.crypt.JWTEncryptor;
 import de.adorsys.cse.jwk.JWK;
+import de.adorsys.cse.jwk.JWKPublicKeyBuilder;
+import de.adorsys.cse.jwk.JWKPublicKeyBuilderNimbusImpl;
 import de.adorsys.cse.jwt.*;
 
 import java.text.ParseException;
 
 public class NimbusClientFactory implements CseFactory {
+    @Override
+    public JWKPublicKeyBuilder jwkPublicKeyBuilder() {
+        return new JWKPublicKeyBuilderNimbusImpl();
+    }
+
     @Override
     public JWTBuilder jwtBuilder() {
         return new JWTBuilderNimbusImpl();
