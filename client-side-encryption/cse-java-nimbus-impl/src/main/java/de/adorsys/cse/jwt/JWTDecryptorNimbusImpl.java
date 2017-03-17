@@ -13,7 +13,7 @@ import java.text.ParseException;
 
 public class JWTDecryptorNimbusImpl implements JWTDecryptor {
 
-    private final PrivateKey privateKey;
+    private final RSADecrypter decrypter;
 
     public JWTDecryptorNimbusImpl(PrivateKey privateKey) {
         if (privateKey == null) {
@@ -23,7 +23,7 @@ public class JWTDecryptorNimbusImpl implements JWTDecryptor {
             throw new IllegalArgumentException("currently only RSA-keys are supported");
         }
 
-        this.privateKey = privateKey;
+        decrypter = new RSADecrypter(privateKey);
     }
 
     @Override
@@ -31,24 +31,24 @@ public class JWTDecryptorNimbusImpl implements JWTDecryptor {
         if (encrypted == null) {
             throw new IllegalArgumentException("encrypted cannot be null");
         }
-        EncryptedJWT encryptedJWT;
-        try {
-            encryptedJWT = EncryptedJWT.parse(encrypted.encode());
-        }
-        catch (ParseException e) {
-            throw new JWTEncryptionException("Provided JWE is incorrect: " + e.getMessage());
-        }
 
-        // Create a decrypter with the specified private RSA key
-        RSADecrypter decrypter = new RSADecrypter(privateKey);
+        return decryptSigned(encrypted.encode());
+    }
 
-        // Decrypt
-        try {
-            encryptedJWT.decrypt(decrypter);
-        } catch (JOSEException e) {
-            throw new JWTEncryptionException("Error decrypting provided JWE object: " + e.getMessage());
+    @Override
+    public JWT decryptUnsigned(JWE encrypted) throws JWTEncryptionException {
+        if (encrypted == null) {
+            throw new IllegalArgumentException("encrypted cannot be null");
         }
-        Payload payload = encryptedJWT.getPayload();
+        return decryptUnsigned(encrypted.encode());
+    }
+
+    @Override
+    public JWS decryptSigned(String encryptedBase64) throws JWTEncryptionException {
+        if (encryptedBase64 == null) {
+            throw new IllegalArgumentException("encryptedBase64 cannot be null");
+        }
+        Payload payload = decryptPayload(encryptedBase64);
 
         String serialize = payload.toSignedJWT().serialize();
         try {
@@ -59,20 +59,29 @@ public class JWTDecryptorNimbusImpl implements JWTDecryptor {
     }
 
     @Override
-    public JWT decryptUnsigned(JWE encrypted) throws JWTEncryptionException {
-        if (encrypted == null) {
-            throw new IllegalArgumentException("encrypted cannot be null");
+    public JWT decryptUnsigned(String encryptedBase64) throws JWTEncryptionException {
+        if (encryptedBase64 == null) {
+            throw new IllegalArgumentException("encryptedBase64 cannot be null");
         }
+
+        Payload payload = decryptPayload(encryptedBase64);
+        try {
+            JWTClaimsSet claimsSet = JWTClaimsSet.parse(payload.toJSONObject());
+            return new JWTNimbusImpl(claimsSet);
+        } catch (ParseException e) {
+            throw new JWTEncryptionException("Encrypted object is not a valid JWT object: " + e.getMessage());
+        }
+
+    }
+
+    private Payload decryptPayload(String encryptedBase64) throws JWTEncryptionException {
         EncryptedJWT encryptedJWT;
         try {
-            encryptedJWT = EncryptedJWT.parse(encrypted.encode());
+            encryptedJWT = EncryptedJWT.parse(encryptedBase64);
         }
         catch (ParseException e) {
             throw new JWTEncryptionException("Provided JWE is incorrect: " + e.getMessage());
         }
-
-        // Create a decrypter with the specified private RSA key
-        RSADecrypter decrypter = new RSADecrypter(privateKey);
 
         // Decrypt
         try {
@@ -81,12 +90,6 @@ public class JWTDecryptorNimbusImpl implements JWTDecryptor {
             throw new JWTEncryptionException("Error decrypting provided JWE object: " + e.getMessage());
         }
 
-        Payload payload = encryptedJWT.getPayload();
-        try {
-            JWTClaimsSet claimsSet = JWTClaimsSet.parse(payload.toJSONObject());
-            return new JWTNimbusImpl(claimsSet);
-        } catch (ParseException e) {
-            throw new JWTEncryptionException("Encrypted object is not a valid JWT object: " + e.getMessage());
-        }
+        return encryptedJWT.getPayload();
     }
 }
