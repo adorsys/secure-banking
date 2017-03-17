@@ -1,6 +1,7 @@
 package de.adorsys.cse.example.client.crypto;
 
 import de.adorsys.cse.CseFactory;
+import de.adorsys.cse.crypt.JWTDecryptor;
 import de.adorsys.cse.crypt.JWTEncryptionException;
 import de.adorsys.cse.crypt.JWTEncryptor;
 import de.adorsys.cse.example.client.crypto.bean.*;
@@ -69,7 +70,7 @@ public class JWEGeneratorResource {
     @Path("/encrypt")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Enclose a secret into a JWE Token", response = JWEEncryptedResponse.class, notes = "Create and sign an access token based on information provided by the caller.")
+    @ApiOperation(value = "Encrypt a secret into a JWE Token", response = JWEEncryptedResponse.class, notes = "Create a JWT with some secret and encrypt with RSA Public Key.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok", response = JWEEncryptedResponse.class),
             @ApiResponse(code = 500, message = "Internal Server Error", response = String.class)
@@ -113,7 +114,7 @@ public class JWEGeneratorResource {
             return Response.status(Response.Status.EXPECTATION_FAILED).entity("Cannot encrypt token: " + tokenToEncrypt.encode()).build();
         }
 
-        response.setEncryptedJWK(jwe.encode());
+        response.setEncryptedJWT(jwe.encode());
         return Response.ok(response).build();
     }
 
@@ -131,13 +132,36 @@ public class JWEGeneratorResource {
     @Path("/decrypt")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Enclose a secret into a JWE Token", response = JWEDecryptedResponse.class, notes = "Create and sign an access token based on information provided by the caller.")
+    @ApiOperation(value = "Decrypt a secret from the JWE Token", response = JWEDecryptedResponse.class, notes = "Decrypts the secrets provided in JWT token with RSA Private key")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Ok", response = JWEDecryptedResponse.class),
             @ApiResponse(code = 500, message = "Internal Server Error", response = JWEDecryptedResponse.class)
     })
     public Response decryptToken(@Context HttpServletRequest request, JWEDecryptRequest decryptRequest) {
-        return Response.ok().build();
+        String privateKeyBase64 = decryptRequest.getPrivateKey();
+
+        PrivateKey privateKey;
+        try {
+            privateKey = KeysSerializer.base64StringToPrivateKey(privateKeyBase64);
+        } catch (Exception e) {
+            return Response.serverError().entity("Cannot parse PrivateKey").build();
+        }
+        JWTDecryptor jwtDecryptor = cseFactory.jwtDecryptor(privateKey);
+
+        String encryptedToken = decryptRequest.getEncryptedJWT();
+
+        JWT decryptedJWT;
+        try {
+            decryptedJWT = jwtDecryptor.decryptUnsigned(encryptedToken);
+        } catch (JWTEncryptionException e) {
+            return Response.serverError().entity("Error decrypting token").build();
+        }
+
+        JWEDecryptedResponse response = new JWEDecryptedResponse();
+
+        decryptedJWT.getPayloadClaims().forEach(response.getDecryptedSecrets()::put);
+
+        return Response.ok(response).build();
     }
 
 

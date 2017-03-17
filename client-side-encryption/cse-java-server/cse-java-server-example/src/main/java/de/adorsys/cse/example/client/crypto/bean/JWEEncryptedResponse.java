@@ -1,13 +1,13 @@
 package de.adorsys.cse.example.client.crypto.bean;
 
 public class JWEEncryptedResponse {
-    private String encryptedJWK;
+    private String encryptedJWT;
 
-    public void setEncryptedJWK(String encryptedJWK) {
-        this.encryptedJWK = encryptedJWK;
+    public void setEncryptedJWT(String encryptedJWK) {
+        this.encryptedJWT = encryptedJWK;
     }
 
-    public String getEncryptedJWK() {
-        return encryptedJWK;
+    public String getEncryptedJWT() {
+        return encryptedJWT;
     }
 }
