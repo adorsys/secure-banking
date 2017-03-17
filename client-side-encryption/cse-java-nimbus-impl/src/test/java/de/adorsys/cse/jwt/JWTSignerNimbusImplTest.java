@@ -53,4 +53,16 @@ public class JWTSignerNimbusImplTest {
         assertTrue("signature pass verification", jwtSigner.verify(actual, longSecretString));
     }
 
+    @Test
+    public void signedAndUnsignedVersionContainSameClaimsSet() throws Exception {
+        String someHMACSecret = generateRandomBase64String(1_000);
+
+        JWT someUnsignedJWT = new JWTBuilderNimbusImpl().withPayload("Some Payload").build();
+
+        JWS actualSignedJWT = jwtSigner.sign(someUnsignedJWT, someHMACSecret);
+
+        assertEquals("Payload claims are same", someUnsignedJWT.getPayloadClaims(), actualSignedJWT.getPayloadClaims());
+        assertEquals("All claims are same", someUnsignedJWT.getAllClaims(), actualSignedJWT.getAllClaims());
+
+    }
 }

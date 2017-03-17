@@ -5,6 +5,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import static de.adorsys.cse.Base64StringGenerator.generateRandomBase64String;
@@ -71,5 +73,94 @@ public class JWTNimbusImplTest {
         }
     }
 
+
+    @Test
+    public void addAndGetClaims() {
+        for (int testNo = 0; testNo < 50; testNo++) {
+            JWTClaimsSet.Builder builder = new JWTClaimsSet.Builder();
+
+            final int claimsCount = 10;
+
+            Map<String, String> expectedClaimsMap = new HashMap<>(10);
+
+            for (int i = 0; i < claimsCount; i++) {
+                String claimName = generateRandomBase64String(20);
+                String providedClaimValue = generateRandomBase64String(2048);
+
+                expectedClaimsMap.put(claimName, providedClaimValue);
+                builder = builder.claim(claimName, providedClaimValue);
+            }
+
+            JWTClaimsSet claimsSet = builder.build();
+            jwt = new JWTNimbusImpl(claimsSet);
+
+            Map<String, Object> allActualClaims = jwt.getAllClaims();
+            assertEquals("claims count corresponds to set", claimsCount, allActualClaims.size());
+
+            allActualClaims.forEach( (actualClaimName, actualClaimValue) -> {
+                assertTrue("claim is in the list of stored claims", expectedClaimsMap.containsKey(actualClaimName));
+                assertEquals("claim returns the claim that was set", expectedClaimsMap.get(actualClaimName), actualClaimValue);
+            }
+            );
+        }
+    }
+
+    @Test
+    public void addAndGetOnePayloadClaim() {
+        for (int testNo = 0; testNo < 50; testNo++) {
+
+            String providedClaimValue = generateRandomBase64String(2048);
+
+            JWTClaimsSet claimsSet = new JWTClaimsSet.Builder().claim("pay", providedClaimValue).build();
+            jwt = new JWTNimbusImpl(claimsSet);
+
+            Map<String, Object> payloadClaims = jwt.getPayloadClaims();
+            assertEquals("Payload claims count corresponds to set", 1, payloadClaims.size());
+
+            payloadClaims.forEach( (actualClaimName, actualClaimValue) -> {
+                        assertTrue("claim is in the list of stored claims", actualClaimName.equals("0"));
+                        assertEquals("claim returns the claim that was set", providedClaimValue, actualClaimValue);
+                    }
+            );
+        }
+    }
+
+    @Test
+    public void getPayloadClaimsWithoutPayloadReturnsEmptyMap() {
+        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder().build();
+        jwt = new JWTNimbusImpl(claimsSet);
+
+        Map<String, Object> payloadClaims = jwt.getPayloadClaims();
+        assertEquals("Payload claims count corresponds to set", 0, payloadClaims.size());
+    }
+
+    @Test
+    public void addAndGetManyPayloadClaims() {
+        for (int testNo = 0; testNo < 50; testNo++) {
+
+            final int claimsCount = 10;
+
+            Map<String, String> expectedPayloadClaimsMap = new HashMap<>(10);
+
+            for (int i = 0; i < claimsCount; i++) {
+                String claimName = generateRandomBase64String(20);
+                String providedClaimValue = generateRandomBase64String(2048);
+
+                expectedPayloadClaimsMap.put(claimName, providedClaimValue);
+            }
+
+            JWTClaimsSet claimsSet = new JWTClaimsSet.Builder().claim("pay", expectedPayloadClaimsMap).build();
+            jwt = new JWTNimbusImpl(claimsSet);
+
+            Map<String, Object> payloadClaims = jwt.getPayloadClaims();
+            assertEquals("claims count corresponds to set", claimsCount, payloadClaims.size());
+
+            payloadClaims.forEach( (actualClaimName, actualClaimValue) -> {
+                        assertTrue("claim is in the list of stored claims", expectedPayloadClaimsMap.containsKey(actualClaimName));
+                        assertEquals("claim returns the claim that was set", expectedPayloadClaimsMap.get(actualClaimName), actualClaimValue);
+                    }
+            );
+        }
+    }
 }
 

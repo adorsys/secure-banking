@@ -30,11 +30,18 @@ public interface JWT {
 
 
     /**
-     * Provides all claims registered in JWT payload
+     * Provides claims registered in JWT payload
      *
      * @return a map of claims (name->value)
      */
-    Map<String, Object> getClaims();
+    Map<String, Object> getPayloadClaims();
+
+    /**
+     * Provides all claims registered in JWT
+     *
+     * @return a map of claims (name->value)
+     */
+    Map<String, Object> getAllClaims();
 
     /**
      * Checks token expiration time provided by "exp" claim
