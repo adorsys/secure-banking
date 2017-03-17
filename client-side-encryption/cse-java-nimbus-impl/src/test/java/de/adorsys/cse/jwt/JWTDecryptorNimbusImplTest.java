@@ -70,8 +70,25 @@ public class JWTDecryptorNimbusImplTest {
         new JWTDecryptorNimbusImpl(keyPair.getPrivate());
     }
 
+
+    @Test(expected = IllegalArgumentException.class)
+    public void decryptUnsignedWithNullJWEThrowsException() throws Exception {
+        JWTDecryptor jwtDecryptor = new JWTDecryptorNimbusImpl(keyPair.getPrivate());
+
+        JWT decryptedJWT = jwtDecryptor.decryptUnsigned((JWE) null);
+        fail("Call decryptUnsigned with null jwe leads to exception");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void decryptSignedWithNullJWEThrowsException() throws Exception {
+        JWTDecryptor jwtDecryptor = new JWTDecryptorNimbusImpl(keyPair.getPrivate());
+
+        JWT decryptedJWT = jwtDecryptor.decryptSigned((JWE) null);
+        fail("Call decryptSigned with null jwe leads to exception");
+    }
+
     @Test
-    public void decryptSigned() throws Exception {
+    public void decryptSignedJWE() throws Exception {
         JWS someJWT = new JWTBuilderNimbusImpl().withPayload("some secret").buildAndSign("hmacSecret");
         JWE encryptedJWT = encryptSignedInternally(someJWT);
 
@@ -87,7 +104,7 @@ public class JWTDecryptorNimbusImplTest {
     }
 
     @Test
-    public void decryptUnsigned() throws Exception {
+    public void decryptUnsignedJWE() throws Exception {
         JWT someJWT = new JWTBuilderNimbusImpl().withPayload("some secret").build();
         JWE encryptedJWT = encryptUnsignedInternally(someJWT);
 
@@ -100,19 +117,50 @@ public class JWTDecryptorNimbusImplTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void decryptUnsignedWithNullThrowsException() throws Exception {
+    public void decryptUnsignedWithNullStringThrowsException() throws Exception {
         JWTDecryptor jwtDecryptor = new JWTDecryptorNimbusImpl(keyPair.getPrivate());
 
-        JWT decryptedJWT = jwtDecryptor.decryptUnsigned(null);
-        fail("Call decryptUnsigned with null jwe leads to exception");
+        JWT decryptedJWT = jwtDecryptor.decryptUnsigned((String) null);
+        fail("Call decryptUnsigned with null String leads to exception");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void decryptSignedWithNullThrowsException() throws Exception {
+    public void decryptSignedWithNullStringThrowsException() throws Exception {
         JWTDecryptor jwtDecryptor = new JWTDecryptorNimbusImpl(keyPair.getPrivate());
 
-        JWT decryptedJWT = jwtDecryptor.decryptSigned(null);
-        fail("Call decryptSigned with null jwe leads to exception");
+        JWT decryptedJWT = jwtDecryptor.decryptSigned((String) null);
+        fail("Call decryptSigned with null String leads to exception");
+    }
+
+    @Test
+    public void decryptSignedBase64String() throws Exception {
+        JWS someJWT = new JWTBuilderNimbusImpl().withPayload("some secret").buildAndSign("hmacSecret");
+        JWE encryptedJWT = encryptSignedInternally(someJWT);
+        String base64Encoded = encryptedJWT.encode();
+
+        JWTDecryptor jwtDecryptor = new JWTDecryptorNimbusImpl(keyPair.getPrivate());
+
+        JWS decryptedSignedJWS = jwtDecryptor.decryptSigned(base64Encoded);
+
+        assertNotNull("Returned non-null jws object", decryptedSignedJWS);
+        assertEquals("Returned decrypted object equals to original one", someJWT.encode(), decryptedSignedJWS.encode());
+
+        JWTSigner jwtSigner = new JWTSignerNimbusImpl();
+        assertTrue("Signature is correct", jwtSigner.verify(decryptedSignedJWS, "hmacSecret"));
+    }
+
+    @Test
+    public void decryptUnsignedBase64String() throws Exception {
+        JWT someJWT = new JWTBuilderNimbusImpl().withPayload("some secret").build();
+        JWE encryptedJWT = encryptUnsignedInternally(someJWT);
+        String encryptedBase64 = encryptedJWT.encode();
+
+        JWTDecryptor jwtDecryptor = new JWTDecryptorNimbusImpl(keyPair.getPrivate());
+
+        JWT decryptedJWT = jwtDecryptor.decryptUnsigned(encryptedBase64);
+
+        assertNotNull("Returned non-null jwt object", decryptedJWT);
+        assertEquals("Returned decrypted object equals to original one", someJWT.encode(), decryptedJWT.encode());
     }
 
     private JWE encryptUnsignedInternally(JWT jwt) throws Exception {
