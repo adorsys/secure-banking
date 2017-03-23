@@ -11,6 +11,7 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
+import java.text.ParseException;
 
 import static org.junit.Assert.*;
 
@@ -106,25 +107,12 @@ public class JWKPublicKeyBuilderNimbusImplTest {
 
     @Test
     public void buildWithRandomRSA2048Key() throws Exception {
-        KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
-        gen.initialize(2048);
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        keyPairGenerator.initialize(2048);
 
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
 
-        testWithRandomKeys(keyFactory, gen, 50);
-    }
-
-    @Test
-    public void buildWithRandomRSA1024Key() throws Exception {
-        KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
-        gen.initialize(1024);
-
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-
-        testWithRandomKeys(keyFactory, gen, 50);
-    }
-
-    private void testWithRandomKeys(KeyFactory keyFactory, KeyPairGenerator keyPairGenerator, int repeats) throws Exception {
+        final int repeats = 50;
         for (int i = 0; i < repeats; i++) {
             // Generate the RSA key pair
             KeyPair keyPair = keyPairGenerator.generateKeyPair();
@@ -134,12 +122,81 @@ public class JWKPublicKeyBuilderNimbusImplTest {
             String key = Base64.encodeBase64URLSafeString(spec.getEncoded());
 
             JWK jwk = jwkPublicKeyBuilder.build(key);
-            assertNotNull("Returned key is provided", jwk);
-            assertNotNull("Returned key is provided", jwk.toJSONString());
-            assertTrue("Returned key is not empty", isJSONValid(jwk.toJSONString()));
+            assertNotNull("Returned 2048 key is provided", jwk);
+            assertNotNull("Returned 2048 key is provided", jwk.toJSONString());
+            assertTrue("Returned 2048 key is not empty", isJSONValid(jwk.toJSONString()));
+        }
+    }
+
+    @Test
+    public void buildWithRandomRSA1024Key() throws Exception {
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        keyPairGenerator.initialize(1024);
+
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+
+        final int repeats = 50;
+        for (int i = 0; i < repeats; i++) {
+            // Generate the RSA key pair
+            KeyPair keyPair = keyPairGenerator.generateKeyPair();
+
+            X509EncodedKeySpec spec = keyFactory.getKeySpec(keyPair.getPublic(),
+                    X509EncodedKeySpec.class);
+            String key = Base64.encodeBase64URLSafeString(spec.getEncoded());
+
+            JWK jwk = jwkPublicKeyBuilder.build(key);
+            assertNotNull("Returned 1024 key is provided", jwk);
+            assertNotNull("Returned 1024 key is provided", jwk.toJSONString());
+            assertTrue("Returned 1024 key is not empty", isJSONValid(jwk.toJSONString()));
         }
 
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void buildFromBase64EncodedJWKRequiresABase64String() throws Exception {
+        jwkPublicKeyBuilder.buildFromBase64EncodedJWK(null);
+        fail("jwkPublicKeyBuilder.buildFromBase64EncodedJWK(null) throws IllegalArgumentException");
+    }
+
+    @Test(expected = ParseException.class)
+    public void buildFromBase64EncodedJWKRequiresACorrectBase64String() throws Exception {
+        jwkPublicKeyBuilder.buildFromBase64EncodedJWK("bla-bla-bla@#@@!!/*)*)$*%#*");
+        fail("jwkPublicKeyBuilder throws ParseException if provided String is not base64 String or not correct JSON object");
+    }
+
+    @Test(expected = ParseException.class)
+    public void buildFromBase64EncodedJWKRequiresACorrectBase64JSONObject() throws Exception {
+        String correctBase64ButNotJSON = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCgYo4stvIF1j87iwzezk0eSb1fRmtzU6T85gvInofMxxQVLA8MyXt94v8POy5CRdFGZaGTpL2IhsHaVIvVx9xOM4UF_xX0MGSRvqu2Ny7LZskFXl1MvDiihbGHmkyu7tqrKA_gVcyMcG9qWG4pBX19lc1L0AULUbHUpj8yWBG3JQIDAQAB";
+        jwkPublicKeyBuilder.buildFromBase64EncodedJWK(correctBase64ButNotJSON);
+        fail("jwkPublicKeyBuilder throws ParseException if provided String is not base64 String or not correct JSON object");
+    }
+
+    @Test
+    public void buildFromBase64EncodedJWK() throws Exception {
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        keyPairGenerator.initialize(1024);
+
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+
+        final int repeats = 50;
+        for (int i = 0; i < repeats; i++) {
+            // Generate the RSA key pair
+            KeyPair keyPair = keyPairGenerator.generateKeyPair();
+
+            X509EncodedKeySpec spec = keyFactory.getKeySpec(keyPair.getPublic(),
+                    X509EncodedKeySpec.class);
+            String key = Base64.encodeBase64URLSafeString(spec.getEncoded());
+
+            final JWK expectedJWK = jwkPublicKeyBuilder.build(keyPair.getPublic());
+
+            String base64EncodedJWK = expectedJWK.toBase64JSONString();
+            final JWK actualJWK = jwkPublicKeyBuilder.buildFromBase64EncodedJWK(base64EncodedJWK);
+
+            assertEquals("JWK is from Base64 decoded", expectedJWK, actualJWK);
+            assertEquals("JWK is from Base64 decoded", expectedJWK.toJSONString(), actualJWK.toJSONString());
+        }
+    }
+
 
     private boolean isJSONValid(String jsonInString) {
         try {
