@@ -6,7 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel(description="This is the represation of an encrypted Bank Access...", value="EncryptedBankAccess" )
 public class EncryptedBankAccess {
 	private String jweString;
-	private BankAccess model;
+	private BankAccess model = new BankAccess();
 	
 	@ApiModelProperty(value = "The JWE encrypted value of the bank access object.", required=true)
 	public String getJweString() {

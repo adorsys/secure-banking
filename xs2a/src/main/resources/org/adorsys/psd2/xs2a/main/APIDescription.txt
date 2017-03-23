@@ -1,0 +1,5 @@
+This is our attempt to implements the RTS recommendations of EBA’s revised Payment Services Directive (EU) 2015/2366 (PSD2).
+
+Beside providing an Interface to account servicing payment service providers (ASPSPs) for the supply of payment initiation service providers (PISPs), account information service providers (AISPs), payers, payees and other payment service providers (PSPs) with payment service users (PSU) payment data.
+
+We hereby suggest robust way of implementing the required common and secure open standards of communication (CSC) by making sure customer data exchanged between PSPs are well protected alongside the communication path. Using the POP-Key, a client application can encrypt all data sent to a server and can also specify 

@@ -1,7 +1,6 @@
 package org.adorsys.psd2.xs2a.resource;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -23,7 +22,7 @@ import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
 import io.swagger.annotations.ResponseHeader;
 
-@Api(value = "/v1/xs2a", authorizations = @Authorization(value = "BearerToken"), description = "The search service allows to retrieve results from the index. It comes with methods to execute a search, and to receive static metadata needed to display the search results. All method are ex- isting in two variants: one including user authentication, and another one requesting a valid ac- cess token.")
+@Api(value = "/v1/xs2a", tags={"Access To Account ISO20022"}, authorizations = @Authorization(value = "BearerToken"), description = "The search service allows to retrieve results from the index. It comes with methods to execute a search, and to receive static metadata needed to display the search results. All method are ex- isting in two variants: one including user authentication, and another one requesting a valid ac- cess token.")
 @Path("/v1/xs2a")
 public class BankingResource {
 
@@ -50,15 +49,5 @@ public class BankingResource {
 	public Response loadPostings(@ApiParam(value="The encrypted bank access object")EncryptedBankAccess bankAccess, 
 			@ApiParam(value="The encrypted cash account") EncryptedCashAccount25 cashAccount) {
 		return Response.ok().entity(new EncryptedAccountStatement()).build();
-	}
-	
-	@GET
-	@Path("pop-keys.json")
-	@Produces(MediaType.APPLICATION_JSON)
-	@ApiOperation(value = "Read public keys", notes = "Fetches publick keys of the target server. Keys are used to encrypt data sent to the server and also send a response encrytpion key to the server. See RFC7800")
-	@ApiResponses(value = { @ApiResponse (code = 200, message = "Ok"),
-			@ApiResponse(code = 400, message = "Bad request", responseHeaders=@ResponseHeader(name="ERROR_KEY", description="BAD_REQUEST"))})
-	public Response getPublicKeys(){
-		return Response.ok().entity("Sample response").build();
 	}
 }
