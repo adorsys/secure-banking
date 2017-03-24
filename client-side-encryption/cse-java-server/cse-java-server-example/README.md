@@ -9,6 +9,7 @@ This module provides an example of cse-java libraries usage by using sample REST
 # How to run
 1. To start Wildfly use the following command
 ```bash
+mvn clean install -f ../../../pom.xml
 mvn wildfly-swarm:run
 ```
 2. Open [Swagger UI](http://localhost:8080/swagger-ui/) in your browser
