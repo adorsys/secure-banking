@@ -28,14 +28,43 @@ Add the module to your apps build.gradle:
 compile project(':securedevicestorage')
 ```
 
-To store a credential in our __SecurePreferences__ you have to call:
+To store a string value in our __SecurePreferences__ you have to call:
 ```java
 SecurePreferences.setValue("KEY", "PLAIN_MESSAGE", Context);
 ```
 
-To retrieve a credential call:
+This works for every other primitive data type. So for storing a boolean value:
 ```java
-SecurePreferences.getValue("KEY", Context);
+SecurePreferences.setValue("KEY", true/false, Context);
+```
+
+for int
+```java
+SecurePreferences.setValue("KEY", 100, Context);
+```
+
+for float and long
+```java
+SecurePreferences.setValue("KEY", 100.12345, Context);
+```
+
+To retrieve a string value:
+```java
+SecurePreferences.getStringValue("KEY", Context);
+```
+
+And respectively for the other types
+```java
+SecurePreferences.getBooleanValue("KEY", Context);
+```
+```java
+SecurePreferences.getIntValue("KEY", Context);
+```
+```java
+SecurePreferences.getFloatValue("KEY", Context);
+```
+```java
+SecurePreferences.getLongValue("KEY", Context);
 ```
 
 There also is a method for clearing the SecurePreferences and deleting the KeyPair.
@@ -44,12 +73,11 @@ To do that call:
 SecurePreferences.clearAllValues(Context);
 ```
 
-Everything about the Cryptographic keys such as generating, maintaining and usage is handled internally by the module, so you do not need to worry about it.
+Everything about the cryptographic keys such as generating, maintaining and usage is handled internally by the module, so you do not need to worry about it.
 
 ### Want to know more:
 
 These links cover security aspect of the android keystore :
-
 https://developer.android.com/training/articles/keystore.html#SecurityFeatures
 https://codingquestion.blogspot.de/2016/09/how-to-use-android-keystore-api-with.html
 http://nelenkov.blogspot.de/2012/05/storing-application-secrets-in-androids.html
@@ -57,7 +85,6 @@ http://nelenkov.blogspot.de/2015/06/keystore-redesign-in-android-m.html
 http://www.androidauthority.com/use-android-keystore-store-passwords-sensitive-information-623779/
 
 This link covers security aspect of the android storage :
-
 https://developer.android.com/guide/topics/data/data-storage.html
 http://stackoverflow.com/a/26077852/3392276
 
