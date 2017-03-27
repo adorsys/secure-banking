@@ -39,7 +39,7 @@ import javax.security.auth.x500.X500Principal;
 
 import static android.os.Build.VERSION_CODES.M;
 
-class KeystoreTool {
+public class KeystoreTool {
     private static final String KEY_ALIAS = "adorsysKeyPair";
     private static final String KEY_ENCRYPTION_ALGORITHM = "RSA";
     private static final String KEY_KEYSTORE_NAME = "AndroidKeyStore";
@@ -48,7 +48,7 @@ class KeystoreTool {
     private static final String KEY_TRANSFORMATION_ALGORITHM = "RSA/ECB/PKCS1Padding";
     private static final String KEY_X500PRINCIPAL = "CN=SecureDeviceStorage, O=Adorsys, C=Germany";
 
-    static boolean keyPairExists() {
+    public static boolean keyPairExists() {
         try {
             return getKeyStoreInstance().getKey(KEY_ALIAS, null) != null;
         } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException
@@ -62,7 +62,7 @@ class KeystoreTool {
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    static void generateKeyPair(@NonNull Context context)
+    public static void generateKeyPair(@NonNull Context context)
             throws InvalidAlgorithmParameterException,
             NoSuchProviderException, NoSuchAlgorithmException, UnrecoverableKeyException,
             CertificateException, KeyStoreException, IOException {
@@ -85,7 +85,7 @@ class KeystoreTool {
         }
     }
 
-    static void deleteKeyPair(@NonNull Context context) throws UnrecoverableKeyException,
+    public static void deleteKeyPair(@NonNull Context context) throws UnrecoverableKeyException,
             CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
 
         if (keyPairExists()) {
@@ -99,7 +99,7 @@ class KeystoreTool {
 
     @RequiresApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     @Nullable
-    static String encryptMessage(@NonNull Context context, @NonNull String plainMessage)
+    public static String encryptMessage(@NonNull Context context, @NonNull String plainMessage)
             throws NoSuchPaddingException, NoSuchAlgorithmException, NoSuchProviderException,
             IOException, UnrecoverableEntryException, KeyStoreException,
             CertificateException, InvalidKeyException {
@@ -128,7 +128,7 @@ class KeystoreTool {
     }
 
     @Nullable
-    static String decryptMessage(@NonNull Context context, @NonNull String encryptedMessage) throws
+    public static String decryptMessage(@NonNull Context context, @NonNull String encryptedMessage) throws
             NoSuchPaddingException, NoSuchAlgorithmException, NoSuchProviderException,
             IOException, UnrecoverableEntryException, KeyStoreException,
             CertificateException, InvalidKeyException {
