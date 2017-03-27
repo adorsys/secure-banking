@@ -70,9 +70,7 @@ class KeystoreTool {
         // Create new key if needed
         if (!keyPairExists()) {
             if (Build.VERSION.SDK_INT >= M) {
-//                generateMarshmallowKeyPair();
-                //Temporarily use JellyBean KeyPair generation until Marshmallow methods are implemented
-                generateJellyBeanKeyPair(context);
+                generateMarshmallowKeyPair();
             } else if (Build.VERSION.SDK_INT < M
                     && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                 generateJellyBeanKeyPair(context);
