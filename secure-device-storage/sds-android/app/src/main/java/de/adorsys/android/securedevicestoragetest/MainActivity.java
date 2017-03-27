@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
                             generateKeyButton.setText(R.string.button_encrypt);
                         }
                         SecurePreferences.setValue(KEY, input.getText().toString(), MainActivity.this);
-                        String decryptedMessage = SecurePreferences.getValue(KEY, MainActivity.this);
+                        String decryptedMessage = SecurePreferences.getStringValue(KEY, MainActivity.this);
                         if (BuildConfig.DEBUG) {
                             Log.d(TAG, decryptedMessage + " ");
                         }

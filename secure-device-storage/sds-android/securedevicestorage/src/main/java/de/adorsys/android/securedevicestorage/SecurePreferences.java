@@ -2,6 +2,7 @@ package de.adorsys.android.securedevicestorage;
 
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -46,8 +47,29 @@ public class SecurePreferences {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    public static void setValue(@NonNull String key, boolean value, @NonNull Context context) {
+        setValue(key, String.valueOf(value), context);
+    }
+
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    public static void setValue(@NonNull String key, float value, @NonNull Context context) {
+        setValue(key, String.valueOf(value), context);
+    }
+
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    public static void setValue(@NonNull String key, long value, @NonNull Context context) {
+        setValue(key, String.valueOf(value), context);
+    }
+
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    public static void setValue(@NonNull String key, int value, @NonNull Context context) {
+        setValue(key, String.valueOf(value), context);
+    }
+
+
     @Nullable
-    public static String getValue(@NonNull String key, @NonNull Context context) {
+    public static String getStringValue(@NonNull String key, @NonNull Context context) {
         String result = getSecureValue(key, context);
         try {
             return KeystoreTool.decryptMessage(context, result != null
@@ -59,6 +81,23 @@ public class SecurePreferences {
             return null;
         }
     }
+
+    public static boolean getBooleanValue(@NonNull String key, @NonNull Context context) {
+        return Boolean.parseBoolean(getStringValue(key, context));
+    }
+
+    public static float getFloatValue(@NonNull String key, @NonNull Context context) {
+        return Float.parseFloat(getStringValue(key, context));
+    }
+
+    public static float getLongValue(@NonNull String key, @NonNull Context context) {
+        return Long.parseLong(getStringValue(key, context));
+    }
+
+    public static float getIntValue(@NonNull String key, @NonNull Context context) {
+        return Integer.parseInt(getStringValue(key, context));
+    }
+
 
     public static void clearAllValues(@NonNull Context context) {
         try {
@@ -73,6 +112,7 @@ public class SecurePreferences {
         }
         clearAllSecureValues(context);
     }
+
 
     private static void setSecureValue(@NonNull String key, @NonNull String value, @NonNull Context context) {
         SharedPreferences preferences = context
