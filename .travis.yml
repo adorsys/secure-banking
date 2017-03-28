@@ -10,7 +10,7 @@ before_script:
   - adb shell input keyevent 82 &
 
 script:
-  - mvn package -am -B -V -U
+  - mvn package -fae -am -B -V -U
   - android list target
   - bash -c 'cd secure-device-storage/sds-android/ && ./gradlew connectedAndroidTest'
   - bash -c 'cd secure-mobile-push/smp-android-client/ && ./gradlew connectedAndroidTest'
@@ -47,17 +47,3 @@ cache:
   - $HOME/.gradle/caches/
   - $HOME/.gradle/wrapper/
   - $HOME/.android/build-cache
-after_success:
-- sh zip-apks.sh
-- sh set-tags.sh
-
-deploy:
-  provider: releases
-  api_key:
-    secure: VynSroJaxos4SOe1ObOxBQL5IFfWoj3QYVa/N2TCM/06uU9wy2/TherYp/H4JUyisxiVm92g2bAf++oM6i3cY+++peGvYTtQqYuT04uc2eFJ4IkCE7jiviuFIEWd1HLDNPZCQoHr9F4HfIV4hAwalf92Pk0H586q5kWtOdXY4KkRYt5QcM903tMv+ZzeCATg90qHhGdXbkycDr82UR7CYi6/MouaDoFLHCFYQDzxofhZUuBwUzrG91Jn0ndKb38PY6vIkTnuMjIG7cjM/h+zHqBpF6P6GeQsH6/fYiH3OjDluamxr4lZdbb09ZSGlRI4GQiO/S44OEiBB8KW/K4rp8cJ3mzqXkNi71I0JIKw+X0Y+exRbo78owAjjTzXirOBSOsE990HUgYBjFZjWwVBCOq65BSFemjIjA0CisMfEsy3uNrTXAXmzxM8KAIHvVTockqag891hs3Pt2QdidDGqf43xXDAy7wYm8AWYsEz+ulGbl3QFUiWp0u69QtvRnWPKUjGVKDX3jqqgAESvuJ9wGEMJFvxm75LqhC33cn9ztGi/8smgEcnuNJsbt71qDlnAuDsJ2djAeWdb3Tc8fzRHM07ImdIINddsxQn1gT0BW7sxBTlI8H98aCzzcxFi/L1H1Z9M0eHOe2hcTHHKGi0qBj2WHaXLCWkmDwVpJ0uRgA=
-  file: generated-apks.zip
-  overwrite: true
-  skip_cleanup: true
-  file_glob: true
-  on:
-    repo: adorsys/secure-key-storage

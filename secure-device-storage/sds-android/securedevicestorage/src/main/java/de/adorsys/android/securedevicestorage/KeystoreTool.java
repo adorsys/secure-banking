@@ -1,6 +1,5 @@
 package de.adorsys.android.securedevicestorage;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 import android.security.KeyPairGeneratorSpec;
@@ -43,11 +42,6 @@ import javax.security.auth.x500.X500Principal;
 
 import static android.os.Build.VERSION_CODES.M;
 
-/**
- * @author Drilon Reçica
- * @since 2/9/17.
- */
-
 class KeystoreTool {
     private static final String KEY_ALIAS = "adorsysKeyPair";
     private static final String KEY_ENCRYPTION_ALGORITHM = "RSA";
@@ -72,6 +66,7 @@ class KeystoreTool {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     static void generateKeyPair(@NonNull Context context)
             throws InvalidAlgorithmParameterException,
             NoSuchProviderException, NoSuchAlgorithmException, UnrecoverableKeyException,
@@ -94,36 +89,6 @@ class KeystoreTool {
                 Log.e(KeystoreTool.class.getName(),
                         context.getString(R.string.message_keypair_already_exists));
             }
-        }
-    }
-
-    @Nullable
-    private static PublicKey getPublicKey(@NonNull Context context) throws UnrecoverableEntryException,
-            CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
-
-        if (keyPairExists()) {
-            KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) getKeyStoreInstance().getEntry(KEY_ALIAS, null);
-            return privateKeyEntry.getCertificate().getPublicKey();
-        } else {
-            if (BuildConfig.DEBUG) {
-                Log.e(KeystoreTool.class.getName(), context.getString(R.string.message_keypair_does_not_exist));
-            }
-            return null;
-        }
-    }
-
-    @Nullable
-    private static PrivateKey getPrivateKey(@NonNull Context context) throws UnrecoverableEntryException,
-            CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
-
-        if (keyPairExists()) {
-            KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) getKeyStoreInstance().getEntry(KEY_ALIAS, null);
-            return privateKeyEntry.getPrivateKey();
-        } else {
-            if (BuildConfig.DEBUG) {
-                Log.e(KeystoreTool.class.getName(), context.getString(R.string.message_keypair_does_not_exist));
-            }
-            return null;
         }
     }
 
@@ -204,7 +169,36 @@ class KeystoreTool {
         return new String(bytes, 0, bytes.length, KEY_CHARSET);
     }
 
-    @SuppressLint("TrulyRandom")
+    @Nullable
+    private static PublicKey getPublicKey(@NonNull Context context) throws UnrecoverableEntryException,
+            CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+
+        if (keyPairExists()) {
+            KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) getKeyStoreInstance().getEntry(KEY_ALIAS, null);
+            return privateKeyEntry.getCertificate().getPublicKey();
+        } else {
+            if (BuildConfig.DEBUG) {
+                Log.e(KeystoreTool.class.getName(), context.getString(R.string.message_keypair_does_not_exist));
+            }
+            return null;
+        }
+    }
+
+    @Nullable
+    private static PrivateKey getPrivateKey(@NonNull Context context) throws UnrecoverableEntryException,
+            CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
+
+        if (keyPairExists()) {
+            KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) getKeyStoreInstance().getEntry(KEY_ALIAS, null);
+            return privateKeyEntry.getPrivateKey();
+        } else {
+            if (BuildConfig.DEBUG) {
+                Log.e(KeystoreTool.class.getName(), context.getString(R.string.message_keypair_does_not_exist));
+            }
+            return null;
+        }
+    }
+
     @RequiresApi(M)
     private static void generateMarshmallowKeyPair()
             throws NoSuchProviderException, NoSuchAlgorithmException,

@@ -9,6 +9,8 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>client-side-encryption</module>
+        <!-- TODO Include the module into the common build when multibanking project artefacts would be released -->
+        <!--<module>xs2a</module>-->
     </modules>
 
     <packaging>pom</packaging>

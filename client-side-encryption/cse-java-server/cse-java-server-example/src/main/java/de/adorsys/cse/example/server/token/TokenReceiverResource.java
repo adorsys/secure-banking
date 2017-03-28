@@ -44,9 +44,9 @@ public class TokenReceiverResource {
                 JWT jwt = factory.parseToken(tokenRequest.getJwt());
 
                 tokenStatusResponse.setTokenExpired(jwt.isExpired());
-                tokenStatusResponse.setTokenExpirationTime((Date) jwt.getClaims().get(JWT.Claims.CLAIM_EXPIRATION_TIME));
+                tokenStatusResponse.setTokenExpirationTime((Date) jwt.getAllClaims().get(JWT.Claims.CLAIM_EXPIRATION_TIME));
 
-                tokenStatusResponse.setTokenClaims(jwt.getClaims());
+                tokenStatusResponse.setTokenClaims(jwt.getAllClaims());
             } else {
                 return Response.serverError().entity("Token is empty").build();
             }

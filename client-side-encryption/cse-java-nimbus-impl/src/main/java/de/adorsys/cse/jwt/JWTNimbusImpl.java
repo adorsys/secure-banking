@@ -11,9 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
 import java.time.Instant;
-import java.util.Date;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class JWTNimbusImpl implements JWT {
     private final static Logger log = LoggerFactory.getLogger(JWTNimbusImpl.class);
@@ -81,7 +79,24 @@ public class JWTNimbusImpl implements JWT {
     }
 
     @Override
-    public Map<String, Object> getClaims() {
+    public Map<String, Object> getPayloadClaims() {
+        Object payload = claimsSet.getClaim(Claims.CLAIM_PAYLOAD);
+        if (payload == null) {
+            return Collections.emptyMap();
+        }
+        if (payload instanceof Map) {
+            try {
+                return ((Map<String, Object>) payload);
+            }
+            catch (ClassCastException e) {
+                Collections.singletonMap("0", payload);
+            }
+        }
+        return Collections.singletonMap("0", payload);
+    }
+
+    @Override
+    public Map<String, Object> getAllClaims() {
         return claimsSet.getClaims();
     }
 

@@ -53,7 +53,8 @@ public class JWTBuilderNimbusImpl implements JWTBuilder {
 
     @Override
     public JWTBuilder withPayload(Object payload) throws InvalidObjectException {
-        return withPayload(String.valueOf(payloadClaims.size()), payload);
+        String payloadClaimIndex = String.valueOf(payloadClaims.size());
+        return withPayload(payloadClaimIndex, payload);
     }
 
     @Override

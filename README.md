@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/adorsys/secure-key-storage.svg?branch=master)](https://travis-ci.org/adorsys/secure-key-storage)
-
 # Secure Credential Management
 This project deals with all issues surrounding the secure management of credentials in web based application environments.
 

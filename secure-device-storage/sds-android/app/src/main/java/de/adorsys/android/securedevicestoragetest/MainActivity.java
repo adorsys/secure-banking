@@ -44,11 +44,11 @@ public class MainActivity extends AppCompatActivity {
                         }
                         SecurePreferences.setValue(KEY, input.getText().toString(),
                                 MainActivity.this,
-                                SecureMethod.METHOD_HASH);
+                                SecureMethod.METHOD_ENCRYPT);
 
                         String decryptedMessage = SecurePreferences.getValue(KEY,
                                 MainActivity.this,
-                                SecureMethod.METHOD_HASH);
+                                SecureMethod.METHOD_ENCRYPT);
                         if (BuildConfig.DEBUG) {
                             Log.d(TAG, decryptedMessage + " ");
                         }

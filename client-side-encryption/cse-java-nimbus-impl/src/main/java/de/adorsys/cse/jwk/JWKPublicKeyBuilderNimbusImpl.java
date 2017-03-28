@@ -9,6 +9,7 @@ import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.text.ParseException;
 import java.util.IllegalFormatException;
 
 public class JWKPublicKeyBuilderNimbusImpl implements JWKPublicKeyBuilder {
@@ -40,11 +41,21 @@ public class JWKPublicKeyBuilderNimbusImpl implements JWKPublicKeyBuilder {
         if (publicKey == null) {
             throw new IllegalArgumentException("publicKey cannot be null");
         }
-        if (JWK.Algorythm.RSA.name().equals(publicKey.getAlgorithm())) {
-            return build((RSAPublicKey) publicKey);
+        for (JWK.Algorythm alg: JWK.Algorythm.values()) {
+            if (alg.getAlgName().equals(publicKey.getAlgorithm())) {
+                return build((RSAPublicKey) publicKey);
+            }
         }
 
         throw new IllegalArgumentException("Unknown public key algorithm: " + publicKey.getAlgorithm());
+    }
+
+    @Override
+    public JWK buildFromBase64EncodedJWK(String base64encodedJWK) throws ParseException {
+        if (base64encodedJWK == null) {
+            throw new IllegalArgumentException("base64encodedJWK cannot be null");
+        }
+        return new JWKNimbusImpl(base64encodedJWK);
     }
 
     private JWK build(RSAPublicKey rsaPublicKey) {
