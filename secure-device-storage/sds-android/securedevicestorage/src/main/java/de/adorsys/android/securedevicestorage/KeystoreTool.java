@@ -267,18 +267,28 @@ class KeystoreTool {
             Calendar start = Calendar.getInstance();
             Calendar end = Calendar.getInstance();
             end.add(Calendar.YEAR, 99);
-            KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(context)
+
+            AlgorithmParameterSpec spec;
+            if (Build.VERSION.SDK_INT >= 23) {
+                spec = new KeyGenParameterSpec.Builder(KEY_ALIAS, KeyProperties.PURPOSE_ENCRYPT)
+                        .setCertificateSubject(new X500Principal(KEY_X500PRINCIPAL))
+                        .setCertificateSerialNumber(BigInteger.ONE)
+                        .setKeyValidityStart(start.getTime())
+                        .setKeyValidityEnd(end.getTime())
+                        .build();
+            } else {
+                spec = new KeyPairGeneratorSpec.Builder(context)
                         .setAlias(KEY_ALIAS)
                         .setSubject(new X500Principal(KEY_X500PRINCIPAL))
                         .setSerialNumber(BigInteger.ONE)
                         .setStartDate(start.getTime())
                         .setEndDate(end.getTime())
                         .build();
+        }
 
             KeyPairGenerator generator
                     = KeyPairGenerator.getInstance(KEY_ENCRYPTION_ALGORITHM, KEY_KEYSTORE_NAME);
             generator.initialize(spec);
-
             generator.generateKeyPair();
         } catch (NoSuchAlgorithmException
                 | NoSuchProviderException
