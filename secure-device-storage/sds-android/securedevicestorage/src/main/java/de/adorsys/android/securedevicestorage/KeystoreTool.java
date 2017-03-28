@@ -28,8 +28,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.UnrecoverableEntryException;
-import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.security.spec.AlgorithmParameterSpec;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -65,15 +65,15 @@ class KeystoreTool {
                 input = Cipher.getInstance(KEY_TRANSFORMATION_ALGORITHM, KEY_CIPHER_MARSHMALLOW_PROVIDER);
             } else {
                 Log.e(KeystoreTool.class.getName(), context.getString(R.string.message_supported_api));
-                return null;
+                throw new CryptoException(context.getString(R.string.message_supported_api), null);
             }
             input.init(Cipher.ENCRYPT_MODE, getPublicKey(context));
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        CipherOutputStream cipherOutputStream = new CipherOutputStream(
-                outputStream, input);
-        cipherOutputStream.write(plainMessage.getBytes(KEY_CHARSET));
-        cipherOutputStream.close();
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            CipherOutputStream cipherOutputStream = new CipherOutputStream(
+                    outputStream, input);
+            cipherOutputStream.write(plainMessage.getBytes(KEY_CHARSET));
+            cipherOutputStream.close();
 
             byte[] values = outputStream.toByteArray();
             return Base64.encodeToString(values, Base64.DEFAULT);
@@ -98,7 +98,7 @@ class KeystoreTool {
                 output = Cipher.getInstance(KEY_TRANSFORMATION_ALGORITHM, KEY_CIPHER_MARSHMALLOW_PROVIDER);
             } else {
                 Log.e(KeystoreTool.class.getName(), context.getString(R.string.message_supported_api));
-                return null;
+                throw new CryptoException(context.getString(R.string.message_supported_api), null);
             }
 
             output.init(Cipher.DECRYPT_MODE, getPrivateKey(context));
@@ -130,13 +130,7 @@ class KeystoreTool {
     static boolean keyPairExists() {
         try {
             return getKeyStoreInstance().getKey(KEY_ALIAS, null) != null;
-        } catch ( KeyStoreException
-                | NoSuchAlgorithmException
-                | UnrecoverableKeyException e) {
-
-            if (BuildConfig.DEBUG) {
-                Log.e(KeystoreTool.class.getName(), e.getMessage(), e);
-            }
+        } catch (Exception e) {
             return false;
         }
     }
@@ -152,6 +146,7 @@ class KeystoreTool {
                 generateJellyBeanKeyPair(context);
             } else {
                 Log.e(KeystoreTool.class.getName(), context.getString(R.string.message_supported_api));
+                throw new CryptoException(context.getString(R.string.message_supported_api), null);
             }
         } else {
             if (BuildConfig.DEBUG) {
@@ -176,7 +171,7 @@ class KeystoreTool {
     }
 
     @Nullable
-    static String getSHA512(String passwordToHash, String salt) {
+    static String getSHA512(String passwordToHash, String salt) throws CryptoException {
         try {
             MessageDigest md = MessageDigest.getInstance(KEY_HASHING_ALGORITHM);
             md.update(salt.getBytes(KEY_CHARSET));
@@ -187,10 +182,7 @@ class KeystoreTool {
             }
             return sb.toString();
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-            if (BuildConfig.DEBUG) {
-                Log.e(KeystoreTool.class.getName(), e.getMessage(), e);
-            }
-            return null;
+            throw new CryptoException(e.getMessage(), e);
         }
     }
 
@@ -212,9 +204,9 @@ class KeystoreTool {
                 if (BuildConfig.DEBUG) {
                     Log.e(KeystoreTool.class.getName(), context.getString(R.string.message_keypair_does_not_exist));
                 }
-                return null;
+                throw new CryptoException(context.getString(R.string.message_keypair_does_not_exist), null);
             }
-        } catch ( NoSuchAlgorithmException
+        } catch (NoSuchAlgorithmException
                 | UnrecoverableEntryException
                 | KeyStoreException e) {
             throw new CryptoException(e.getMessage(), e);
@@ -231,9 +223,9 @@ class KeystoreTool {
                 if (BuildConfig.DEBUG) {
                     Log.e(KeystoreTool.class.getName(), context.getString(R.string.message_keypair_does_not_exist));
                 }
-                return null;
+                throw new CryptoException(context.getString(R.string.message_keypair_does_not_exist), null);
             }
-        } catch ( NoSuchAlgorithmException
+        } catch (NoSuchAlgorithmException
                 | UnrecoverableEntryException
                 | KeyStoreException e) {
             throw new CryptoException(e.getMessage(), e);
@@ -262,7 +254,7 @@ class KeystoreTool {
             generator.initialize(spec);
 
             generator.generateKeyPair();
-        } catch ( NoSuchAlgorithmException
+        } catch (NoSuchAlgorithmException
                 | NoSuchProviderException
                 | InvalidAlgorithmParameterException e) {
             throw new CryptoException(e.getMessage(), e);
@@ -276,19 +268,19 @@ class KeystoreTool {
             Calendar end = Calendar.getInstance();
             end.add(Calendar.YEAR, 99);
             KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(context)
-                    .setAlias(KEY_ALIAS)
-                    .setSubject(new X500Principal(KEY_X500PRINCIPAL))
-                    .setSerialNumber(BigInteger.ONE)
-                    .setStartDate(start.getTime())
-                    .setEndDate(end.getTime())
-                    .build();
+                        .setAlias(KEY_ALIAS)
+                        .setSubject(new X500Principal(KEY_X500PRINCIPAL))
+                        .setSerialNumber(BigInteger.ONE)
+                        .setStartDate(start.getTime())
+                        .setEndDate(end.getTime())
+                        .build();
 
             KeyPairGenerator generator
                     = KeyPairGenerator.getInstance(KEY_ENCRYPTION_ALGORITHM, KEY_KEYSTORE_NAME);
             generator.initialize(spec);
 
             generator.generateKeyPair();
-        } catch ( NoSuchAlgorithmException
+        } catch (NoSuchAlgorithmException
                 | NoSuchProviderException
                 | InvalidAlgorithmParameterException e) {
             throw new CryptoException(e.getMessage(), e);
@@ -306,7 +298,7 @@ class KeystoreTool {
             keyStore.load(null);
 
             return keyStore;
-        } catch ( CertificateException
+        } catch (CertificateException
                 | NoSuchAlgorithmException
                 | KeyStoreException
                 | IOException e) {

@@ -8,6 +8,7 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.UnsupportedEncodingException;
@@ -27,19 +28,17 @@ public class SecurePreferences {
     public static void setValue(@NonNull String key,
                                 @NonNull String value,
                                 @NonNull Context context,
-                                @NonNull SecureMethod secureMethod) {
+                                @NonNull SecureMethod secureMethod) throws CryptoException {
         if (secureMethod.equals(SecureMethod.METHOD_ENCRYPT)) {
             if (!KeystoreTool.keyPairExists()) {
                 KeystoreTool.generateKeyPair(context);
             }
 
-            String transformedValue = null;
-            transformedValue = KeystoreTool.encryptMessage(context, value);
-            if (transformedValue != null) {
+            String transformedValue = KeystoreTool.encryptMessage(context, value);
+            if (!TextUtils.isEmpty(transformedValue)) {
                 setSecureValue(key, transformedValue, context);
             } else {
-                Log.e(SecurePreferences.class.getName(),
-                        context.getString(R.string.message_problem_encryption));
+                throw new CryptoException(context.getString(R.string.message_problem_encryption), null);
             }
         } else {
             byte[] saltBytes = KeystoreTool.calculateSalt();
@@ -48,23 +47,17 @@ public class SecurePreferences {
                 if (saltBytes != null) {
                     salt = new String(saltBytes, 0, saltBytes.length, KEY_CHARSET);
                 } else {
-                    Log.e(SecurePreferences.class.getName(),
-                            context.getString(R.string.message_problem_salt_creation));
-                    return;
+                    throw new CryptoException(context.getString(R.string.message_problem_salt_creation), null);
                 }
             } catch (UnsupportedEncodingException e) {
-                if (BuildConfig.DEBUG) {
-                    Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
-                }
-                return;
+                throw new CryptoException(e.getMessage(), e);
             }
             String hashedValue = KeystoreTool.getSHA512(value, salt);
             if (hashedValue != null) {
                 setSecureValue(key, hashedValue, context);
                 setSecureValue(SALT_PREFIX + key, salt, context);
             } else {
-                Log.e(SecurePreferences.class.getName(),
-                        context.getString(R.string.message_problem_hashing));
+                throw new CryptoException(context.getString(R.string.message_problem_hashing), null);
             }
         }
     }
@@ -72,28 +65,28 @@ public class SecurePreferences {
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     public static void setValue(@NonNull String key, boolean value,
                                 @NonNull Context context,
-                                @NonNull SecureMethod secureMethod) {
+                                @NonNull SecureMethod secureMethod) throws CryptoException {
         setValue(key, String.valueOf(value), context, secureMethod);
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     public static void setValue(@NonNull String key, float value,
                                 @NonNull Context context,
-                                @NonNull SecureMethod secureMethod) {
+                                @NonNull SecureMethod secureMethod) throws CryptoException {
         setValue(key, String.valueOf(value), context, secureMethod);
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     public static void setValue(@NonNull String key, long value,
                                 @NonNull Context context,
-                                @NonNull SecureMethod secureMethod) {
+                                @NonNull SecureMethod secureMethod) throws CryptoException {
         setValue(key, String.valueOf(value), context, secureMethod);
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     public static void setValue(@NonNull String key, int value,
                                 @NonNull Context context,
-                                @NonNull SecureMethod secureMethod) {
+                                @NonNull SecureMethod secureMethod) throws CryptoException {
         setValue(key, String.valueOf(value), context, secureMethod);
     }
 
@@ -101,7 +94,7 @@ public class SecurePreferences {
     @Nullable
     public static String getStringValue(@NonNull String key,
                                   @NonNull Context context,
-                                  @NonNull SecureMethod secureMethod) {
+                                  @NonNull SecureMethod secureMethod) throws CryptoException {
         if (secureMethod.equals(SecureMethod.METHOD_ENCRYPT)) {
             String result = getSecureValue(key, context);
                 return KeystoreTool.decryptMessage(context, result != null
@@ -111,24 +104,24 @@ public class SecurePreferences {
         }
     }
 
-    public static boolean getBooleanValue(@NonNull String key, @NonNull Context context, @NonNull SecureMethod secureMethod) {
+    public static boolean getBooleanValue(@NonNull String key, @NonNull Context context, @NonNull SecureMethod secureMethod) throws CryptoException {
         return Boolean.parseBoolean(getStringValue(key, context, secureMethod));
     }
 
-    public static float getFloatValue(@NonNull String key, @NonNull Context context, @NonNull SecureMethod secureMethod) {
+    public static float getFloatValue(@NonNull String key, @NonNull Context context, @NonNull SecureMethod secureMethod) throws CryptoException {
         return Float.parseFloat(getStringValue(key, context, secureMethod));
     }
 
-    public static float getLongValue(@NonNull String key, @NonNull Context context, @NonNull SecureMethod secureMethod) {
+    public static float getLongValue(@NonNull String key, @NonNull Context context, @NonNull SecureMethod secureMethod) throws CryptoException {
         return Long.parseLong(getStringValue(key, context, secureMethod));
     }
 
-    public static float getIntValue(@NonNull String key, @NonNull Context context, @NonNull SecureMethod secureMethod) {
+    public static float getIntValue(@NonNull String key, @NonNull Context context, @NonNull SecureMethod secureMethod) throws CryptoException {
         return Integer.parseInt(getStringValue(key, context, secureMethod));
     }
 
 
-    public static void clearAllValues(@NonNull Context context) {
+    public static void clearAllValues(@NonNull Context context) throws CryptoException {
         if (KeystoreTool.keyPairExists()) {
             KeystoreTool.deleteKeyPair(context);
         }
@@ -138,7 +131,7 @@ public class SecurePreferences {
 
     public static boolean compareHashedCredential(@NonNull String currentCredential,
                                                   @NonNull String keyOfSecureCredential,
-                                                  @NonNull Context context) {
+                                                  @NonNull Context context) throws CryptoException {
         String securedCredential = getStringValue(keyOfSecureCredential, context, SecureMethod.METHOD_HASH);
         String salt = getStringValue(SALT_PREFIX + keyOfSecureCredential, context, SecureMethod.METHOD_HASH);
         String hashedCurrentCredential = KeystoreTool.getSHA512(currentCredential, salt);
@@ -147,8 +140,7 @@ public class SecurePreferences {
             return hashedCurrentCredential.equals(securedCredential);
         } else {
             if (BuildConfig.DEBUG) {
-                Log.e(SecurePreferences.class.getName(),
-                        context.getString(R.string.message_problem_hashing));
+                Log.e(SecurePreferences.class.getName(), context.getString(R.string.message_problem_hashing));
             }
             return false;
         }
