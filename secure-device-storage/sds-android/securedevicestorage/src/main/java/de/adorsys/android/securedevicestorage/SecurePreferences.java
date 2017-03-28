@@ -1,6 +1,7 @@
 package de.adorsys.android.securedevicestorage;
 
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -10,6 +11,7 @@ import android.support.annotation.RequiresApi;
 import android.util.Log;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
@@ -23,40 +25,93 @@ import javax.crypto.NoSuchPaddingException;
 
 import static android.content.Context.MODE_PRIVATE;
 
+/**
+ * @author Drilon Reçica
+ * @since 2/17/17.
+ */
 public class SecurePreferences {
     private static final String KEY_SHARED_PREFERENCES_NAME = "SecurePreferences";
+    private static final String SALT_PREFIX = "SALT OF ";
+    private static final String KEY_CHARSET = "UTF-8";
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    public static void setValue(@NonNull String key, @NonNull String value, @NonNull Context context) {
-        try {
-            if (!KeystoreTool.keyPairExists()) {
-                KeystoreTool.generateKeyPair(context);
+    public static void setValue(@NonNull String key, @NonNull String value,
+                                @NonNull Context context,
+                                @NonNull SecureMethod secureMethod) {
+        if (secureMethod.equals(SecureMethod.METHOD_ENCRYPT)) {
+            try {
+                if (!KeystoreTool.keyPairExists()) {
+                    KeystoreTool.generateKeyPair(context);
+                }
+            } catch (CertificateException | NoSuchAlgorithmException | IOException
+                    | KeyStoreException | UnrecoverableKeyException
+                    | InvalidAlgorithmParameterException | NoSuchProviderException e) {
+                Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
+                return;
             }
-            String transformedValue = KeystoreTool.encryptMessage(context, value);
+
+            String transformedValue = null;
+            try {
+                transformedValue = KeystoreTool.encryptMessage(context, value);
+            } catch (NoSuchPaddingException | NoSuchAlgorithmException | NoSuchProviderException
+                    | IOException | UnrecoverableEntryException | KeyStoreException
+                    | InvalidKeyException | CertificateException e) {
+
+                Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
+            }
             if (transformedValue != null) {
                 setSecureValue(key, transformedValue, context);
             } else {
                 Log.e(SecurePreferences.class.getName(),
                         context.getString(R.string.message_problem_encryption));
             }
-        } catch (NoSuchPaddingException | NoSuchAlgorithmException | NoSuchProviderException
-                | IOException | UnrecoverableEntryException | KeyStoreException | InvalidAlgorithmParameterException
-                | InvalidKeyException | CertificateException e) {
-            Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
+        } else {
+            byte[] saltBytes = KeystoreTool.calculateSalt();
+            String salt;
+            try {
+                if (saltBytes != null) {
+                    salt = new String(saltBytes, 0, saltBytes.length, KEY_CHARSET);
+                } else {
+                    Log.e(SecurePreferences.class.getName(),
+                            context.getString(R.string.message_problem_salt_creation));
+                    return;
+                }
+            } catch (UnsupportedEncodingException e) {
+                if (BuildConfig.DEBUG) {
+                    Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
+                }
+                return;
+            }
+            String hashedValue = KeystoreTool.getSHA512(value, salt);
+            if (hashedValue != null) {
+                setSecureValue(key, hashedValue, context);
+                setSecureValue(SALT_PREFIX + key, salt, context);
+            } else {
+                Log.e(SecurePreferences.class.getName(),
+                        context.getString(R.string.message_problem_hashing));
+            }
         }
     }
 
     @Nullable
-    public static String getValue(@NonNull String key, @NonNull Context context) {
-        String result = getSecureValue(key, context);
-        try {
-            return KeystoreTool.decryptMessage(context, result != null
-                    ? result : context.getString(R.string.message_nothing_found));
-        } catch (NoSuchPaddingException | NoSuchAlgorithmException | NoSuchProviderException |
-                UnrecoverableEntryException | IOException | CertificateException |
-                InvalidKeyException | KeyStoreException e) {
-            Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
-            return null;
+    public static String getValue(@NonNull String key,
+                                  @NonNull Context context,
+                                  @NonNull SecureMethod secureMethod) {
+
+        if (secureMethod.equals(SecureMethod.METHOD_ENCRYPT)) {
+            String result = getSecureValue(key, context);
+            try {
+                return KeystoreTool.decryptMessage(context, result != null
+                        ? result : context.getString(R.string.message_nothing_found));
+            } catch (NoSuchPaddingException | NoSuchAlgorithmException | NoSuchProviderException |
+                    UnrecoverableEntryException | IOException | CertificateException |
+                    InvalidKeyException | KeyStoreException e) {
+
+                Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
+                return null;
+            }
+        } else {
+            return getSecureValue(key, context);
         }
     }
 
@@ -74,10 +129,30 @@ public class SecurePreferences {
         clearAllSecureValues(context);
     }
 
+    public static boolean compareHashedCredential(@NonNull String currentCredential,
+                                                  @NonNull String keyOfSecureCredential,
+                                                  @NonNull Context context) {
+
+        String securedCredential = getValue(keyOfSecureCredential, context, SecureMethod.METHOD_HASH);
+        String salt = getValue(SALT_PREFIX + keyOfSecureCredential, context, SecureMethod.METHOD_HASH);
+        String hashedCurrentCredential = KeystoreTool.getSHA512(currentCredential, salt);
+
+        if (hashedCurrentCredential != null) {
+            return hashedCurrentCredential.equals(securedCredential);
+        } else {
+            if (BuildConfig.DEBUG) {
+                Log.e(SecurePreferences.class.getName(),
+                        context.getString(R.string.message_problem_hashing));
+            }
+            return false;
+        }
+    }
+
+    @SuppressLint({"CommitPrefEdits", "ApplySharedPref"})
     private static void setSecureValue(@NonNull String key, @NonNull String value, @NonNull Context context) {
         SharedPreferences preferences = context
                 .getSharedPreferences(KEY_SHARED_PREFERENCES_NAME, MODE_PRIVATE);
-        preferences.edit().putString(key, value).apply();
+        preferences.edit().putString(key, value).commit();
     }
 
     @Nullable
@@ -87,9 +162,10 @@ public class SecurePreferences {
         return preferences.getString(key, null);
     }
 
+    @SuppressLint({"CommitPrefEdits", "ApplySharedPref"})
     private static void clearAllSecureValues(@NonNull Context context) {
         SharedPreferences preferences = context
                 .getSharedPreferences(KEY_SHARED_PREFERENCES_NAME, MODE_PRIVATE);
-        preferences.edit().clear().apply();
+        preferences.edit().clear().commit();
     }
 }

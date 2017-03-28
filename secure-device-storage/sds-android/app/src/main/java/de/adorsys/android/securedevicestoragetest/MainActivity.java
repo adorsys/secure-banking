@@ -11,7 +11,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import de.adorsys.android.securedevicestorage.SecureMethod;
 import de.adorsys.android.securedevicestorage.SecurePreferences;
+
+/**
+ * @author Drilon Reçica
+ * @since 2/17/17.
+ */
 
 public class MainActivity extends AppCompatActivity {
     private static final String KEY = "TEMPTAG";
@@ -36,11 +42,20 @@ public class MainActivity extends AppCompatActivity {
                                 .equals(getString(R.string.button_generate_encrypt))) {
                             generateKeyButton.setText(R.string.button_encrypt);
                         }
-                        SecurePreferences.setValue(KEY, input.getText().toString(), MainActivity.this);
-                        String decryptedMessage = SecurePreferences.getValue(KEY, MainActivity.this);
+                        SecurePreferences.setValue(KEY, input.getText().toString(),
+                                MainActivity.this,
+                                SecureMethod.METHOD_ENCRYPT);
+
+                        String decryptedMessage = SecurePreferences.getValue(KEY,
+                                MainActivity.this,
+                                SecureMethod.METHOD_ENCRYPT);
                         if (BuildConfig.DEBUG) {
                             Log.d(TAG, decryptedMessage + " ");
                         }
+
+                        Log.d("LOGTAG", "" +SecurePreferences.compareHashedCredential("test", KEY, MainActivity.this));
+                        Log.d("LOGTAG", "" +SecurePreferences.compareHashedCredential("teSt", KEY, MainActivity.this));
+
                         keyInfoTextView.setText(getString(R.string.message_encrypted_decrypted,
                                 input.getText().toString(), decryptedMessage));
                     }

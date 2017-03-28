@@ -14,16 +14,19 @@ import android.util.Log;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.UnrecoverableEntryException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
@@ -39,16 +42,18 @@ import javax.security.auth.x500.X500Principal;
 
 import static android.os.Build.VERSION_CODES.M;
 
-public class KeystoreTool {
+class KeystoreTool {
     private static final String KEY_ALIAS = "adorsysKeyPair";
     private static final String KEY_ENCRYPTION_ALGORITHM = "RSA";
+    private static final String KEY_HASHING_ALGORITHM = "SHA-512";
+    private static final String KEY_CHARSET = "UTF-8";
     private static final String KEY_KEYSTORE_NAME = "AndroidKeyStore";
     private static final String KEY_CIPHER_JELLYBEAN_PROVIDER = "AndroidOpenSSL";
     private static final String KEY_CIPHER_MARSHMALLOW_PROVIDER = "AndroidKeyStoreBCWorkaround";
     private static final String KEY_TRANSFORMATION_ALGORITHM = "RSA/ECB/PKCS1Padding";
     private static final String KEY_X500PRINCIPAL = "CN=SecureDeviceStorage, O=Adorsys, C=Germany";
 
-    public static boolean keyPairExists() {
+    static boolean keyPairExists() {
         try {
             return getKeyStoreInstance().getKey(KEY_ALIAS, null) != null;
         } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException
@@ -62,7 +67,7 @@ public class KeystoreTool {
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    public static void generateKeyPair(@NonNull Context context)
+    static void generateKeyPair(@NonNull Context context)
             throws InvalidAlgorithmParameterException,
             NoSuchProviderException, NoSuchAlgorithmException, UnrecoverableKeyException,
             CertificateException, KeyStoreException, IOException {
@@ -70,7 +75,9 @@ public class KeystoreTool {
         // Create new key if needed
         if (!keyPairExists()) {
             if (Build.VERSION.SDK_INT >= M) {
-                generateMarshmallowKeyPair();
+//                generateMarshmallowKeyPair();
+                //Temporarily use JellyBean KeyPair generation until Marshmallow methods are implemented
+                generateJellyBeanKeyPair(context);
             } else if (Build.VERSION.SDK_INT < M
                     && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                 generateJellyBeanKeyPair(context);
@@ -85,7 +92,7 @@ public class KeystoreTool {
         }
     }
 
-    public static void deleteKeyPair(@NonNull Context context) throws UnrecoverableKeyException,
+    static void deleteKeyPair(@NonNull Context context) throws UnrecoverableKeyException,
             CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
 
         if (keyPairExists()) {
@@ -99,7 +106,7 @@ public class KeystoreTool {
 
     @RequiresApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     @Nullable
-    public static String encryptMessage(@NonNull Context context, @NonNull String plainMessage)
+    static String encryptMessage(@NonNull Context context, @NonNull String plainMessage)
             throws NoSuchPaddingException, NoSuchAlgorithmException, NoSuchProviderException,
             IOException, UnrecoverableEntryException, KeyStoreException,
             CertificateException, InvalidKeyException {
@@ -120,7 +127,7 @@ public class KeystoreTool {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         CipherOutputStream cipherOutputStream = new CipherOutputStream(
                 outputStream, input);
-        cipherOutputStream.write(plainMessage.getBytes("UTF-8"));
+        cipherOutputStream.write(plainMessage.getBytes(KEY_CHARSET));
         cipherOutputStream.close();
 
         byte[] values = outputStream.toByteArray();
@@ -128,7 +135,7 @@ public class KeystoreTool {
     }
 
     @Nullable
-    public static String decryptMessage(@NonNull Context context, @NonNull String encryptedMessage) throws
+    static String decryptMessage(@NonNull Context context, @NonNull String encryptedMessage) throws
             NoSuchPaddingException, NoSuchAlgorithmException, NoSuchProviderException,
             IOException, UnrecoverableEntryException, KeyStoreException,
             CertificateException, InvalidKeyException {
@@ -159,7 +166,7 @@ public class KeystoreTool {
             bytes[i] = values.get(i);
         }
 
-        return new String(bytes, 0, bytes.length, "UTF-8");
+        return new String(bytes, 0, bytes.length, KEY_CHARSET);
     }
 
     @Nullable
@@ -199,7 +206,7 @@ public class KeystoreTool {
 
         Calendar start = Calendar.getInstance();
         Calendar end = Calendar.getInstance();
-        end.add(Calendar.MONTH, 1);
+        end.add(Calendar.YEAR, 99);
 
         KeyGenParameterSpec spec = new KeyGenParameterSpec.Builder(
                 KEY_ALIAS, KeyProperties.PURPOSE_SIGN)
@@ -225,7 +232,7 @@ public class KeystoreTool {
 
         Calendar start = Calendar.getInstance();
         Calendar end = Calendar.getInstance();
-        end.add(Calendar.MONTH, 1);
+        end.add(Calendar.YEAR, 99);
         KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(context)
                 .setAlias(KEY_ALIAS)
                 .setSubject(new X500Principal(KEY_X500PRINCIPAL))
@@ -253,5 +260,33 @@ public class KeystoreTool {
         keyStore.load(null);
 
         return keyStore;
+    }
+
+    @Nullable
+    static String getSHA512(String passwordToHash, String salt) {
+        try {
+            MessageDigest md = MessageDigest.getInstance(KEY_HASHING_ALGORITHM);
+            md.update(salt.getBytes(KEY_CHARSET));
+            byte[] bytes = md.digest(passwordToHash.getBytes(KEY_CHARSET));
+            StringBuilder sb = new StringBuilder();
+            for (byte aByte : bytes) {
+                sb.append(Integer.toString((aByte & 0xff) + 0x100, 16).substring(1));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            if (BuildConfig.DEBUG) {
+                Log.e(KeystoreTool.class.getName(), e.getMessage(), e);
+            }
+            return null;
+        }
+    }
+
+    @Nullable
+    static byte[] calculateSalt() {
+        SecureRandom random = new SecureRandom();
+        byte[] salt = new byte[128];
+        random.nextBytes(salt);
+
+        return salt;
     }
 }
