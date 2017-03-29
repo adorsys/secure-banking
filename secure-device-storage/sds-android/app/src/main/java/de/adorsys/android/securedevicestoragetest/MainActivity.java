@@ -18,7 +18,6 @@ import de.adorsys.android.securedevicestorage.SecurePreferences;
  * @author Drilon Reçica
  * @since 2/17/17.
  */
-
 public class MainActivity extends AppCompatActivity {
     private static final String KEY = "TEMPTAG";
     private static final String TAG = "LOGTAG";
@@ -42,22 +41,29 @@ public class MainActivity extends AppCompatActivity {
                                 .equals(getString(R.string.button_generate_encrypt))) {
                             generateKeyButton.setText(R.string.button_encrypt);
                         }
-                        SecurePreferences.setValue(KEY, input.getText().toString(),
-                                MainActivity.this,
-                                SecureMethod.METHOD_ENCRYPT);
+                        try {
+                            SecureMethod secureMethod = SecureMethod.METHOD_ENCRYPT;
+                            SecurePreferences.setValue(KEY, input.getText().toString(),
+                                    MainActivity.this,
+                                    secureMethod);
 
-                        String decryptedMessage = SecurePreferences.getValue(KEY,
-                                MainActivity.this,
-                                SecureMethod.METHOD_ENCRYPT);
-                        if (BuildConfig.DEBUG) {
-                            Log.d(TAG, decryptedMessage + " ");
+                            String decryptedMessage = SecurePreferences.getStringValue(KEY,
+                                    MainActivity.this,
+                                    secureMethod);
+                            if (BuildConfig.DEBUG) {
+                                Log.d(TAG, decryptedMessage + " ");
+                            }
+
+                            if (SecureMethod.METHOD_HASH.equals(secureMethod)) {
+                                Log.d("LOGTAG", "" + SecurePreferences.compareHashedCredential("test", KEY, MainActivity.this));
+                                Log.d("LOGTAG", "" + SecurePreferences.compareHashedCredential("teSt", KEY, MainActivity.this));
+                            }
+
+                            keyInfoTextView.setText(getString(R.string.message_encrypted_decrypted,
+                                    input.getText().toString(), decryptedMessage));
+                        } catch (Exception e) {
+                            Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
                         }
-
-                        Log.d("LOGTAG", "" +SecurePreferences.compareHashedCredential("test", KEY, MainActivity.this));
-                        Log.d("LOGTAG", "" +SecurePreferences.compareHashedCredential("teSt", KEY, MainActivity.this));
-
-                        keyInfoTextView.setText(getString(R.string.message_encrypted_decrypted,
-                                input.getText().toString(), decryptedMessage));
                     }
                 } else {
                     Toast.makeText(MainActivity.this, "Field cannot be empty", Toast.LENGTH_SHORT).show();
@@ -68,8 +74,12 @@ public class MainActivity extends AppCompatActivity {
         clearPreferencesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SecurePreferences.clearAllValues(MainActivity.this);
-                Toast.makeText(MainActivity.this, "SecurePreferences cleared and KeyPair deleted", Toast.LENGTH_SHORT).show();
+                try {
+                    SecurePreferences.clearAllValues(MainActivity.this);
+                    Toast.makeText(MainActivity.this, "SecurePreferences cleared and KeyPair deleted", Toast.LENGTH_SHORT).show();
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+                }
             }
         });
     }

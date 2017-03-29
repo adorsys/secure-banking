@@ -8,20 +8,10 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.text.TextUtils;
 import android.util.Log;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.UnrecoverableEntryException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-
-import javax.crypto.NoSuchPaddingException;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -35,35 +25,20 @@ public class SecurePreferences {
     private static final String KEY_CHARSET = "UTF-8";
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    public static void setValue(@NonNull String key, @NonNull String value,
+    public static void setValue(@NonNull String key,
+                                @NonNull String value,
                                 @NonNull Context context,
-                                @NonNull SecureMethod secureMethod) {
+                                @NonNull SecureMethod secureMethod) throws CryptoException {
         if (secureMethod.equals(SecureMethod.METHOD_ENCRYPT)) {
-            try {
-                if (!KeystoreTool.keyPairExists()) {
-                    KeystoreTool.generateKeyPair(context);
-                }
-            } catch (CertificateException | NoSuchAlgorithmException | IOException
-                    | KeyStoreException | UnrecoverableKeyException
-                    | InvalidAlgorithmParameterException | NoSuchProviderException e) {
-                Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
-                return;
+            if (!KeystoreTool.keyPairExists()) {
+                KeystoreTool.generateKeyPair(context);
             }
 
-            String transformedValue = null;
-            try {
-                transformedValue = KeystoreTool.encryptMessage(context, value);
-            } catch (NoSuchPaddingException | NoSuchAlgorithmException | NoSuchProviderException
-                    | IOException | UnrecoverableEntryException | KeyStoreException
-                    | InvalidKeyException | CertificateException e) {
-
-                Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
-            }
-            if (transformedValue != null) {
+            String transformedValue = KeystoreTool.encryptMessage(context, value);
+            if (!TextUtils.isEmpty(transformedValue)) {
                 setSecureValue(key, transformedValue, context);
             } else {
-                Log.e(SecurePreferences.class.getName(),
-                        context.getString(R.string.message_problem_encryption));
+                throw new CryptoException(context.getString(R.string.message_problem_encryption), null);
             }
         } else {
             byte[] saltBytes = KeystoreTool.calculateSalt();
@@ -72,77 +47,100 @@ public class SecurePreferences {
                 if (saltBytes != null) {
                     salt = new String(saltBytes, 0, saltBytes.length, KEY_CHARSET);
                 } else {
-                    Log.e(SecurePreferences.class.getName(),
-                            context.getString(R.string.message_problem_salt_creation));
-                    return;
+                    throw new CryptoException(context.getString(R.string.message_problem_salt_creation), null);
                 }
             } catch (UnsupportedEncodingException e) {
-                if (BuildConfig.DEBUG) {
-                    Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
-                }
-                return;
+                throw new CryptoException(e.getMessage(), e);
             }
             String hashedValue = KeystoreTool.getSHA512(value, salt);
             if (hashedValue != null) {
                 setSecureValue(key, hashedValue, context);
                 setSecureValue(SALT_PREFIX + key, salt, context);
             } else {
-                Log.e(SecurePreferences.class.getName(),
-                        context.getString(R.string.message_problem_hashing));
+                throw new CryptoException(context.getString(R.string.message_problem_hashing), null);
             }
         }
     }
 
-    @Nullable
-    public static String getValue(@NonNull String key,
-                                  @NonNull Context context,
-                                  @NonNull SecureMethod secureMethod) {
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    public static void setValue(@NonNull String key, boolean value,
+                                @NonNull Context context,
+                                @NonNull SecureMethod secureMethod) throws CryptoException {
+        setValue(key, String.valueOf(value), context, secureMethod);
+    }
 
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    public static void setValue(@NonNull String key, float value,
+                                @NonNull Context context,
+                                @NonNull SecureMethod secureMethod) throws CryptoException {
+        setValue(key, String.valueOf(value), context, secureMethod);
+    }
+
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    public static void setValue(@NonNull String key, long value,
+                                @NonNull Context context,
+                                @NonNull SecureMethod secureMethod) throws CryptoException {
+        setValue(key, String.valueOf(value), context, secureMethod);
+    }
+
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    public static void setValue(@NonNull String key, int value,
+                                @NonNull Context context,
+                                @NonNull SecureMethod secureMethod) throws CryptoException {
+        setValue(key, String.valueOf(value), context, secureMethod);
+    }
+
+
+    @Nullable
+    public static String getStringValue(@NonNull String key,
+                                  @NonNull Context context,
+                                  @NonNull SecureMethod secureMethod) throws CryptoException {
         if (secureMethod.equals(SecureMethod.METHOD_ENCRYPT)) {
             String result = getSecureValue(key, context);
-            try {
                 return KeystoreTool.decryptMessage(context, result != null
                         ? result : context.getString(R.string.message_nothing_found));
-            } catch (NoSuchPaddingException | NoSuchAlgorithmException | NoSuchProviderException |
-                    UnrecoverableEntryException | IOException | CertificateException |
-                    InvalidKeyException | KeyStoreException e) {
-
-                Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
-                return null;
-            }
         } else {
             return getSecureValue(key, context);
         }
     }
 
-    public static void clearAllValues(@NonNull Context context) {
-        try {
-            if (KeystoreTool.keyPairExists()) {
-                KeystoreTool.deleteKeyPair(context);
-            }
-        } catch (CertificateException | NoSuchAlgorithmException | IOException
-                | UnrecoverableKeyException | KeyStoreException e) {
-            if (BuildConfig.DEBUG) {
-                Log.e(SecurePreferences.class.getName(), e.getMessage(), e);
-            }
+    public static boolean getBooleanValue(@NonNull String key, @NonNull Context context, @NonNull SecureMethod secureMethod) throws CryptoException {
+        return Boolean.parseBoolean(getStringValue(key, context, secureMethod));
+    }
+
+    public static float getFloatValue(@NonNull String key, @NonNull Context context, @NonNull SecureMethod secureMethod) throws CryptoException {
+        return Float.parseFloat(getStringValue(key, context, secureMethod));
+    }
+
+    public static float getLongValue(@NonNull String key, @NonNull Context context, @NonNull SecureMethod secureMethod) throws CryptoException {
+        return Long.parseLong(getStringValue(key, context, secureMethod));
+    }
+
+    public static float getIntValue(@NonNull String key, @NonNull Context context, @NonNull SecureMethod secureMethod) throws CryptoException {
+        return Integer.parseInt(getStringValue(key, context, secureMethod));
+    }
+
+
+    public static void clearAllValues(@NonNull Context context) throws CryptoException {
+        if (KeystoreTool.keyPairExists()) {
+            KeystoreTool.deleteKeyPair(context);
         }
         clearAllSecureValues(context);
     }
 
+
     public static boolean compareHashedCredential(@NonNull String currentCredential,
                                                   @NonNull String keyOfSecureCredential,
-                                                  @NonNull Context context) {
-
-        String securedCredential = getValue(keyOfSecureCredential, context, SecureMethod.METHOD_HASH);
-        String salt = getValue(SALT_PREFIX + keyOfSecureCredential, context, SecureMethod.METHOD_HASH);
+                                                  @NonNull Context context) throws CryptoException {
+        String securedCredential = getStringValue(keyOfSecureCredential, context, SecureMethod.METHOD_HASH);
+        String salt = getStringValue(SALT_PREFIX + keyOfSecureCredential, context, SecureMethod.METHOD_HASH);
         String hashedCurrentCredential = KeystoreTool.getSHA512(currentCredential, salt);
 
         if (hashedCurrentCredential != null) {
             return hashedCurrentCredential.equals(securedCredential);
         } else {
             if (BuildConfig.DEBUG) {
-                Log.e(SecurePreferences.class.getName(),
-                        context.getString(R.string.message_problem_hashing));
+                Log.e(SecurePreferences.class.getName(), context.getString(R.string.message_problem_hashing));
             }
             return false;
         }
