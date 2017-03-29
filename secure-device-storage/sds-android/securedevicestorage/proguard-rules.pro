@@ -19,8 +19,3 @@
     static <fields>;
     static <methods>;
 }
-
--keepclasseswithmembers class de.adorsys.android.securedevicestorage.SecureMethod {
-    static <fields>;
-    static <methods>;
-}
