@@ -29,7 +29,6 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
-import java.security.spec.AlgorithmParameterSpec;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -78,7 +77,7 @@ class KeystoreTool {
             byte[] values = outputStream.toByteArray();
             return Base64.encodeToString(values, Base64.DEFAULT);
 
-        } catch ( NoSuchAlgorithmException
+        } catch (NoSuchAlgorithmException
                 | NoSuchProviderException
                 | NoSuchPaddingException
                 | InvalidKeyException
@@ -118,7 +117,7 @@ class KeystoreTool {
 
             return new String(bytes, 0, bytes.length, KEY_CHARSET);
 
-        } catch ( NoSuchAlgorithmException
+        } catch (NoSuchAlgorithmException
                 | NoSuchProviderException
                 | NoSuchPaddingException
                 | InvalidKeyException
@@ -240,13 +239,15 @@ class KeystoreTool {
             end.add(Calendar.YEAR, 99);
 
             KeyGenParameterSpec spec = new KeyGenParameterSpec.Builder(
-                    KEY_ALIAS, KeyProperties.PURPOSE_SIGN)
+                    KEY_ALIAS, KeyProperties.PURPOSE_DECRYPT)
                     .setKeyValidityStart(start.getTime())
                     .setKeyValidityEnd(end.getTime())
+                    .setUserAuthenticationRequired(false)
                     .setCertificateSerialNumber(BigInteger.ONE)
                     .setCertificateSubject(new X500Principal(KEY_X500PRINCIPAL))
                     .setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
-                    .setSignaturePaddings(KeyProperties.SIGNATURE_PADDING_RSA_PSS)
+                    .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_PKCS1)
+                    .setSignaturePaddings(KeyProperties.SIGNATURE_PADDING_RSA_PKCS1)
                     .build();
 
             KeyPairGenerator generator
@@ -268,23 +269,13 @@ class KeystoreTool {
             Calendar end = Calendar.getInstance();
             end.add(Calendar.YEAR, 99);
 
-            AlgorithmParameterSpec spec;
-            if (Build.VERSION.SDK_INT >= 23) {
-                spec = new KeyGenParameterSpec.Builder(KEY_ALIAS, KeyProperties.PURPOSE_ENCRYPT)
-                        .setCertificateSubject(new X500Principal(KEY_X500PRINCIPAL))
-                        .setCertificateSerialNumber(BigInteger.ONE)
-                        .setKeyValidityStart(start.getTime())
-                        .setKeyValidityEnd(end.getTime())
-                        .build();
-            } else {
-                spec = new KeyPairGeneratorSpec.Builder(context)
-                        .setAlias(KEY_ALIAS)
-                        .setSubject(new X500Principal(KEY_X500PRINCIPAL))
-                        .setSerialNumber(BigInteger.ONE)
-                        .setStartDate(start.getTime())
-                        .setEndDate(end.getTime())
-                        .build();
-        }
+            KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(context)
+                    .setAlias(KEY_ALIAS)
+                    .setSubject(new X500Principal(KEY_X500PRINCIPAL))
+                    .setSerialNumber(BigInteger.ONE)
+                    .setStartDate(start.getTime())
+                    .setEndDate(end.getTime())
+                    .build();
 
             KeyPairGenerator generator
                     = KeyPairGenerator.getInstance(KEY_ENCRYPTION_ALGORITHM, KEY_KEYSTORE_NAME);
