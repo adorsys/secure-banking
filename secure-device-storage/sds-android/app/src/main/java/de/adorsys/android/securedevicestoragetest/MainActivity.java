@@ -47,9 +47,7 @@ public class MainActivity extends AppCompatActivity {
                                     MainActivity.this,
                                     secureMethod);
 
-                            String decryptedMessage = SecurePreferences.getStringValue(KEY,
-                                    MainActivity.this,
-                                    secureMethod);
+                            String decryptedMessage = SecurePreferences.getStringValue(KEY, MainActivity.this, secureMethod, "");
                             if (BuildConfig.DEBUG) {
                                 Log.d(TAG, decryptedMessage + " ");
                             }

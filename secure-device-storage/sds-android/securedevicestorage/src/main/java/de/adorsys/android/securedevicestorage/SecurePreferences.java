@@ -93,31 +93,39 @@ public class SecurePreferences {
 
     @Nullable
     public static String getStringValue(@NonNull String key,
-                                  @NonNull Context context,
-                                  @NonNull SecureMethod secureMethod) throws CryptoException {
+                                        @NonNull Context context,
+                                        @NonNull SecureMethod secureMethod,
+                                        @Nullable String defValue) {
         if (secureMethod.equals(SecureMethod.METHOD_ENCRYPT)) {
             String result = getSecureValue(key, context);
-                return KeystoreTool.decryptMessage(context, result != null
-                        ? result : context.getString(R.string.message_nothing_found));
+            try {
+                if (!TextUtils.isEmpty(result)) {
+                    return KeystoreTool.decryptMessage(context, result);
+                } else {
+                    return defValue;
+                }
+            } catch (CryptoException e) {
+                return defValue;
+            }
         } else {
             return getSecureValue(key, context);
         }
     }
 
-    public static boolean getBooleanValue(@NonNull String key, @NonNull Context context, @NonNull SecureMethod secureMethod) throws CryptoException {
-        return Boolean.parseBoolean(getStringValue(key, context, secureMethod));
+    public static boolean getBooleanValue(@NonNull String key, @NonNull Context context, @NonNull SecureMethod secureMethod, boolean defValue) {
+        return Boolean.parseBoolean(getStringValue(key, context, secureMethod, String.valueOf(defValue)));
     }
 
-    public static float getFloatValue(@NonNull String key, @NonNull Context context, @NonNull SecureMethod secureMethod) throws CryptoException {
-        return Float.parseFloat(getStringValue(key, context, secureMethod));
+    public static float getFloatValue(@NonNull String key, @NonNull Context context, @NonNull SecureMethod secureMethod, float defValue) {
+        return Float.parseFloat(getStringValue(key, context, secureMethod, String.valueOf(defValue)));
     }
 
-    public static float getLongValue(@NonNull String key, @NonNull Context context, @NonNull SecureMethod secureMethod) throws CryptoException {
-        return Long.parseLong(getStringValue(key, context, secureMethod));
+    public static float getLongValue(@NonNull String key, @NonNull Context context, @NonNull SecureMethod secureMethod, long defValue) {
+        return Long.parseLong(getStringValue(key, context, secureMethod, String.valueOf(defValue)));
     }
 
-    public static float getIntValue(@NonNull String key, @NonNull Context context, @NonNull SecureMethod secureMethod) throws CryptoException {
-        return Integer.parseInt(getStringValue(key, context, secureMethod));
+    public static float getIntValue(@NonNull String key, @NonNull Context context, @NonNull SecureMethod secureMethod, int defValue) {
+        return Integer.parseInt(getStringValue(key, context, secureMethod, String.valueOf(defValue)));
     }
 
 
@@ -132,8 +140,8 @@ public class SecurePreferences {
     public static boolean compareHashedCredential(@NonNull String currentCredential,
                                                   @NonNull String keyOfSecureCredential,
                                                   @NonNull Context context) throws CryptoException {
-        String securedCredential = getStringValue(keyOfSecureCredential, context, SecureMethod.METHOD_HASH);
-        String salt = getStringValue(SALT_PREFIX + keyOfSecureCredential, context, SecureMethod.METHOD_HASH);
+        String securedCredential = getStringValue(keyOfSecureCredential, context, SecureMethod.METHOD_HASH, null);
+        String salt = getStringValue(SALT_PREFIX + keyOfSecureCredential, context, SecureMethod.METHOD_HASH, null);
         String hashedCurrentCredential = KeystoreTool.getSHA512(currentCredential, salt);
 
         if (hashedCurrentCredential != null) {
