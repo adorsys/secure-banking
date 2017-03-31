@@ -16,7 +16,7 @@ public class JWSNimbusImpl extends JWTNimbusImpl implements JWS {
         super(base64encodedJWT);
     }
 
-    JWSNimbusImpl(JWTClaimsSet claimsSet, String hmacSecret, JWSAlgorithm signAlgorithm) {
+    JWSNimbusImpl(JWTClaimsSet claimsSet, byte[] hmacSecret, JWSAlgorithm signAlgorithm) {
         super(claimsSet);
 
         try {
@@ -26,7 +26,7 @@ public class JWSNimbusImpl extends JWTNimbusImpl implements JWS {
             this.container = signedJWT;
             this.base64encodedToken = container.serialize();
         } catch (KeyLengthException e) {
-            log.error("Provided hmacSecret's length is less then required key length. Actual length is {}", hmacSecret.length(), e);
+            log.error("Provided hmacSecret's length is less then required key length. Actual length is {}", hmacSecret.length, e);
         } catch (JOSEException e) {
             log.error("Error while singing JWT", e);
         }

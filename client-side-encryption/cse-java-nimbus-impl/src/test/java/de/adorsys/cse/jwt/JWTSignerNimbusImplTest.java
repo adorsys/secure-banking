@@ -26,7 +26,10 @@ public class JWTSignerNimbusImplTest {
     public void providingNotLongEnoughSecretLeadToExtendingItToMinimalLength() throws Exception {
         String notLongEnoughString = generateRandomBase64String(22);
         //we need a string with length of 32 chars, so we add 10 chars
-        String expectedSecret = "AAAAAAAAAA".concat(notLongEnoughString);
+        String expectedSecret = notLongEnoughString;
+        while (expectedSecret.length() < 32) {
+            expectedSecret = expectedSecret.concat("\0");
+        }
 
         JWT someJWT = new JWTBuilderNimbusImpl().build();
 

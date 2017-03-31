@@ -13,8 +13,7 @@ import java.text.ParseException;
 import java.util.Arrays;
 
 public class JWTSignerNimbusImpl implements JWTSigner {
-    private static final char CHARACTER_TO_FILL = 'A';
-    private static final int MINIMAL_KEY_LENGTH = 32; //minimal key length for HS256 - 256 bits
+    private static final int MINIMAL_KEY_LENGTH_BYTES = 32; //minimal key length for HS256 - 256 bits
 
     private static final Logger log = LoggerFactory.getLogger(JWTSignerNimbusImpl.class);
 
@@ -22,7 +21,7 @@ public class JWTSignerNimbusImpl implements JWTSigner {
 
     @Override
     public byte[] generateHMacSecret() {
-        byte[] randomBytes = new byte[MINIMAL_KEY_LENGTH];
+        byte[] randomBytes = new byte[MINIMAL_KEY_LENGTH_BYTES];
         secureRandom.nextBytes(randomBytes);
         return randomBytes;
     }
@@ -37,18 +36,18 @@ public class JWTSignerNimbusImpl implements JWTSigner {
         jwt.getAllClaims().forEach(builder::claim);
 
 
-        return new JWSNimbusImpl(builder.build(), normalizeHmacSecretLength(hmacSecret), JWSAlgorithm.HS256);
+        return new JWSNimbusImpl(builder.build(), normalizeHmacSecretLength(hmacSecret.getBytes()), JWSAlgorithm.HS256);
     }
 
     @Override
     public boolean verify(JWS signedJwt, String hmacSecret) {
-        if (hmacSecret == null || hmacSecret.length() == 0) {
+        if (hmacSecret == null || hmacSecret.getBytes().length == 0) {
             throw new IllegalArgumentException("hmacSecret cannot be null or empty");
         }
 
         try {
             SignedJWT signedJWT = SignedJWT.parse(signedJwt.encode());
-            MACVerifier verifier = new MACVerifier(normalizeHmacSecretLength(hmacSecret).getBytes());
+            MACVerifier verifier = new MACVerifier(normalizeHmacSecretLength(hmacSecret.getBytes()));
             return signedJWT.verify(verifier);
         } catch (JOSEException | ParseException e) {
             log.warn("Failed checking signature of jwt. Reason: {}", e.getMessage());
@@ -56,19 +55,13 @@ public class JWTSignerNimbusImpl implements JWTSigner {
         }
     }
 
-    private String normalizeHmacSecretLength(String hmacSecret) {
-        if (hmacSecret.length() < MINIMAL_KEY_LENGTH) {
-            log.warn("provided hmacSecret is less then {} bytes and will be extended with '{}'", MINIMAL_KEY_LENGTH * 8, CHARACTER_TO_FILL);
-            return extendStringToLength(hmacSecret);
+    private byte[] normalizeHmacSecretLength(byte[] hmacSecret) {
+        if (hmacSecret.length < MINIMAL_KEY_LENGTH_BYTES) {
+            log.warn("provided hmacSecret is less then {} bytes and will be extended with 0-byte", MINIMAL_KEY_LENGTH_BYTES * 8);
+            return Arrays.copyOf(hmacSecret, MINIMAL_KEY_LENGTH_BYTES);
         }
         else {
             return hmacSecret;
         }
-    }
-
-    private String extendStringToLength(String hmacSecret) {
-        char[] array = new char[MINIMAL_KEY_LENGTH - hmacSecret.length()];
-        Arrays.fill(array, CHARACTER_TO_FILL);
-        return new String(array).concat(hmacSecret);
     }
 }
