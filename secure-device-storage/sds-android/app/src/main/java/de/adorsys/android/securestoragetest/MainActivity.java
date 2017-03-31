@@ -1,4 +1,4 @@
-package de.adorsys.android.securedevicestoragetest;
+package de.adorsys.android.securestoragetest;
 
 import android.os.Build;
 import android.os.Bundle;
@@ -11,7 +11,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import de.adorsys.android.securedevicestorage.SecurePreferences;
+import de.adorsys.android.securestorage.SecurePreferences;
 
 /**
  * @author Drilon Reçica

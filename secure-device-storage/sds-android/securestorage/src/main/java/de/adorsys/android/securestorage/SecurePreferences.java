@@ -1,4 +1,4 @@
-package de.adorsys.android.securedevicestorage;
+package de.adorsys.android.securestorage;
 
 
 import android.annotation.SuppressLint;
