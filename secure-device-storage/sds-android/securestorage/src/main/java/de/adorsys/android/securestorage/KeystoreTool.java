@@ -1,4 +1,4 @@
-package de.adorsys.android.securedevicestorage;
+package de.adorsys.android.securestorage;
 
 import android.content.Context;
 import android.os.Build;
@@ -14,19 +14,16 @@ import android.util.Log;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
@@ -44,7 +41,6 @@ import static android.os.Build.VERSION_CODES.M;
 class KeystoreTool {
     private static final String KEY_ALIAS = "adorsysKeyPair";
     private static final String KEY_ENCRYPTION_ALGORITHM = "RSA";
-    private static final String KEY_HASHING_ALGORITHM = "SHA-512";
     private static final String KEY_CHARSET = "UTF-8";
     private static final String KEY_KEYSTORE_NAME = "AndroidKeyStore";
     private static final String KEY_CIPHER_JELLYBEAN_PROVIDER = "AndroidOpenSSL";
@@ -167,30 +163,6 @@ class KeystoreTool {
             Log.e(KeystoreTool.class.getName(),
                     context.getString(R.string.message_keypair_does_not_exist));
         }
-    }
-
-    @Nullable
-    static String getSHA512(String passwordToHash, String salt) throws CryptoException {
-        try {
-            MessageDigest md = MessageDigest.getInstance(KEY_HASHING_ALGORITHM);
-            md.update(salt.getBytes(KEY_CHARSET));
-            byte[] bytes = md.digest(passwordToHash.getBytes(KEY_CHARSET));
-            StringBuilder sb = new StringBuilder();
-            for (byte aByte : bytes) {
-                sb.append(Integer.toString((aByte & 0xff) + 0x100, 16).substring(1));
-            }
-            return sb.toString();
-        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-            throw new CryptoException(e.getMessage(), e);
-        }
-    }
-
-    @Nullable
-    static byte[] calculateSalt() {
-        SecureRandom random = new SecureRandom();
-        byte[] salt = new byte[128];
-        random.nextBytes(salt);
-        return salt;
     }
 
     @Nullable

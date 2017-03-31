@@ -1,4 +1,4 @@
-package de.adorsys.android.securedevicestoragetest;
+package de.adorsys.android.securestoragetest;
 
 import android.os.Build;
 import android.os.Bundle;
@@ -11,8 +11,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import de.adorsys.android.securedevicestorage.SecureMethod;
-import de.adorsys.android.securedevicestorage.SecurePreferences;
+import de.adorsys.android.securestorage.SecurePreferences;
 
 /**
  * @author Drilon Reçica
@@ -42,19 +41,12 @@ public class MainActivity extends AppCompatActivity {
                             generateKeyButton.setText(R.string.button_encrypt);
                         }
                         try {
-                            SecureMethod secureMethod = SecureMethod.METHOD_ENCRYPT;
                             SecurePreferences.setValue(KEY, input.getText().toString(),
-                                    MainActivity.this,
-                                    secureMethod);
+                                    MainActivity.this);
 
-                            String decryptedMessage = SecurePreferences.getStringValue(KEY, MainActivity.this, secureMethod, "");
+                            String decryptedMessage = SecurePreferences.getStringValue(KEY, MainActivity.this, "");
                             if (BuildConfig.DEBUG) {
                                 Log.d(TAG, decryptedMessage + " ");
-                            }
-
-                            if (SecureMethod.METHOD_HASH.equals(secureMethod)) {
-                                Log.d("LOGTAG", "" + SecurePreferences.compareHashedCredential("test", KEY, MainActivity.this));
-                                Log.d("LOGTAG", "" + SecurePreferences.compareHashedCredential("teSt", KEY, MainActivity.this));
                             }
 
                             keyInfoTextView.setText(getString(R.string.message_encrypted_decrypted,
