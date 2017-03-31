@@ -19,3 +19,5 @@
     static <fields>;
     static <methods>;
 }
+
+-keep class de.adorsys.android.securedevicestorage.CryptoException

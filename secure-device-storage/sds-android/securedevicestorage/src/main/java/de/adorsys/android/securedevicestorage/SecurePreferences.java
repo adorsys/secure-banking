@@ -62,26 +62,34 @@ public class SecurePreferences {
 
     @Nullable
     public static String getStringValue(@NonNull String key,
-                                        @NonNull Context context) throws CryptoException {
+                                        @NonNull Context context,
+                                        @Nullable String defValue) {
         String result = getSecureValue(key, context);
-        return KeystoreTool.decryptMessage(context, result != null
-                ? result : context.getString(R.string.message_nothing_found));
+        try {
+            if (!TextUtils.isEmpty(result)) {
+                return KeystoreTool.decryptMessage(context, result);
+            } else {
+                return defValue;
+            }
+        } catch (CryptoException e) {
+            return defValue;
+        }
     }
 
-    public static boolean getBooleanValue(@NonNull String key, @NonNull Context context) throws CryptoException {
-        return Boolean.parseBoolean(getStringValue(key, context));
+    public static boolean getBooleanValue(@NonNull String key, @NonNull Context context, boolean defValue) {
+        return Boolean.parseBoolean(getStringValue(key, context, String.valueOf(defValue)));
     }
 
-    public static float getFloatValue(@NonNull String key, @NonNull Context context) throws CryptoException {
-        return Float.parseFloat(getStringValue(key, context));
+    public static float getFloatValue(@NonNull String key, @NonNull Context context, float defValue) {
+        return Float.parseFloat(getStringValue(key, context, String.valueOf(defValue)));
     }
 
-    public static float getLongValue(@NonNull String key, @NonNull Context context) throws CryptoException {
-        return Long.parseLong(getStringValue(key, context));
+    public static float getLongValue(@NonNull String key, @NonNull Context context, long defValue) {
+        return Long.parseLong(getStringValue(key, context, String.valueOf(defValue)));
     }
 
-    public static float getIntValue(@NonNull String key, @NonNull Context context) throws CryptoException {
-        return Integer.parseInt(getStringValue(key, context));
+    public static float getIntValue(@NonNull String key, @NonNull Context context, int defValue) {
+        return Integer.parseInt(getStringValue(key, context, String.valueOf(defValue)));
     }
 
 
