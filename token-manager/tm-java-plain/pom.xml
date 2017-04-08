@@ -6,7 +6,7 @@
 	<artifactId>tmjv</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 
-	<name>WildFly Swarm Example</name>
+	<name>Simple Token Manager</name>
 	<packaging>war</packaging>
 
 	<properties>
@@ -25,6 +25,18 @@
 				<version>${version.wildfly.swarm}</version>
 				<scope>import</scope>
 				<type>pom</type>
+			</dependency>
+
+			<!-- Colocated project. Might be build before. -->
+			<dependency>
+				<groupId>de.adorsys.envutils</groupId>
+				<artifactId>envutils4j</artifactId>
+				<version>1.0.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>de.adorsys.cryptoutils</groupId>
+				<artifactId>jtstamp</artifactId>
+				<version>1.0.0-SNAPSHOT</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -58,6 +70,16 @@
 	</build>
 
 	<dependencies>
+		<dependency>
+			<groupId>de.adorsys.envutils</groupId>
+			<artifactId>envutils4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>de.adorsys.cryptoutils</groupId>
+			<artifactId>jtstamp</artifactId>
+		</dependency>
+
+
 		<!-- Java EE 7 dependency -->
 		<dependency>
 			<groupId>javax</groupId>

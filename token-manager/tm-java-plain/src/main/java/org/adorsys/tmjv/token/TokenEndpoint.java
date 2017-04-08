@@ -1,42 +1,49 @@
 package org.adorsys.tmjv.token;
 
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.JWSSigner;
-import com.nimbusds.jose.crypto.RSASSASigner;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.JWTClaimsSet.Builder;
-import com.nimbusds.jwt.SignedJWT;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import org.adorsys.tmjv.key.TmKeyPair;
-import org.apache.commons.lang3.StringUtils;
-
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.adorsys.jjwk.selector.KeyPairRandomSelector;
+import org.adorsys.jjwk.selector.SignerAndAlgorithm;
+import org.adorsys.tmjv.key.ServerKeys;
+import org.apache.commons.lang3.StringUtils;
+
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.JWTClaimsSet.Builder;
+import com.nimbusds.jwt.SignedJWT;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+
 /**
  * The token endpoint allow us to obtain reuqest for a jwt token in excahnge
- * of a saml assersion from the deutsche bank SAMl IDP.
+ * of a a simple token
  * <p>
- * The saml assertion will
  *
  * @author fpo
  */
-@Api(value = "/v1/token")
+@Api(value = "/v1/token", tags={"Token Endpoint"})
 @Path("/v1/token")
 public class TokenEndpoint {
 
     @Inject
-    private TmKeyPair tmSignKey;
+    private ServerKeys serverKeys;
 
     @PostConstruct
     public void initialize() {
@@ -52,7 +59,7 @@ public class TokenEndpoint {
             @ApiResponse(code = 500, message = "Internal Server Error", response = AccessToken.class)
     })
     public Response token(@Context HttpServletRequest request, Jwt jwt) {
-        JWSSigner signer = new RSASSASigner(tmSignKey.getPrivateKey());
+//        JWSSigner signer = new RSASSASigner(tmSignKey.getPrivateKey());
         Builder builder = new JWTClaimsSet.Builder();
 
         if (StringUtils.isNotBlank(jwt.getAud())) {
@@ -81,15 +88,18 @@ public class TokenEndpoint {
         }
         JWTClaimsSet claimsSet = builder.build();
 
-        SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.RS256), claimsSet);
-
+        JOSEObjectType typ = JOSEObjectType.JWT;
+        JWK jwk = KeyPairRandomSelector.randomKey(serverKeys.getKeys());
+        SignerAndAlgorithm signerAndAlgorithm = new SignerAndAlgorithm(jwk);
+		JWSHeader jwsHeader = new JWSHeader(signerAndAlgorithm.getJwsAlgorithm(), typ , null, null, 
+				null, null, null, null, null, null, jwk.getKeyID(), null, null);
+        SignedJWT signedJWT = new SignedJWT(jwsHeader,claimsSet);
         try {
-            signedJWT.sign(signer);
+            signedJWT.sign(signerAndAlgorithm.getSigner());
         } catch (JOSEException e) {
             throw new ServerErrorException(500, e);
         }
         String s = signedJWT.serialize();
-
         AccessToken token = new AccessToken();
         token.setAccessToken(s);
         return Response.ok().entity(token).build();
