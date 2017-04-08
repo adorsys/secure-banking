@@ -10,8 +10,13 @@ Most crypto currency realms require the user to own a key pair. The user can sha
 ### Secure messaging 
 A secure messaging environment will also require the user to own a key pair. This is the case with pgp and smime based email.
 
+### Secure data storage
+Individual encryption of critical user data in the data center is an even more prominent issue as more and more data leak often lead to disclosure user data like credit card data and personal identification numbers.  
+
+### Makes cryptographic key critical
 There is even more stuff moving in the direction of electronic data processing. The use of cryptographic keys becoming more critical than ever.
 
+## Purpose 
 The main purpose of this work is to combine techniques and processes to provide a way to recover from lost private key, while keeping them as private as they are today.
  
 * If the missing key pair was used to hold a crypto currency, the money is lost.
@@ -113,7 +118,7 @@ The master key must also be recovered by the application that uses the private k
 
 The main problem we still have with this approach is that if the user loses this key, there won't be any way or recovering his master key.
 
-#### How do we recover from the a lost master key
+### How do we recover from the a lost master key
 * For a given combination of trusted parties
   * We generate a recovery key pair (rk) and send the rk-encryption key to the user.
   * We send a recovery request to trusted each party. When the trusted party logs in to help his trustee, we do the following
