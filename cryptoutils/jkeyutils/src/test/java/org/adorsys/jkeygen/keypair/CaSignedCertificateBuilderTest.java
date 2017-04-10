@@ -18,8 +18,8 @@ public class CaSignedCertificateBuilderTest {
 		KeyPair caKeyPair = new KeyPairBuilder().withKeyAlg("RSA").withKeyLength(2048).build();
 		Assume.assumeNotNull(caKeyPair);
 		
-		X500Name cn = new X500NameBuilder(BCStyle.INSTANCE).addRDN(BCStyle.CN, "Francis Pouatcha").build();
-		SelfSignedKeyPairData caKeyPairData = new SelfSignedCertBuilder().withSubjectDN(cn)
+		X500Name caCn = new X500NameBuilder(BCStyle.INSTANCE).addRDN(BCStyle.CN, "Francis Pouatcha").build();
+		SelfSignedKeyPairData caKeyPairData = new SelfSignedCertBuilder().withSubjectDN(caCn)
 				.withSignatureAlgo("SHA256withRSA").withNotAfterInDays(300).withCa(true).build(caKeyPair);
 		Assume.assumeNotNull(caKeyPairData);
 		Assume.assumeNotNull(caKeyPairData.getKeyPair());
