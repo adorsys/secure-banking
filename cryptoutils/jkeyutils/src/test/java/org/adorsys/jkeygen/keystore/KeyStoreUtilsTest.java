@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.Key;
+import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -11,7 +12,6 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.List;
 
 import javax.security.auth.callback.Callback;
@@ -19,7 +19,8 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
-import org.adorsys.jkeygen.keypair.SelfSignedKeyPairBuilder;
+import org.adorsys.jkeygen.keypair.KeyPairBuilder;
+import org.adorsys.jkeygen.keypair.SelfSignedCertBuilder;
 import org.adorsys.jkeygen.keypair.SelfSignedKeyPairData;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
@@ -30,21 +31,24 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class KeyStoreUtilsTest {
-	SelfSignedKeyPairData keyPairData;
+	private SelfSignedKeyPairData keyPairData;
+	private char[] storePass = "FrancisKeystorePass".toCharArray();
+	private char[] keyPass = "FrancisKeyPass".toCharArray();
+	private String keyAlias = "FrancisKeyAlias";
 
 	@Before
 	public void before() {
+		KeyPair keyPair = new KeyPairBuilder().withKeyAlg("RSA").withKeyLength(2048).build();
+		Assume.assumeNotNull(keyPair);
+		
 		X500Name cn = new X500NameBuilder(BCStyle.INSTANCE).addRDN(BCStyle.CN, "Francis Pouatcha").build();
-		keyPairData = new SelfSignedKeyPairBuilder().withEndEntityName(cn).withKeyAlg("RSA").withKeyLength(2048)
-				.withSignatureAlgo("SHA256withRSA").withNotAfterInDays(300).build();
+		keyPairData = new SelfSignedCertBuilder().withSubjectDN(cn)
+				.withSignatureAlgo("SHA256withRSA").withNotAfterInDays(300).withCa(false).build(keyPair);
 		Assume.assumeNotNull(keyPairData);
 		Assume.assumeNotNull(keyPairData.getKeyPair());
 		Assume.assumeNotNull(keyPairData.getSubjectCert());
 
 	}
-	char[] storePass = "FrancisKeystorePass".toCharArray();
-	char[] keyPass = "FrancisKeyPass".toCharArray();
-	String keyAlias = "FrancisKeyAlias";
 
 	
 	@Test
@@ -60,8 +64,13 @@ public class KeyStoreUtilsTest {
 
 	@Test
 	public void testLoadKeystore() {
-		byte[] bs = assumeCreateKeyStore(storePass, keyAlias, keyPass);
-		Assume.assumeNotNull(bs);
+		byte[] bs = null;
+		try {
+			bs = createKeyStore(storePass, keyAlias, keyPass); 
+			Assume.assumeNotNull(bs);
+		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
+			Assume.assumeNoException(e);
+		}
 		try {
 			ByteArrayInputStream bis = new ByteArrayInputStream(bs);
 			KeyStore keyStore = KeyStoreUtils.loadKeyStore(bis, "FrancisKeyStore", null, new PasswordCallbackHandler(storePass));
@@ -73,14 +82,17 @@ public class KeyStoreUtilsTest {
 	
 	@Test
 	public void testBadStorePass() {
-		byte[] bs = assumeCreateKeyStore(storePass, keyAlias, keyPass);
-		Assume.assumeNotNull(bs);
+		byte[] bs = null;
+		try {
+			bs = createKeyStore(storePass, keyAlias, keyPass); 
+			Assume.assumeNotNull(bs);
+		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
+			Assume.assumeNoException(e);
+		}
 		try {
 			ByteArrayInputStream bis = new ByteArrayInputStream(bs);
 			char[] badStorePass = "WrongFrancisKeystorePass".toCharArray();
 			KeyStoreUtils.loadKeyStore(bis, "FrancisKeyStore", null, new PasswordCallbackHandler(badStorePass));
-//			Assert.assertNotNull(keyStore);
-//			Enumeration<String> aliases = keyStore.aliases();
 			Assert.fail("Expecting UnrecoverableKeyException");
 		} catch (IOException e) {
 			// expected behavior
@@ -90,8 +102,13 @@ public class KeyStoreUtilsTest {
 
 	@Test
 	public void testLoadKey() {
-		byte[] bs = assumeCreateKeyStore(storePass, keyAlias, keyPass);
-		Assume.assumeNotNull(bs);
+		byte[] bs = null;
+		try {
+			bs = createKeyStore(storePass, keyAlias, keyPass); 
+			Assume.assumeNotNull(bs);
+		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
+			Assume.assumeNoException(e);
+		}
 		ByteArrayInputStream bis = new ByteArrayInputStream(bs);
 		KeyStore keyStore = null;
 		try {
@@ -111,8 +128,14 @@ public class KeyStoreUtilsTest {
 	
 	@Test
 	public void testBadKeyPass() {
-		byte[] bs = assumeCreateKeyStore(storePass, keyAlias, keyPass);
-		Assume.assumeNotNull(bs);
+		byte[] bs = null;
+		try {
+			bs = createKeyStore(storePass, keyAlias, keyPass); 
+			Assume.assumeNotNull(bs);
+		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
+			Assume.assumeNoException(e);
+		}
+		
 		ByteArrayInputStream bis = new ByteArrayInputStream(bs);
 		KeyStore keyStore = null;
 		try {
@@ -147,23 +170,12 @@ public class KeyStoreUtilsTest {
 		return bos.toByteArray();
 	}
 	
-	private byte[] assumeCreateKeyStore(char[] storePass, String keyAlias, char[] keyPass){
-		try {
-			return createKeyStore(storePass, keyAlias, keyPass);
-		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
-			return null;
-		}
-	}
-	
-	
 	private static class PasswordCallbackHandler implements CallbackHandler {
 		private char[] password;
-
 		private PasswordCallbackHandler(char[] password) {
 			if (password != null) {
 				this.password = (char[]) password.clone();
 			}
-
 		}
 
 		public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
@@ -179,7 +191,6 @@ public class KeyStoreUtilsTest {
 			if (this.password != null) {
 				Arrays.fill(this.password, ' ');
 			}
-
 			super.finalize();
 		}
 	}

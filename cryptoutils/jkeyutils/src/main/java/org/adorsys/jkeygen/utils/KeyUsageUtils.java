@@ -76,11 +76,11 @@ public class KeyUsageUtils {
         // else false
     	return false;
 	}	
-	public static final int[] getKeyUsageForUserKey(){
+	public static final int[] getStdKeyUsages(){
 		return new int[]{KeyUsage.digitalSignature, KeyUsage.nonRepudiation,KeyUsage.keyEncipherment};
 	}
 
-	public static final int[] getKeyUsageForCertificationAuthotity(){
+	public static final int[] getCaKeyUsages(){
 		return new int[]{KeyUsage.keyCertSign};
 	}
 }

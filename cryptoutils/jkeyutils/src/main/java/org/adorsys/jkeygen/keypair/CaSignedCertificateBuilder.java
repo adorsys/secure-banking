@@ -6,12 +6,16 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
+import org.adorsys.jkeygen.utils.CheckCaCertificate;
 import org.adorsys.jkeygen.utils.KeyUsageUtils;
-import org.adorsys.jkeygen.utils.UUIDUtils;
+import org.adorsys.jkeygen.utils.SerialNumberGenerator;
 import org.adorsys.jkeygen.utils.V3CertificateUtils;
+import org.adorsys.jkeygen.validation.BatchValidator;
+import org.adorsys.jkeygen.validation.KeyValue;
+import org.adorsys.jkeygen.validation.ListOfKeyValueBuilder;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -38,19 +42,16 @@ import org.bouncycastle.operator.ContentSigner;
  * @author fpo
  *
  */
-public class X509CertificateBuilder {
+public class CaSignedCertificateBuilder {
 
-	private boolean ca;
+	private boolean createCaCert;
 
 	private X500Name subjectDN;
 	
 	private boolean subjectOnlyInAlternativeName;
 
-	private PublicKey subjectPublicKey;
-
-	private Date notBefore;
-
-	private Date notAfter;
+	private Integer notAfterInDays;
+	private Integer notBeforeInDays = 0;
 
 	private X509CertificateHolder subjectSampleCertificate;
 
@@ -63,27 +64,42 @@ public class X509CertificateBuilder {
 
 	private AuthorityInformationAccess authorityInformationAccess;
 	
-	private String signatureAlgoritm;
+	private String signatureAlgo;
+	
+	private PublicKey subjectPublicKey;
 
 	boolean dirty = false;
 	public X509CertificateHolder build(PrivateKey issuerPrivatekey) {
 		if(dirty)throw new IllegalStateException("Builder can not be reused");
 		dirty=true;
 		
-		if(StringUtils.isBlank(signatureAlgoritm)) {
+		// AUtoselect algorithm
+		if(StringUtils.isBlank(signatureAlgo)) {
 			String algorithm = issuerPrivatekey.getAlgorithm();
 			if(StringUtils.equalsAnyIgnoreCase("DSA", algorithm)){
-				signatureAlgoritm = "SHA1withDSA";
+				signatureAlgo = "SHA256withDSA";
 			} else if (StringUtils.equals("RSA", algorithm)){
-				signatureAlgoritm = "SHA256WithRSA";
+				signatureAlgo = "SHA256WithRSA";
 			}
 		}
 		
+		Date now = new Date();
+		Date notAfter = notAfterInDays!=null?DateUtils.addDays(now, notAfterInDays):null;
+		Date notBefore = notBeforeInDays!=null?DateUtils.addDays(now, notBeforeInDays):null;;
+		
+		// Prefill from subject certificate 
 		if(subjectSampleCertificate!=null){
-			if(subjectPublicKey==null) subjectPublicKey=V3CertificateUtils.extractPublicKey(subjectSampleCertificate);
-			if(subjectDN==null) subjectDN=subjectSampleCertificate.getSubject();
-			if(notBefore==null) notBefore=subjectSampleCertificate.getNotBefore();
-			if(notAfter==null) notAfter=subjectSampleCertificate.getNotAfter();
+			// Verify self signed certificate
+			
+			// get subject public key from sample certificate.
+			subjectPublicKey=V3CertificateUtils.extractPublicKey(subjectSampleCertificate);
+			
+			// Take subjectDN if not provided
+			if(subjectDN==null)subjectDN=subjectSampleCertificate.getSubject();
+			
+			// Copy expiration from cert if not provided.
+			if(notAfter==null)notAfter=subjectSampleCertificate.getNotAfter();
+			if(notBefore==null)notBefore=subjectSampleCertificate.getNotBefore();
 			
 			if(!keyUsageSet)copyKeyUsage(subjectSampleCertificate);
 			
@@ -91,53 +107,54 @@ public class X509CertificateBuilder {
 				Extension extension = subjectSampleCertificate.getExtension(X509Extension.subjectAlternativeName);
 				if(extension!=null) subjectAltNames = GeneralNames.getInstance(extension.getParsedValue());
 			}
-			
-			if(authorityInformationAccess==null){
-				Extension extension = issuerCertificate.getExtension(X509Extension.authorityInfoAccess);
-				if(extension!=null) authorityInformationAccess = AuthorityInformationAccess.getInstance(extension.getParsedValue());
-			}
 		}
 		
-		List<String> errorKeys = new ArrayList<String>();
-		if(subjectPublicKey==null) errorKeys.add("X509CertificateBuilder_missing_subject_publicKey");
-		// to set subject to empty, set subjectOnlyInAltName to true. See rfc 5280 then subject alt name must be set
-		if(subjectDN==null) errorKeys.add("X509CertificateBuilder_missing_subject_DN");
-		if(notBefore==null) errorKeys.add("X509CertificateBuilder_missing_validity_date_notBefore");
-		if(notAfter==null) errorKeys.add("X509CertificateBuilder_missing_validity_date_notAfter");
-
-		if(!errorKeys.isEmpty()){
-            throw new IllegalStateException(errorKeys.toString());
-		}
-
-
+//		
+//		if(authorityInformationAccess==null){
+//			Extension extension = issuerCertificate.getExtension(X509Extension.authorityInfoAccess);
+//			if(extension!=null) authorityInformationAccess = AuthorityInformationAccess.getInstance(extension.getParsedValue());
+//		}
+		
+		
+		List<KeyValue> notNullCheckList = ListOfKeyValueBuilder.newBuilder()
+				.add("X509CertificateBuilder_missing_subject_DN", subjectDN)
+				.add("X509CertificateBuilder_missing_subject_publicKey", subjectPublicKey)
+				.add("X509CertificateBuilder_missing_validity_date_notBefore", notBefore)
+				.add("X509CertificateBuilder_missing_validity_date_notAfter", notAfter)
+				.build();
+			
+		List<String> errorKeys = BatchValidator.filterNull(notNullCheckList);
+		if(errorKeys==null)errorKeys=new ArrayList<>();
+		
 		X500Name issuerDN = null;
 		BasicConstraints basicConstraints = null;
 		if(issuerCertificate==null){
+			// Self signed certificate
 			issuerDN = subjectDN;
-			if(ca){
+			if(createCaCert){
 				// self signed ca certificate
 				basicConstraints = new BasicConstraints(true);
-				subjectOnlyInAlternativeName = false;// in ca case, subject must subject must be set
+				// in ca case, subject must subject must be set
+				subjectOnlyInAlternativeName = false;
 			} else {
+				// not a ca certificate
 				basicConstraints = new BasicConstraints(false);
 			}
 		} else {			
 			// check is issuerCertificate is ca certificate
-			Extension basicConstraintsExtension = issuerCertificate.getExtension(X509Extension.basicConstraints);
-			BasicConstraints issuerBasicConstraints = BasicConstraints.getInstance(basicConstraintsExtension.getParsedValue());
-			if(!issuerBasicConstraints.isCA())
-				errorKeys.add("X509CertificateBuilder_issuerCert_notCaCert");
-
-			if(!errorKeys.isEmpty()){
-	            throw new IllegalStateException(errorKeys.toString());
-			}
+			if(!CheckCaCertificate.isCaCertificate(issuerCertificate))errorKeys.add("X509CertificateBuilder_issuerCert_notCaCert");
 
 			// prepare inputs
 			issuerDN = issuerCertificate.getSubject();
 
-			if(ca){// ca signing another ca certificate
-				subjectOnlyInAlternativeName = false;// in ca case, subject must subject must be set
+			// ca signing another ca certificate
+			if(createCaCert){
+				// in ca case, subject must subject must be set
+				subjectOnlyInAlternativeName = false;
+				
 				// ca certificate must carry a subject
+				Extension basicConstraintsExtension = issuerCertificate.getExtension(X509Extension.basicConstraints);
+				BasicConstraints issuerBasicConstraints = BasicConstraints.getInstance(basicConstraintsExtension.getParsedValue());
 				BigInteger pathLenConstraint = issuerBasicConstraints.getPathLenConstraint();
 				if(pathLenConstraint==null){
 					pathLenConstraint = BigInteger.ONE;
@@ -145,21 +162,31 @@ public class X509CertificateBuilder {
 					pathLenConstraint = pathLenConstraint.add(BigInteger.ONE);
 				}
 				basicConstraints = new BasicConstraints(pathLenConstraint.intValue());
-				withKeyUsage(KeyUsage.keyCertSign);
-			} else {// ca issuing a simple certificate
+				
+				resetKeyUsage();
+				for (int keyUsage : KeyUsageUtils.getCaKeyUsages()) withKeyUsage(keyUsage);
+			} else {
+				// ca issuing a simple certificate
 				basicConstraints = new BasicConstraints(false);
 			}
 		}
-
-		BigInteger serial = UUIDUtils.toBigInteger(UUID.randomUUID());
+		
+		BigInteger serial = SerialNumberGenerator.uniqueSerial();
+		
 		X509v3CertificateBuilder v3CertGen = null;
 		if(subjectOnlyInAlternativeName && subjectAltNames!=null){
-			v3CertGen = new JcaX509v3CertificateBuilder(issuerDN, serial, notBefore, notAfter, new X500Name("cn="),subjectPublicKey);
-		} else {
-			v3CertGen = new JcaX509v3CertificateBuilder(issuerDN, serial, notBefore, notAfter, subjectDN,subjectPublicKey);
+			// Remove missing sobject error.
+			errorKeys.remove("X509CertificateBuilder_missing_subject_DN");
+			subjectDN = new X500Name("cn=");
 		}
+		
+		if(!errorKeys.isEmpty()){
+			throw new IllegalArgumentException("Fields can not be null: " + errorKeys);
+		}
+		
+		v3CertGen = new JcaX509v3CertificateBuilder(issuerDN, serial, notBefore, notAfter, subjectDN,subjectPublicKey);
 		JcaX509ExtensionUtils extUtils = V3CertificateUtils.getJcaX509ExtensionUtils();
-
+		
 		try {
 			v3CertGen.addExtension(X509Extension.basicConstraints,true, basicConstraints);
 			
@@ -195,7 +222,7 @@ public class X509CertificateBuilder {
 			throw new IllegalStateException(e);
 		}
 
-		ContentSigner signer = V3CertificateUtils.getContentSigner(issuerPrivatekey,signatureAlgoritm);
+		ContentSigner signer = V3CertificateUtils.getContentSigner(issuerPrivatekey,signatureAlgo);
 
 		return v3CertGen.build(signer);
 
@@ -206,49 +233,58 @@ public class X509CertificateBuilder {
 		if(ku!=-1)withKeyUsage(ku);
 	}
 
-	public X509CertificateBuilder withSignatureAlgoritm(String signatureAlgoritm) {
-		this.signatureAlgoritm = signatureAlgoritm;
+	public CaSignedCertificateBuilder withSignatureAlgo(String signatureAlgo) {
+		this.signatureAlgo = signatureAlgo;
 		return this;
 	}
 
-	public X509CertificateBuilder withCa(boolean ca) {
-		this.ca = ca;
+	public CaSignedCertificateBuilder withCa(boolean ca) {
+		this.createCaCert = ca;
 		return this;
 	}
 
-	public X509CertificateBuilder withSubjectDN(X500Name subjectDN) {
+	public CaSignedCertificateBuilder withSubjectDN(X500Name subjectDN) {
 		this.subjectDN = subjectDN;
 		return this;
 	}
 
-	public X509CertificateBuilder withSubjectPublicKey(PublicKey subjectPublicKey) {
+	public CaSignedCertificateBuilder withSubjectPublicKey(PublicKey subjectPublicKey) {
 		this.subjectPublicKey = subjectPublicKey;
 		return this;
 	}
 
-	public X509CertificateBuilder withNotBefore(Date notBefore) {
-		this.notBefore = notBefore;
+	
+	public CaSignedCertificateBuilder withNotAfterInDays(Integer notAfterInDays) {
+		this.notAfterInDays = notAfterInDays;
 		return this;
 	}
 
-	public X509CertificateBuilder withNotAfter(Date notAfter) {
-		this.notAfter = notAfter;
+	public CaSignedCertificateBuilder withNotBeforeInDays(Integer notBeforeInDays) {
+		this.notBeforeInDays = notBeforeInDays;
 		return this;
 	}
 
-	public X509CertificateBuilder withSubjectSampleCertificate(
+	public CaSignedCertificateBuilder withSubjectSampleCertificate(
 			X509CertificateHolder subjectSampleCertificate) {
 		this.subjectSampleCertificate = subjectSampleCertificate;
 		return this;
 	}
 
-	public X509CertificateBuilder withIssuerCertificate(
+	public CaSignedCertificateBuilder withIssuerCertificate(
 			X509CertificateHolder issuerCertificate) {
+		// Validate Issuer Certificate
+		if(!CheckCaCertificate.isCaCertificate(issuerCertificate)) throw new IllegalArgumentException("Invalid issuer certificate");
 		this.issuerCertificate = issuerCertificate;
 		return this;
 	}
+	
+	public CaSignedCertificateBuilder resetKeyUsage() {
+		keyUsageSet = false;
+		this.keyUsage = -1;
+		return this;
+	}
 
-	public X509CertificateBuilder withKeyUsage(int keyUsage) {
+	public CaSignedCertificateBuilder withKeyUsage(int keyUsage) {
 		if(keyUsageSet){
 			this.keyUsage=this.keyUsage|keyUsage;
 		} else {
@@ -258,7 +294,7 @@ public class X509CertificateBuilder {
 		return this;
 	}
 
-	public X509CertificateBuilder withSubjectAltNames(GeneralNames subjectAltNames) {
+	public CaSignedCertificateBuilder withSubjectAltNames(GeneralNames subjectAltNames) {
 		if(this.subjectAltNames==null){
 			this.subjectAltNames = new GeneralNames(subjectAltNames.getNames());
 		} else {
@@ -279,7 +315,7 @@ public class X509CertificateBuilder {
 		return this;
 	}
 
-	public X509CertificateBuilder withSubjectAltName(GeneralName subjectAltName) {
+	public CaSignedCertificateBuilder withSubjectAltName(GeneralName subjectAltName) {
 		if(this.subjectAltNames==null){
 			this.subjectAltNames = new GeneralNames(subjectAltName);
 		} else {
@@ -296,13 +332,13 @@ public class X509CertificateBuilder {
 		return this;
 	}
 	
-	public X509CertificateBuilder withAuthorityInformationAccess(
+	public CaSignedCertificateBuilder withAuthorityInformationAccess(
 			AuthorityInformationAccess authorityInformationAccess) {
 		this.authorityInformationAccess = authorityInformationAccess;
 		return this;
 	}
 
-	public X509CertificateBuilder withSubjectOnlyInAlternativeName(boolean subjectOnlyInAlternativeName) {
+	public CaSignedCertificateBuilder withSubjectOnlyInAlternativeName(boolean subjectOnlyInAlternativeName) {
 		this.subjectOnlyInAlternativeName = subjectOnlyInAlternativeName;
 		return this;
 	}
