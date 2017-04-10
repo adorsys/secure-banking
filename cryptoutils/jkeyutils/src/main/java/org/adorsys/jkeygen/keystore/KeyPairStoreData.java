@@ -2,20 +2,20 @@ package org.adorsys.jkeygen.keystore;
 
 import javax.security.auth.callback.CallbackHandler;
 
-import org.adorsys.jkeygen.keypair.CertifiedKeyPairData;
+import org.adorsys.jkeygen.keypair.CertificationResult;
 import org.adorsys.jkeygen.keypair.SelfSignedKeyPairData;
 
 public class KeyPairStoreData {
 
 	private final SelfSignedKeyPairData keyPairs;
 	
-	private final CertifiedKeyPairData certification;
+	private final CertificationResult certification;
 	
 	private final CallbackHandler passwordSource;
 	
 	private final String alias;
 
-	public KeyPairStoreData(SelfSignedKeyPairData keyPairs, CertifiedKeyPairData certification,
+	public KeyPairStoreData(SelfSignedKeyPairData keyPairs, CertificationResult certification,
 			CallbackHandler passwordSource, String alias) {
 		super();
 		this.keyPairs = keyPairs;
@@ -28,7 +28,7 @@ public class KeyPairStoreData {
 		return keyPairs;
 	}
 
-	public CertifiedKeyPairData getCertification() {
+	public CertificationResult getCertification() {
 		return certification;
 	}
 

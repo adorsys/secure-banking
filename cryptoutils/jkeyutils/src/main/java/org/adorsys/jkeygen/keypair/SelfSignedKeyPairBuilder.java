@@ -5,10 +5,13 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.Provider;
 import java.util.Date;
+import java.util.List;
 
-import org.adorsys.jkeygen.utils.BuilderChecker;
 import org.adorsys.jkeygen.utils.KeyUsageUtils;
 import org.adorsys.jkeygen.utils.ProviderUtils;
+import org.adorsys.jkeygen.validation.BatchValidator;
+import org.adorsys.jkeygen.validation.KeyValue;
+import org.adorsys.jkeygen.validation.ListOfKeyValueBuilder;
 import org.apache.commons.lang3.time.DateUtils;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.GeneralNames;
@@ -27,6 +30,7 @@ public class SelfSignedKeyPairBuilder {
 	
 	private Integer keyLength;
 	private String keyAlg;
+	private String signatureAlgo;
 	private Integer notAfterInDays;
 	private Integer notBeforeInDays = 0;
 	
@@ -34,16 +38,29 @@ public class SelfSignedKeyPairBuilder {
 	private X500Name endEntityName;
 	
 	private GeneralNames subjectAlternativeNames;
-
-	private final BuilderChecker checker = new BuilderChecker(SelfSignedKeyPairBuilder.class);
 	
 	/**
 	 * Returns the message key pair subject certificate holder.
 	 * 
+	 * Following entity must be validated  
+	 * 
 	 * @return KeyPairAndCertificateHolder
 	 */
+	boolean dirty = false;
 	public SelfSignedKeyPairData build() {
-		checker.checkDirty().checkNull(endEntityName, keyAlg, keyLength, notBeforeInDays, notAfterInDays);
+		if(dirty)throw new IllegalStateException("Builder can not be reused");
+		dirty=true;
+		List<KeyValue> notNullCheckList = ListOfKeyValueBuilder.newBuilder()
+			.add("endEntityName", endEntityName)
+			.add("keyAlg", keyAlg)
+			.add("signatureAlgo", signatureAlgo)
+			.add("keyLength", keyLength)
+			.add("notBeforeInDays", notBeforeInDays)
+			.add("notAfterInDays", notAfterInDays).build();
+		List<String> nullList = BatchValidator.filterNull(notNullCheckList);
+		if(nullList!=null && !nullList.isEmpty()){
+			throw new IllegalArgumentException("Fields can not be null: " + nullList);
+		}
 		return  generateSelfSignedKeyPair();
 	}
 
@@ -64,6 +81,11 @@ public class SelfSignedKeyPairBuilder {
 
 	public SelfSignedKeyPairBuilder withKeyAlg(String keyAlg) {
 		this.keyAlg = keyAlg;
+		return this;
+	}
+
+	public SelfSignedKeyPairBuilder withSignatureAlgo(String signatureAlgo) {
+		this.signatureAlgo = signatureAlgo;
 		return this;
 	}
 

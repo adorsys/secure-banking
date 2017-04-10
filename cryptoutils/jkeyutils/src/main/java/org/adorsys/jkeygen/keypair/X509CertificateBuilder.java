@@ -8,10 +8,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import org.adorsys.jkeygen.utils.BuilderChecker;
 import org.adorsys.jkeygen.utils.KeyUsageUtils;
 import org.adorsys.jkeygen.utils.UUIDUtils;
 import org.adorsys.jkeygen.utils.V3CertificateUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -62,10 +62,22 @@ public class X509CertificateBuilder {
 	private GeneralNames subjectAltNames;
 
 	private AuthorityInformationAccess authorityInformationAccess;
+	
+	private String signatureAlgoritm;
 
-	private final BuilderChecker checker = new BuilderChecker(X509CertificateBuilder.class);
+	boolean dirty = false;
 	public X509CertificateHolder build(PrivateKey issuerPrivatekey) {
-		checker.checkDirty();
+		if(dirty)throw new IllegalStateException("Builder can not be reused");
+		dirty=true;
+		
+		if(StringUtils.isBlank(signatureAlgoritm)) {
+			String algorithm = issuerPrivatekey.getAlgorithm();
+			if(StringUtils.equalsAnyIgnoreCase("DSA", algorithm)){
+				signatureAlgoritm = "SHA1withDSA";
+			} else if (StringUtils.equals("RSA", algorithm)){
+				signatureAlgoritm = "SHA256WithRSA";
+			}
+		}
 		
 		if(subjectSampleCertificate!=null){
 			if(subjectPublicKey==null) subjectPublicKey=V3CertificateUtils.extractPublicKey(subjectSampleCertificate);
@@ -183,7 +195,7 @@ public class X509CertificateBuilder {
 			throw new IllegalStateException(e);
 		}
 
-		ContentSigner signer = V3CertificateUtils.getContentSigner(issuerPrivatekey,"SHA1WithRSA");
+		ContentSigner signer = V3CertificateUtils.getContentSigner(issuerPrivatekey,signatureAlgoritm);
 
 		return v3CertGen.build(signer);
 
@@ -192,6 +204,11 @@ public class X509CertificateBuilder {
 	private void copyKeyUsage(X509CertificateHolder issuerCertificate) {
 		int ku = KeyUsageUtils.getKeyUsage(issuerCertificate);
 		if(ku!=-1)withKeyUsage(ku);
+	}
+
+	public X509CertificateBuilder withSignatureAlgoritm(String signatureAlgoritm) {
+		this.signatureAlgoritm = signatureAlgoritm;
+		return this;
 	}
 
 	public X509CertificateBuilder withCa(boolean ca) {
