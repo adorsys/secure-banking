@@ -18,6 +18,7 @@
 	<modules>
 		<module>jjwk</module>
 		<module>jtstamp</module>
+		<module>jkeyutils</module>
 	</modules>
 	<dependencyManagement>
 		<dependencies>			
@@ -44,6 +45,14 @@
 				<artifactId>commons-io</artifactId>
 				<version>2.5</version>
 			</dependency>
+			
+			<!-- https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk15on -->
+			<dependency>
+			    <groupId>org.bouncycastle</groupId>
+			    <artifactId>bcpkix-jdk15on</artifactId>
+			    <version>1.55</version>
+			</dependency>
+			
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>

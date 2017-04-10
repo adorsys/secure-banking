@@ -1,5 +1,7 @@
 package org.adorsys.jjwk.keystore;
 
+import javax.security.auth.callback.CallbackHandler;
+
 /**
  * Holds params used to load a keystore and containing keys.
  * 
@@ -12,8 +14,8 @@ public interface KeyStoreParams {
 	
 	public String getStoreType();
 	
-	public PasswordSource getKeyStorePassword();
+	public CallbackHandler getKeyStorePassCallbackHandler();
 	
-	public PasswordSource getKeyPassword();
+	public CallbackHandler getKeyPassCallbackHandler();
 
 }

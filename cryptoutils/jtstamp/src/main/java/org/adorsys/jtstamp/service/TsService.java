@@ -3,7 +3,8 @@ package org.adorsys.jtstamp.service;
 import java.util.Date;
 
 import org.adorsys.jjwk.selector.KeyPairRandomSelector;
-import org.adorsys.jjwk.selector.SignerAndAlgorithm;
+import org.adorsys.jjwk.selector.JWSSignerAndAlgorithm;
+import org.adorsys.jjwk.selector.JWSSignerAndAlgorithmBuilder;
 import org.adorsys.jtstamp.exception.TsMissingFieldException;
 import org.adorsys.jtstamp.exception.TsSignatureException;
 import org.adorsys.jtstamp.model.TsData;
@@ -70,7 +71,7 @@ public class TsService {
         
         JOSEObjectType typ = new JOSEObjectType(JOSE_OBJECT_TYPE_STAMP);
         JWK jwk = KeyPairRandomSelector.randomKey(privateKeys);
-        SignerAndAlgorithm signerAndAlgorithm = new SignerAndAlgorithm(jwk);
+        JWSSignerAndAlgorithm signerAndAlgorithm = JWSSignerAndAlgorithmBuilder.build(jwk);
         JWSHeader jwsHeader = null;
         if(data.isInclKid()){
         	jwsHeader = new JWSHeader(signerAndAlgorithm.getJwsAlgorithm(), typ , null, null, 

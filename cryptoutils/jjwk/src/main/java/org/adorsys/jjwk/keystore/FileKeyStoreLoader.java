@@ -8,6 +8,10 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -30,7 +34,7 @@ public class FileKeyStoreLoader implements KeyStoreLoader {
 	 * @param keyStorePasswordSrc
 	 * @param create
 	 */
-	public FileKeyStoreLoader(String keyStorFileName, String storeType, PasswordSource keyStorePasswordSrc, boolean create) {
+	public FileKeyStoreLoader(String keyStorFileName, String storeType, CallbackHandler keyStorePasswordSrc) {
 
 		// Use default type if blank.
 		if (StringUtils.isBlank(storeType))
@@ -44,25 +48,18 @@ public class FileKeyStoreLoader implements KeyStoreLoader {
 		File keyStorFile = new File(keyStorFileName);
 		if (keyStorFile.exists()) {
 			java.io.FileInputStream fis = null;
+			PasswordCallback passwordCallback = new PasswordCallback(keyStorFileName, false);
 			try {
+				keyStorePasswordSrc.handle(new PasswordCallback[]{passwordCallback});
 				fis = new java.io.FileInputStream(keyStorFileName);
-				ks.load(fis, keyStorePasswordSrc.getPassword(null));
+				ks.load(fis, passwordCallback.getPassword());
 			} catch (NoSuchAlgorithmException | CertificateException | IOException e) {
 				throw new IllegalStateException(e);
-			} finally {
-				keyStorePasswordSrc.cleanup();
-				IOUtils.closeQuietly(fis);
-			}
-		} else if (create){
-			FileOutputStream fos = null;
-			try {
-				fos = new FileOutputStream(keyStorFile);
-				ks.store(fos, keyStorePasswordSrc.getPassword(null));
-			} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
+			} catch (UnsupportedCallbackException e) {
 				throw new IllegalStateException(e);
 			} finally {
-				keyStorePasswordSrc.cleanup();
-				IOUtils.closeQuietly(fos);
+				passwordCallback.clearPassword();
+				IOUtils.closeQuietly(fis);
 			}
 		} else {
 			throw new IllegalStateException("Key store no found on the given address");

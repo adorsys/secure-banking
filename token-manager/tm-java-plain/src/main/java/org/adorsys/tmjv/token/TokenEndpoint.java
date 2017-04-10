@@ -14,7 +14,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.adorsys.jjwk.selector.KeyPairRandomSelector;
-import org.adorsys.jjwk.selector.SignerAndAlgorithm;
+import org.adorsys.jjwk.selector.JWSSignerAndAlgorithm;
+import org.adorsys.jjwk.selector.JWSSignerAndAlgorithmBuilder;
 import org.adorsys.tmjv.key.ServerKeys;
 import org.apache.commons.lang3.StringUtils;
 
@@ -59,7 +60,6 @@ public class TokenEndpoint {
             @ApiResponse(code = 500, message = "Internal Server Error", response = AccessToken.class)
     })
     public Response token(@Context HttpServletRequest request, Jwt jwt) {
-//        JWSSigner signer = new RSASSASigner(tmSignKey.getPrivateKey());
         Builder builder = new JWTClaimsSet.Builder();
 
         if (StringUtils.isNotBlank(jwt.getAud())) {
@@ -90,7 +90,7 @@ public class TokenEndpoint {
 
         JOSEObjectType typ = JOSEObjectType.JWT;
         JWK jwk = KeyPairRandomSelector.randomKey(serverKeys.getKeys());
-        SignerAndAlgorithm signerAndAlgorithm = new SignerAndAlgorithm(jwk);
+        JWSSignerAndAlgorithm signerAndAlgorithm = JWSSignerAndAlgorithmBuilder.build(jwk);
 		JWSHeader jwsHeader = new JWSHeader(signerAndAlgorithm.getJwsAlgorithm(), typ , null, null, 
 				null, null, null, null, null, null, jwk.getKeyID(), null, null);
         SignedJWT signedJWT = new SignedJWT(jwsHeader,claimsSet);
