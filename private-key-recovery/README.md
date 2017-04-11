@@ -4,32 +4,39 @@
 
 We are working on a lot of processes involving the processing and storage of critical data by computer systems. Most of these processes involve the possession of a key pair by each participant. Sample operation involving or requiring the ownership of keys are:
 
-* The possession of a crypto currency
-  Most crypto currency realms require the user to own a key pair. The user can share his public key to receive payment, the user must use the private key to make payment. 
-* Secure messaging 
-  A secure messaging environment will also require the user to own a key pair. This is the case with pgp and smime based email.
+### The possession of a crypto currency
+Most crypto currency realms require the user to own a key pair. The user can share his public key to receive payment, the user must use the private key to make payment. 
 
-There is even more stuff moving in the direction fo electronic data processing. The use of cryptographic keys becoming more critical than ever.
+### Secure messaging 
+A secure messaging environment will also require the user to own a key pair. This is the case with pgp and smime based email.
 
+### Secure data storage
+Individual encryption of critical user data in the data center is an even more prominent issue as more and more data leak often lead to disclosure user data like credit card data and personal identification numbers.  
+
+### Makes cryptographic key critical
+There is even more stuff moving in the direction of electronic data processing. The use of cryptographic keys becoming more critical than ever.
+
+## Purpose 
 The main purpose of this work is to combine techniques and processes to provide a way to recover from lost private key, while keeping them as private as they are today.
  
 * If the missing key pair was used to hold a crypto currency, the money is lost.
 * If the missing key pair was used to involve into secure messaging, older messages can not be read anymore.
-* if the missing key pair was used to protect some data, access to that data is gone. 
+* If the missing key pair was used to protect some data, access to that data is gone. 
 
-Observation of the crypto based tool market show that the securing of the private key is left to the owner of the key pair. This strongly limits the extent of user who have access to these technology. A computer savy person might backup his key pair in a way to prevent access form malicious entities. This is not the case of a standard person.
+Observation of the crypto based tool market shows that the securing of the private key is left to the owner of the key pair. This strongly limits the extent of user who have access to these technology. A computer savy person might backup his key pair in a way to prevent access form malicious entities. This is not the case of a common person.
 
 The main problem associated with the possession of a key pair is that if the user loses access to his private key, all information protected by that key pair can not be used. 
 
 ## Trusted Party
 
-The core idea of this work build on the notion of trust. I want to give part of my key to someone I trust.
+The core idea of this work build on the notion of trust. I want to give part of my key to someone I trust or put it into something I control.
 
 A trusted party is a party I trust. 
 * A party that defines some processes used to identify me.
 * A party I can give some piece of information to and be sure that he will only give it back to me after proper identification.
 
-Example trusted parties are:
+### Institutions as Trusted Parties
+
 * The bank that holds my bank account
 * The department of driver license of my county
 * My insurance company
@@ -37,17 +44,21 @@ Example trusted parties are:
 * My email provider (like google)
 * My telecom provider
 
+### People as Trusted Parties
+
 But trusted parties must not always be institutions, they can also be:
 * My wife
 * My mom
 * my friend
 
+### Devices as Trusted Parties
+
 My trusted parties can also just be devices I own. In this case, these devices will be used to protect each order.
 
-A difference between an institution and a single person are:
+A difference between an institution and people are:
 * An institution provides a cleaner identification process
 * An institution can provide more reliable data storage to keep trustee key data
-* A private person assuming this role will have to find a solution for the recovery of key data entrusted to him. This can be:
+* A person bearing this role will have to find a solution for the recovery of key data entrusted to him. This can be:
   * His drop box account
   * His email account
   Beware that that those entrusted key data are well encrypted and can not be used by the storage provider anyway.  
@@ -56,7 +67,7 @@ A difference between an institution and a single person are:
 ## Sample Workflow
 
 It all turns around splitting and sharing private key (Master Key) to trusted parties
-* In order to backup the key pair, the owner splitts the key pair and encrypts each chunk with the public key of the a trusted party.
+* In order to backup the key pair, the owner splits the private key and encrypts each chunk with the public key of the corresponding trusted party.
   * The public key encrypted chunk can be sent to the trusted party for storage.
     * This approach bears the risk, that data are out of the user's control.
     * But there is no extra backup need by the user. 
@@ -64,7 +75,7 @@ It all turns around splitting and sharing private key (Master Key) to trusted pa
     * This approach bears the risk that the user might renew his key and make our key protection useless.
     * Then a notification mechanism will have to be implemented to allow for update of key chunk when trusted party public key changes.
 
-In order to manage revocation, it might be a better idea to to directly send the encrypted chunk of the master key to the trusted. An indirection can allow us to generate a secret key (Master Key Encryption Key) that is used to encrypt the private key (Master Key) 
+In order to manage revocation, it might be a better idea to directly send the encrypted chunk of the master key to the trusted party. An indirection can allow us to generate a secret key (Master Key Encryption Key) that is used to encrypt the key pair (Master Key) 
 
 * We will have to backup the encrypted master key and 
 * Chunk and public key encrypt the "Master Key Encryption Key" with trusted's public key.
@@ -85,7 +96,7 @@ The master key shall normally be generated by the system that uses the private k
 
 ### Recovering the Master Key
 
-The master key must also be recovered by the application that use the private key. If the key using system does not have a database, the system can be connected to standard data storage system like emails, dropbox... 
+The master key must also be recovered by the application that uses the private key. If the key using system does not have a database, the system can be connected to standard data storage system like emails, dropbox... 
 
 ### Protecting the Master Key
 * Generate and maintain a key pair for an entity (Storing the key on the key using device).
@@ -107,7 +118,7 @@ The master key must also be recovered by the application that use the private ke
 
 The main problem we still have with this approach is that if the user loses this key, there won't be any way or recovering his master key.
 
-#### How do we recover from the a lost master key
+### How do we recover from the a lost master key
 * For a given combination of trusted parties
   * We generate a recovery key pair (rk) and send the rk-encryption key to the user.
   * We send a recovery request to trusted each party. When the trusted party logs in to help his trustee, we do the following
