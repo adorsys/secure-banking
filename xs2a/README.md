@@ -5,23 +5,26 @@ The service uses hbci in the background to access PSU banking information.
 
 ## Building and running
 
-### hbci4java fork 
+The easy way using docker is described [here](../README.md#xs2a)
+If you want to do it on your own you have to build the parent directory, the hbci4java fork and the multibanking adpater as described below.
 
- ```
+### hbci4java fork
+
+ ```bash
  git clone https://github.com/tadschik/hbci4java.git
  mvn clean install -f hbci4java/pom.xml
  ```
 
 ### Build the multibanking adapter
 
- ```
+ ```bash
  git clone https://github.com/adorsys/multibanking.git
  mvn clean install -f multibanking/onlinebanking-adapter/pom.xml
  ```
 
 ### Build this project and start with wildfly swarm
 
- ```
+ ```bash
  mvn clean install wildfly-swarm:run
  ```
 
@@ -29,6 +32,5 @@ The service uses hbci in the background to access PSU banking information.
 
 ### Swagger UI
 
-locate your browser at: http://localhost:8080/swagger-ui/#/
-
-In the swagger url field, enter: http://localhost:8080/swagger.json and click explore.
+Follow Link to the documented [Swagger API](
+    http://localhost:8080/swagger-ui/?url=localhost:8080/swagger.json)
