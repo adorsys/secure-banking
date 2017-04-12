@@ -15,4 +15,4 @@ Just run...
 docker run -it -v $PWD:/usr/src/app -p 8090:8080 adorsys/openjdk-build-base /usr/src/app/scripts/runxs2a.sh
 ```
 
-This might take some time. If everything is fine you find your documented API [here](http://localhost:8090/swagger-ui/?url=localhost:8090/swagger.json)
+This might take some time. If everything is fine you find your documented API [here](http://localhost:8090/swagger-ui/?url=http://localhost:8090/swagger.json)
