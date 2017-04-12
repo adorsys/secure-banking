@@ -33,4 +33,4 @@ If you want to do it on your own you have to build the parent directory, the hbc
 ### Swagger UI
 
 Follow Link to the documented [Swagger API](
-    http://localhost:8080/swagger-ui/?url=localhost:8080/swagger.json)
+    http://localhost:8080/swagger-ui/?url=http://localhost:8080/swagger.json)
