@@ -1,7 +1,3 @@
-# Secure Device Storage - IOS
+# Secure Device Storage - iOS
 
-## Introduction
-
-This link covers security aspect of the IOS keychain :
-
-https://developer.apple.com/library/content/documentation/Security/Conceptual/keychainServConcepts/02concepts/concepts.html
+The project has been moved to a separate repository. It can be found here: https://github.com/adorsys/secure-banking-ios

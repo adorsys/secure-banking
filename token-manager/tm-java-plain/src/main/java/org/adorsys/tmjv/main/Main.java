@@ -23,9 +23,9 @@ public class Main {
         final SwaggerArchive archive = deployment.as(SwaggerArchive.class);
 
         // Tell swagger where our resources are
-        archive.setResourcePackages("org.adorsys.tmjv.token");
+        archive.setResourcePackages("org.adorsys.tmjv.token","org.adorsys.tmjv.ts");
 
-        archive.setTitle("Token Manager Demo");
+        archive.setTitle("Token Manager Application");
 
         swarm.start();
 
