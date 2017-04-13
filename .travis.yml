@@ -1,49 +1,10 @@
-language: android
+-language: java
 
 jdk:
   - oraclejdk8
 
-before_script:
-  - echo no | android create avd --force -n test -t android-21 --abi armeabi-v7a
-  - emulator -avd test -no-skin -no-audio -no-window &
-  - android-wait-for-emulator
-  - adb shell input keyevent 82 &
-
 script:
   - mvn package -fae -am -B -V -U
-  - android list target
-  - bash -c 'cd secure-device-storage/sds-android/ && ./gradlew connectedAndroidTest'
-  - bash -c 'cd secure-mobile-push/smp-android-client/ && ./gradlew connectedAndroidTest'
-  - bash -c 'cd sms-parser/android-sms-parser/ && ./gradlew connectedAndroidTest'
-
+  
 install:
   - mvn install -DskipTests -Dmaven.javadoc.skip=true -B -V
-
-android:
-  components:
-  - tools
-  - platform-tools
-  - android-25
-  - build-tools-25.0.2
-  - extra-android-m2repository
-  - extra-google-m2repository
-  - extra-android-support
-  - extra-google-google_play_services
-  sudo: false
-  licenses:
-  - android-sdk-preview-license-.+
-  - android-sdk-license-.+
-  - google-gdk-license-.+
-  - intel-android-extra-license.+
-env:
-  global:
-  - ADB_INSTALL_TIMEOUT=8
-
-before_cache:
-  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
-cache:
-  directories:
-  - $HOME/.gradle/caches/
-  - $HOME/.gradle/wrapper/
-  - $HOME/.android/build-cache
