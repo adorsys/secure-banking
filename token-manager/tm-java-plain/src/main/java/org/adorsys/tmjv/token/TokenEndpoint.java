@@ -1,5 +1,7 @@
 package org.adorsys.tmjv.token;
 
+import java.util.List;
+
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -13,7 +15,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.adorsys.jjwk.selector.KeyPairRandomSelector;
+import org.adorsys.jjwk.keystore.JwkExport;
 import org.adorsys.jjwk.selector.JWSSignerAndAlgorithm;
 import org.adorsys.jjwk.selector.JWSSignerAndAlgorithmBuilder;
 import org.adorsys.tmjv.key.ServerKeys;
@@ -89,7 +91,8 @@ public class TokenEndpoint {
         JWTClaimsSet claimsSet = builder.build();
 
         JOSEObjectType typ = JOSEObjectType.JWT;
-        JWK jwk = KeyPairRandomSelector.randomKey(serverKeys.getKeys());
+        List<JWK> keypairs = JwkExport.selectKeypairs(serverKeys.getKeys());
+        JWK jwk = JwkExport.randomKey(keypairs);
         JWSSignerAndAlgorithm signerAndAlgorithm = JWSSignerAndAlgorithmBuilder.build(jwk);
 		JWSHeader jwsHeader = new JWSHeader(signerAndAlgorithm.getJwsAlgorithm(), typ , null, null, 
 				null, null, null, null, null, null, jwk.getKeyID(), null, null);

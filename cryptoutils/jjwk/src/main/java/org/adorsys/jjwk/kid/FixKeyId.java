@@ -8,7 +8,10 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.util.List;
 
+import javax.security.auth.callback.CallbackHandler;
+
 import org.adorsys.jjwk.keystore.JwkExport;
+import org.adorsys.jkeygen.keystore.PasswordCallbackUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.nimbusds.jose.JOSEException;
@@ -21,9 +24,9 @@ public class FixKeyId {
 	/**
 	 * Replaces each alias of a store with the base 64 encoded sha-1 thumbprint of the corresponding key.
 	 */
-	public static boolean fixKeyId(final KeyStore ks, char[] keypass) {
+	public static boolean fixKeyId(final KeyStore ks, CallbackHandler callbackHandler) {
 		try {
-			JWKSet exportPrivateKeys = JwkExport.exportPrivateKeys(ks, keypass);
+			JWKSet exportPrivateKeys = JwkExport.exportKeys(ks, callbackHandler);
 			List<JWK> keys = exportPrivateKeys.getKeys();
 			boolean change = false;
 			for (JWK jwk : keys) {
@@ -31,6 +34,7 @@ public class FixKeyId {
 				Base64URL thumbprint = jwk.computeThumbprint();
 				String expectedKeyId = thumbprint.toString().toLowerCase();
 				if(!StringUtils.equals(keyID, expectedKeyId)){
+					char[] keypass = PasswordCallbackUtils.getPassword(callbackHandler, keyID);
 					Key key = ks.getKey(keyID, keypass);
 					Certificate certificate = ks.getCertificate(keyID);
 					Certificate[] chain = {certificate};

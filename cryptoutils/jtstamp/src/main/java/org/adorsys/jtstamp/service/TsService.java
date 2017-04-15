@@ -1,8 +1,9 @@
 package org.adorsys.jtstamp.service;
 
 import java.util.Date;
+import java.util.List;
 
-import org.adorsys.jjwk.selector.KeyPairRandomSelector;
+import org.adorsys.jjwk.keystore.JwkExport;
 import org.adorsys.jjwk.selector.JWSSignerAndAlgorithm;
 import org.adorsys.jjwk.selector.JWSSignerAndAlgorithmBuilder;
 import org.adorsys.jtstamp.exception.TsMissingFieldException;
@@ -32,11 +33,11 @@ public class TsService {
 	
 	public static final String JOSE_OBJECT_TYPE_STAMP = "STAMP";
 
-	private final JWKSet privateKeys;
+	private final JWKSet serverKeys;
 
-	public TsService(JWKSet privateKeys) {
+	public TsService(JWKSet serverKeys) {
 		super();
-		this.privateKeys = privateKeys;
+		this.serverKeys = serverKeys;
 	}
 
 	/**
@@ -70,7 +71,8 @@ public class TsService {
         JWTClaimsSet claimsSet = builder.build();
         
         JOSEObjectType typ = new JOSEObjectType(JOSE_OBJECT_TYPE_STAMP);
-        JWK jwk = KeyPairRandomSelector.randomKey(privateKeys);
+        List<JWK> keypairs = JwkExport.selectKeypairs(serverKeys);
+        JWK jwk = JwkExport.randomKey(keypairs);
         JWSSignerAndAlgorithm signerAndAlgorithm = JWSSignerAndAlgorithmBuilder.build(jwk);
         JWSHeader jwsHeader = null;
         if(data.isInclKid()){

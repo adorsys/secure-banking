@@ -7,7 +7,7 @@
 		<artifactId>cryptoutils</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 	</parent>
-	<artifactId>jtstamp</artifactId>
+	<artifactId>trustedp</artifactId>
 
 	<name>Simple Time stamping Component</name>
 	<properties>
@@ -16,10 +16,12 @@
 		<failOnMissingWebXml>false</failOnMissingWebXml>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<version.swagger>1.5.5</version.swagger>
+		<amazon_access_key_id>AKIAJ3O5RO226WWTHC2Q</amazon_access_key_id>
+		<amazon_secret_access_key>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</amazon_secret_access_key>
 	</properties>
 
 	<build>
-		<finalName>jtstamp</finalName>
+		<finalName>trustedp</finalName>
 	</build>
 
 	<dependencyManagement>
@@ -30,9 +32,20 @@
 				<artifactId>jjwk</artifactId>
 				<version>1.0.0-SNAPSHOT</version>
 			</dependency>
+			<dependency>
+				<groupId>com.amazonaws</groupId>
+				<artifactId>aws-java-sdk-bom</artifactId>
+				<version>1.11.119</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 	<dependencies>
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk-s3</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>io.swagger</groupId>
 			<artifactId>swagger-annotations</artifactId>
@@ -45,10 +58,6 @@
 			<groupId>com.nimbusds</groupId>
 			<artifactId>nimbus-jose-jwt</artifactId>
 		</dependency>
-		
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-		</dependency>
+
 	</dependencies>
 </project>

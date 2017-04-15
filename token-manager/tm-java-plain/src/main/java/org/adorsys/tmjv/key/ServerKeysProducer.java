@@ -1,15 +1,21 @@
 package org.adorsys.tmjv.key;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+
 import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Produces;
 import javax.security.auth.callback.CallbackHandler;
 
 import org.adorsys.envutils.EnvPropPasswordCallbackHandler;
 import org.adorsys.envutils.EnvProperties;
-import org.adorsys.jjwk.keystore.FileBasedPrivateKeysSource;
-import org.adorsys.jjwk.keystore.KeyStoreParams;
-
-import com.nimbusds.jose.jwk.JWKSet;
+import org.adorsys.jjwk.keystore.JwkExport;
+import org.adorsys.jkeygen.keystore.KeyStoreService;
 
 public class ServerKeysProducer {
 
@@ -17,32 +23,20 @@ public class ServerKeysProducer {
 
 	@PostConstruct
 	public void initCredentials() {
-		KeyStoreParams keyStoreParams = new KeyStoreParams() {
+		
+		String storeType = EnvProperties.getEnvOrSysProp("TOKEN_MANAGER_KEY_STORE_TYPE", false);
+		String keystoreFilename = EnvProperties.getEnvOrSysProp("TOKEN_MANAGER_KEY_STORE_FILE", false);
+		CallbackHandler keyStorePassCallbackHandler = new EnvPropPasswordCallbackHandler("TOKEN_MANAGER_KEY_STORE_PASSWORD");
+		CallbackHandler keyPassCallbackHandler = new EnvPropPasswordCallbackHandler("TOKEN_MANAGER_KEY_ENTRY_PASSWORD");
 
-			@Override
-			public String getStoreType() {
-				return EnvProperties.getEnvOrSysProp("TOKEN_MANAGER_KEY_STORE_TYPE", false);
-			}
-
-			@Override
-			public String getKeystoreFilename() {
-				return EnvProperties.getEnvOrSysProp("TOKEN_MANAGER_KEY_STORE_FILE", false);
-			}
-
-			@Override
-			public CallbackHandler getKeyStorePassCallbackHandler() {
-				return new EnvPropPasswordCallbackHandler("TOKEN_MANAGER_KEY_STORE_PASSWORD");
-			}
-
-			@Override
-			public CallbackHandler getKeyPassCallbackHandler() {
-				return new EnvPropPasswordCallbackHandler("TOKEN_MANAGER_KEY_ENTRY_PASSWORD");
-			}
-		};
-
-		FileBasedPrivateKeysSource keysSource = new FileBasedPrivateKeysSource(keyStoreParams);
-		JWKSet keys = keysSource.load();
-		holder = new ServerKeys(keys);
+		KeyStore keyStore;
+		try {
+			keyStore = KeyStoreService.loadKeyStore(new FileInputStream(keystoreFilename), "tmjv", storeType, keyStorePassCallbackHandler);
+		} catch (UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException | CertificateException
+				| IOException e) {
+			throw new IllegalStateException(e);
+		}
+		holder = new ServerKeys(JwkExport.exportKeys(keyStore, keyPassCallbackHandler));
 	}
 
 	@Produces

@@ -5,23 +5,16 @@ import javax.security.auth.callback.CallbackHandler;
 import org.adorsys.jkeygen.keypair.CertificationResult;
 import org.adorsys.jkeygen.keypair.SelfSignedKeyPairData;
 
-public class KeyPairStoreData {
+public class KeyPairData extends KeyEntryData {
 
 	private final SelfSignedKeyPairData keyPairs;
 	
 	private final CertificationResult certification;
 	
-	private final CallbackHandler passwordSource;
-	
-	private final String alias;
-
-	public KeyPairStoreData(SelfSignedKeyPairData keyPairs, CertificationResult certification,
-			CallbackHandler passwordSource, String alias) {
-		super();
+	public KeyPairData(SelfSignedKeyPairData keyPairs, CertificationResult certification, String alias, CallbackHandler passwordSource) {
+		super(alias, passwordSource);
 		this.keyPairs = keyPairs;
 		this.certification = certification;
-		this.passwordSource = passwordSource;
-		this.alias = alias;
 	}
 
 	public SelfSignedKeyPairData getKeyPairs() {
@@ -30,13 +23,5 @@ public class KeyPairStoreData {
 
 	public CertificationResult getCertification() {
 		return certification;
-	}
-
-	public CallbackHandler getPasswordSource() {
-		return passwordSource;
-	}
-
-	public String getAlias() {
-		return alias;
 	}
 }

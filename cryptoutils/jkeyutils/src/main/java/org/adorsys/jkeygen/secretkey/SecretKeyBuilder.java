@@ -1,22 +1,20 @@
-package org.adorsys.jkeygen.keypair;
+package org.adorsys.jkeygen.secretkey;
 
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
+import java.security.Provider;
 import java.util.List;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 
 import org.adorsys.jkeygen.utils.ProviderUtils;
 import org.adorsys.jkeygen.validation.BatchValidator;
 import org.adorsys.jkeygen.validation.KeyValue;
 import org.adorsys.jkeygen.validation.ListOfKeyValueBuilder;
 
-/**
- * Instantiates and returns a key pair certificate.
- * 
- * @author fpo
- *
- */
-public class KeyPairBuilder {
+public class SecretKeyBuilder {
+
+	private static Provider provider = ProviderUtils.bcProvider;
 	
 	private Integer keyLength;
 	private String keyAlg;
@@ -29,7 +27,7 @@ public class KeyPairBuilder {
 	 * @return KeyPairAndCertificateHolder
 	 */
 	boolean dirty = false;
-	public KeyPair build() {
+	public SecretKey build() {
 		if(dirty)throw new IllegalStateException("Builder can not be reused");
 		dirty=true;
 		List<KeyValue> notNullCheckList = ListOfKeyValueBuilder.newBuilder()
@@ -40,25 +38,25 @@ public class KeyPairBuilder {
 		if(nullList!=null && !nullList.isEmpty()){
 			throw new IllegalArgumentException("Fields can not be null: " + nullList);
 		}
-		// Generate a key pair for the new EndEntity
-		KeyPairGenerator kGen;
+		KeyGenerator kGen;
 		try {
-			kGen = KeyPairGenerator.getInstance(keyAlg, ProviderUtils.bcProvider);
+			kGen = KeyGenerator.getInstance(keyAlg, provider);
 		} catch (NoSuchAlgorithmException e) {
 			throw new IllegalStateException(e);
 		}
 
-		kGen.initialize(keyLength);
-		return kGen.generateKeyPair();
+		kGen.init(keyLength);
+		return kGen.generateKey();
 	}
 
-	public KeyPairBuilder withKeyLength(Integer keyLength) {
+	public SecretKeyBuilder withKeyLength(Integer keyLength) {
 		this.keyLength = keyLength;
 		return this;
 	}
 
-	public KeyPairBuilder withKeyAlg(String keyAlg) {
+	public SecretKeyBuilder withKeyAlg(String keyAlg) {
 		this.keyAlg = keyAlg;
 		return this;
 	}
+
 }
