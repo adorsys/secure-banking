@@ -7,12 +7,16 @@ import java.security.KeyStore;
 import javax.crypto.SecretKey;
 import javax.security.auth.callback.CallbackHandler;
 
+import org.adorsys.jjwk.keystore.JwkExport;
 import org.adorsys.jkeygen.keystore.KeyStoreService;
 import org.adorsys.jkeygen.keystore.KeystoreBuilder;
 import org.adorsys.jkeygen.keystore.SecretKeyData;
 import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
 import org.adorsys.jkeygen.pwd.PasswordMapCallbackHandler;
 import org.adorsys.jkeygen.secretkey.SecretKeyBuilder;
+
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
 
 public class TestKeyUtils {
 	
@@ -54,5 +58,10 @@ public class TestKeyUtils {
 	public static PasswordMapCallbackHandler.Builder callbackHandlerBuilder(String secretKeyAlias, char[] secretKeyPass){
 		return new PasswordMapCallbackHandler.Builder()
 				.withEntry(secretKeyAlias, secretKeyPass);
+	}
+	
+	public static JWK readKeyAsJWK(KeyStore keyStore, String alias, CallbackHandler callbackHandler){
+		JWKSet exportKeys = JwkExport.exportKeys(keyStore, callbackHandler);
+		return JwkExport.selectKey(exportKeys, alias);
 	}
 }

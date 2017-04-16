@@ -5,4 +5,7 @@ public class WrongKeyCredentialException extends Exception {
 	public WrongKeyCredentialException(Throwable cause) {
 		super(cause);
 	}
+	public WrongKeyCredentialException(String message) {
+		super(message);
+	}
 }

@@ -1,57 +1,42 @@
 package org.adorsys.encobject.service;
 
 import java.io.IOException;
-import java.security.Key;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
+import org.adorsys.encobject.domain.ContentMetaInfo;
 import org.adorsys.encobject.domain.KeyCredentials;
-import org.adorsys.encobject.domain.ObjectInfo;
+import org.adorsys.encobject.domain.ObjectHandle;
+import org.adorsys.jjwk.selector.UnsupportedEncAlgorithmException;
+import org.adorsys.jjwk.selector.UnsupportedKeyLengthException;
 import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
 import org.jclouds.blobstore.BlobStoreContext;
 
-import com.nimbusds.jose.crypto.factories.DefaultJWEDecrypterFactory;
-
 public class EncObjectService {
-	
-	private DefaultJWEDecrypterFactory decrypterFactory = new DefaultJWEDecrypterFactory();
+
 	private KeystorePersistence keystorePersistence;
-	private BlobStoreContext blobStoreContext;
-	private String container;
-	
+	private ObjectPersistence objectPersistence;
+
 	public EncObjectService(BlobStoreContext blobStoreContext) {
-		this.blobStoreContext = blobStoreContext;
 		this.keystorePersistence = new KeystorePersistence(blobStoreContext);
+		objectPersistence = new ObjectPersistence(blobStoreContext);
 	}
 
-
-	public ObjectInfo readObjectInfo(KeyCredentials keyCredentials, String handle) throws UnknownKeyStoreException, WrongKeystoreCredentialException, 
-		MissingKeystoreAlgorithmException, MissingKeystoreProviderException, MissingKeyAlgorithmException, 
-		CertificateException, IOException, WrongKeyCredentialException, ObjectInfoNotFoundException {
+	public byte[] readObject(KeyCredentials keyCredentials, ObjectHandle objectHandle)
+			throws UnknownKeyStoreException, WrongKeystoreCredentialException, MissingKeystoreAlgorithmException,
+			MissingKeystoreProviderException, MissingKeyAlgorithmException, CertificateException, IOException,
+			WrongKeyCredentialException, ObjectNotFoundException {
 		
-		// Retrieve key
-		String storeid = keyCredentials.getStoreid();
-		
-		// Load keystore data
-		KeyStore ks = keystorePersistence.loadKeystore(container, storeid, new PasswordCallbackHandler(keyCredentials.getStorepass().toCharArray()));
-		
-		Key key;
-		try {
-			key = ks.getKey(keyCredentials.getKeyid(), keyCredentials.getKeypass().toCharArray());
-		} catch (UnrecoverableKeyException e) {
-			throw new WrongKeyCredentialException(e);
-		} catch (KeyStoreException e) {
-			// Initialization mus have happened
-			throw new IllegalStateException(e);
-		} catch (NoSuchAlgorithmException e) {
-			throw new MissingKeyAlgorithmException(e.getMessage(), e);
-		}
-//		return loadUnzipObjectInfo(handle, key);
-		return null;
+		KeyStore keyStore = keystorePersistence.loadKeystore(keyCredentials.getHandle().getContainer(), 
+				keyCredentials.getHandle().getName(), new PasswordCallbackHandler(keyCredentials.getStorepass().toCharArray()));
+		return objectPersistence.loadObject(objectHandle, keyStore, new PasswordCallbackHandler(keyCredentials.getKeypass().toCharArray()));
 	}
-
-
+	
+	public void writeObject(byte[] data, ContentMetaInfo metaIno, ObjectHandle handle, KeyCredentials keyCredentials)
+			throws CertificateException, UnknownKeyStoreException, WrongKeystoreCredentialException, 
+			MissingKeystoreAlgorithmException, MissingKeystoreProviderException, MissingKeyAlgorithmException, IOException, UnsupportedEncAlgorithmException, WrongKeyCredentialException, UnsupportedKeyLengthException{
+		KeyStore keyStore = keystorePersistence.loadKeystore(keyCredentials.getHandle().getContainer(), 
+				keyCredentials.getHandle().getName(), new PasswordCallbackHandler(keyCredentials.getStorepass().toCharArray()));
+		objectPersistence.storeObject(data, metaIno, handle, keyStore, keyCredentials.getKeyid(), new PasswordCallbackHandler(keyCredentials.getKeypass().toCharArray()), null);
 	}
+}

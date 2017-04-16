@@ -50,6 +50,13 @@ public class JwkExport {
     	return new JWKSelector(keyPairs).select(exportKeys);
 	}
 	
+	public static JWK selectKey(JWKSet exportKeys, String keyId){
+    	JWKMatcher matcher = new JWKMatcher.Builder().keyID(keyId).build();
+    	List<JWK> keys = new JWKSelector(matcher).select(exportKeys);
+    	if(keys==null || keys.isEmpty()) return null;
+    	return keys.iterator().next();
+	}
+	
 
 	public static JWKSet exportKeys(KeyStore keyStore, CallbackHandler callbackHandler){
 		PasswordLookup pwLookup = new PasswordLookup() {

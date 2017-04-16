@@ -6,21 +6,21 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel(value="KeyCredentials", description="Contains information necessary to retrieve a key from a key store. The type or format of the key store is not relevant for this interface.")
 public class KeyCredentials {
 	
-	private String storeid;
+	private ObjectHandle handle;
 	
 	private String storepass;
 	
 	private String keyid;
 	
 	private String keypass;
-
-    @ApiModelProperty(value = "The id of the key store in the realm")
-	public String getStoreid() {
-		return storeid;
+	
+	@ApiModelProperty(value = "The reference to the object in the remote storage.")
+    public ObjectHandle getHandle() {
+		return handle;
 	}
 
-	public void setStoreid(String storeid) {
-		this.storeid = storeid;
+	public void setHandle(ObjectHandle handle) {
+		this.handle = handle;
 	}
 
     @ApiModelProperty(value = "The password used to access the keystore.")
