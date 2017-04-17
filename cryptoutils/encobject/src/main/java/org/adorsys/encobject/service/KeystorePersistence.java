@@ -1,7 +1,6 @@
 package org.adorsys.encobject.service;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -11,12 +10,9 @@ import java.security.cert.CertificateException;
 
 import javax.security.auth.callback.CallbackHandler;
 
+import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.domain.keystore.KeystoreData;
 import org.adorsys.jkeygen.keystore.KeyStoreService;
-import org.jclouds.blobstore.BlobStore;
-import org.jclouds.blobstore.BlobStoreContext;
-import org.jclouds.blobstore.ContainerNotFoundException;
-import org.jclouds.blobstore.domain.Blob;
 
 import com.google.protobuf.ByteString;
 
@@ -28,36 +24,38 @@ import com.google.protobuf.ByteString;
  */
 public class KeystorePersistence {
 	
-	private BlobStoreContext blobStoreContext;
+	private BlobStoreConnection blobStoreConnection;
 	
-	public KeystorePersistence(BlobStoreContext blobStoreContext) {
-		super();
-		this.blobStoreContext = blobStoreContext;
+	public KeystorePersistence(BlobStoreContextFactory blobStoreContextFactory) {
+		this.blobStoreConnection = new BlobStoreConnection(blobStoreContextFactory);
 	}
 
-	public void saveStore(KeyStore keystore, CallbackHandler storePassHandler, String container, String storeid) throws NoSuchAlgorithmException, CertificateException{
-		String storeType = keystore.getType();
+	public void saveKeyStore(KeyStore keystore, CallbackHandler storePassHandler, ObjectHandle handle) throws NoSuchAlgorithmException, CertificateException, UnknownContainerException{
 		try {
-			byte[] bs = KeyStoreService.toByteArray(keystore, storeid, storePassHandler);
+			String storeType = keystore.getType();
+			byte[] bs = KeyStoreService.toByteArray(keystore, handle.getName(), storePassHandler);
 			KeystoreData keystoreData = KeystoreData.newBuilder().setType(storeType).setKeystore(ByteString.copyFrom(bs)).build();
-			BlobStore blobStore = blobStoreContext.getBlobStore();
-			blobStore.createContainerInLocation(null, container);
-			// add blob
-			Blob blob = blobStore.blobBuilder(storeid)
-			.payload(keystoreData.toByteArray())
-			.build();
-			blobStore.putBlob(container, blob);
+			blobStoreConnection.putBlob(handle, keystoreData.toByteArray());
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
 	}
 	
-	public KeyStore loadKeystore(String container, String storeid, CallbackHandler handler) throws UnknownKeyStoreException, CertificateException, WrongKeystoreCredentialException, MissingKeystoreAlgorithmException, MissingKeystoreProviderException, MissingKeyAlgorithmException, IOException{
-		KeystoreData keystoreData = loadKeystoreData(container, storeid);
-		return loadKeystore(keystoreData, storeid, handler);
+	public KeyStore loadKeystore(ObjectHandle handle, CallbackHandler handler) throws ObjectNotFoundException, CertificateException, WrongKeystoreCredentialException, MissingKeystoreAlgorithmException, MissingKeystoreProviderException, MissingKeyAlgorithmException, IOException, UnknownContainerException{
+		KeystoreData keystoreData = loadKeystoreData(handle);
+		return initKeystore(keystoreData, handle.getName(), handler);
 	}	
+	
+	private KeystoreData loadKeystoreData(ObjectHandle handle) throws ObjectNotFoundException, UnknownContainerException{
+		byte[] keyStoreBytes = blobStoreConnection.getBlob(handle);
+		try {
+			return KeystoreData.parseFrom(keyStoreBytes);
+		} catch (IOException e) {
+			throw new IllegalStateException("Invalid protocol buffer", e);
+		}
+	}
 
-	private KeyStore loadKeystore(KeystoreData keystoreData, String storeid, CallbackHandler handler) throws WrongKeystoreCredentialException, MissingKeystoreAlgorithmException, MissingKeystoreProviderException, MissingKeyAlgorithmException, CertificateException, IOException {
+	private KeyStore initKeystore(KeystoreData keystoreData, String storeid, CallbackHandler handler) throws WrongKeystoreCredentialException, MissingKeystoreAlgorithmException, MissingKeystoreProviderException, MissingKeyAlgorithmException, CertificateException, IOException {
 		try {
 			return KeyStoreService.loadKeyStore(keystoreData.getKeystore().toByteArray(), storeid, keystoreData.getType(), handler);
 		} catch (UnrecoverableKeyException e) {
@@ -75,30 +73,6 @@ public class KeystorePersistence {
 			throw new IllegalStateException("Unidentified keystore exception", e);
 		} catch (NoSuchAlgorithmException e) {
 			throw new MissingKeyAlgorithmException(e.getMessage(), e);
-		}
-	}
-	
-	private KeystoreData loadKeystoreData(String container, String storeid) throws UnknownKeyStoreException{
-		BlobStore blobStore = blobStoreContext.getBlobStore();
-		Blob blob;
-		try {
-			blob = blobStore.getBlob(container, storeid);
-			if(blob==null)  throw new UnknownKeyStoreException(container + "/" + storeid);
-		} catch (ContainerNotFoundException e){
-			throw new UnknownKeyStoreException(container);			
-		}
-		
-		InputStream inputStream;
-		try {
-			inputStream = blob.getPayload().openStream();
-		} catch (IOException e) {
-			throw new IllegalStateException(e);
-		}
-
-		try {
-			return KeystoreData.parseFrom(inputStream);
-		} catch (IOException e) {
-			throw new IllegalStateException("Invalid protocol buffer", e);
 		}
 	}
 }

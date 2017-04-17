@@ -3,27 +3,34 @@ package org.adorsys.encobject.utils;
 import java.io.File;
 import java.util.Properties;
 
+import org.adorsys.encobject.service.BlobStoreContextFactory;
 import org.jclouds.ContextBuilder;
 import org.jclouds.blobstore.BlobStoreContext;
 import org.jclouds.filesystem.reference.FilesystemConstants;
 
-public class TestFsBlobStoreFactory {
+public class TestFsBlobStoreFactory implements BlobStoreContextFactory {
 	
 	private static final String STORE_BASEDIR = "./target/filesystemstorage";
-
-	public static BlobStoreContext getTestBlobStoreContext(){
-		// setup where the provider must store the files
-		Properties properties = new Properties();
+	Properties properties = new Properties();
+	
+	public TestFsBlobStoreFactory(){
 		properties.setProperty(FilesystemConstants.PROPERTY_BASEDIR, STORE_BASEDIR);
-
-		// get a context with filesystem that offers the portable BlobStore api
-		return ContextBuilder.newBuilder("filesystem")
-		                 .overrides(properties)
-		                 .buildView(BlobStoreContext.class);
 	}
 	
 	public static boolean existsOnFs(String container, String name){
 		File file = new File(STORE_BASEDIR + "/" + container + "/" + name );
 		return file.exists();
+	}
+
+	@Override
+	public BlobStoreContext alocate() {
+		 return ContextBuilder.newBuilder("filesystem")
+         .overrides(properties)
+         .buildView(BlobStoreContext.class);
+	}
+
+	@Override
+	public void dispose(BlobStoreContext blobStoreContext) {
+		blobStoreContext.close();
 	}
 }

@@ -162,10 +162,15 @@ public class KeyStoreService {
 				PasswordCallbackUtils.getPassword(keyPairHolder.getPasswordSource(), keyPairHolder.getAlias()), chain);
 	}
 
-	public static void addToKeyStore(final KeyStore ks, SecretKeyData secretKeyData) throws KeyStoreException {
+	public static void addToKeyStore(final KeyStore ks, SecretKeyData secretKeyData) {
 		KeyStore.SecretKeyEntry entry = new KeyStore.SecretKeyEntry(secretKeyData.getSecretKey());
 		ProtectionParameter protParam = new KeyStore.PasswordProtection(PasswordCallbackUtils.getPassword(secretKeyData.getPasswordSource(), secretKeyData.getAlias()));
-		ks.setEntry(secretKeyData.getAlias(), entry, protParam);
+		try {
+			ks.setEntry(secretKeyData.getAlias(), entry, protParam);
+		} catch (KeyStoreException e) {
+			// Key store not initialized
+			throw new IllegalStateException(e);
+		}
 	}
 	
 	

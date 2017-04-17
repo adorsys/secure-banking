@@ -8,9 +8,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
+import org.adorsys.encobject.domain.ObjectHandle;
 import org.adorsys.encobject.utils.TestFsBlobStoreFactory;
 import org.adorsys.encobject.utils.TestKeyUtils;
-import org.jclouds.blobstore.BlobStoreContext;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -18,32 +18,43 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class KeystorePersistenceTest {
-	private static BlobStoreContext storeContext;
-	private static KeystorePersistence keystorePersistence;
 	private static String container = KeystorePersistenceTest.class.getSimpleName();
+	private static BlobStoreContextFactory storeContextFactory;
+	private static KeystorePersistence keystorePersistence;
+	private static ContainerPersistence containerPersistence;
 
 	@BeforeClass
 	public static void beforeClass(){
 		TestKeyUtils.turnOffEncPolicy();
-		storeContext = TestFsBlobStoreFactory.getTestBlobStoreContext();
-		Assume.assumeNotNull(storeContext);
-		keystorePersistence = new KeystorePersistence(storeContext);
+		storeContextFactory = new TestFsBlobStoreFactory();
+		keystorePersistence = new KeystorePersistence(storeContextFactory);
+		containerPersistence = new ContainerPersistence(storeContextFactory);
+		
+		try {
+			containerPersistence.creteContainer(container);
+		} catch (ContainerExistsException e) {
+			Assume.assumeNoException(e);
+		}
 
 	}
 	
 	@AfterClass
 	public static void afterClass(){
-		storeContext.getBlobStore().deleteContainer(container);
-		storeContext.close();
+		try {
+			if(containerPersistence!=null && containerPersistence.containerExists(container))
+				containerPersistence.deleteContainer(container);
+		} catch (UnknownContainerException e) {
+			Assume.assumeNoException(e);
+		}
 	} 
 
 	@Test
-	public void testStoreKeystore() throws NoSuchAlgorithmException, CertificateException {
+	public void testStoreKeystore() throws NoSuchAlgorithmException, CertificateException, UnknownContainerException {
 		String storeid = "sampleKeyStorePersistence";
 		char[] storePass = "aSimplePass".toCharArray();
 		KeyStore keystore = TestKeyUtils.testSecretKeystore(storeid, storePass, "mainKey", "aSimpleSecretPass".toCharArray());
 		Assume.assumeNotNull(keystore);
-		keystorePersistence.saveStore(keystore, TestKeyUtils.callbackHandlerBuilder(storeid, storePass).build(), container, storeid);
+		keystorePersistence.saveKeyStore(keystore, TestKeyUtils.callbackHandlerBuilder(storeid, storePass).build(), new ObjectHandle(container, storeid));
 		Assert.assertTrue(TestFsBlobStoreFactory.existsOnFs(container, storeid));
 	}
 	
@@ -55,17 +66,17 @@ public class KeystorePersistenceTest {
 		KeyStore keystore = TestKeyUtils.testSecretKeystore(storeid, storePass, "mainKey", "aSimpleSecretPass".toCharArray());
 		Assume.assumeNotNull(keystore);
 		try {
-			keystorePersistence.saveStore(keystore, TestKeyUtils.callbackHandlerBuilder(storeid, storePass).build(), container, storeid);
-		} catch (NoSuchAlgorithmException | CertificateException e) {
+			keystorePersistence.saveKeyStore(keystore, TestKeyUtils.callbackHandlerBuilder(storeid, storePass).build(), new ObjectHandle(container, storeid));
+		} catch (NoSuchAlgorithmException | CertificateException | UnknownContainerException e) {
 			Assume.assumeNoException(e);
 		}
 		
 		KeyStore loadedKeystore = null;
 		try {
-			loadedKeystore = keystorePersistence.loadKeystore(container, storeid, TestKeyUtils.callbackHandlerBuilder(storeid, storePass).build());
-		} catch (CertificateException | UnknownKeyStoreException | WrongKeystoreCredentialException
+			loadedKeystore = keystorePersistence.loadKeystore(new ObjectHandle(container, storeid), TestKeyUtils.callbackHandlerBuilder(storeid, storePass).build());
+		} catch (CertificateException | ObjectNotFoundException | WrongKeystoreCredentialException
 				| MissingKeystoreAlgorithmException | MissingKeystoreProviderException | MissingKeyAlgorithmException
-				| IOException e) {
+				| IOException | UnknownContainerException e) {
 			Assume.assumeNoException(e);
 		}
 		Assert.assertNotNull(loadedKeystore);

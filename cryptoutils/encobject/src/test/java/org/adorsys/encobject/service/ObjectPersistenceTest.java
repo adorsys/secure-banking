@@ -14,7 +14,6 @@ import org.adorsys.encobject.utils.TestKeyUtils;
 import org.adorsys.jjwk.selector.UnsupportedEncAlgorithmException;
 import org.adorsys.jjwk.selector.UnsupportedKeyLengthException;
 import org.adorsys.jkeygen.pwd.PasswordCallbackHandler;
-import org.jclouds.blobstore.BlobStoreContext;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -26,9 +25,10 @@ import com.nimbusds.jose.JWEAlgorithm;
 
 public class ObjectPersistenceTest {
 
-	private static String container = KeystorePersistenceTest.class.getSimpleName();
-	private static BlobStoreContext storeContext;
+	private static String container = ObjectPersistenceTest.class.getSimpleName();
+	private static BlobStoreContextFactory storeContextFactory;
 	private static ObjectPersistence objectInfoPersistence;
+	private static ContainerPersistence containerPersistence;
 	private static KeyStore keyStore;
 	private static CallbackHandler secretKeyPassHandler;
 	private static String secretKeyAlias = "mainKey";
@@ -37,12 +37,17 @@ public class ObjectPersistenceTest {
 	@BeforeClass
 	public static void beforeClass(){
 		TestKeyUtils.turnOffEncPolicy();
-		storeContext = TestFsBlobStoreFactory.getTestBlobStoreContext();
-		Assume.assumeNotNull(storeContext);
-		objectInfoPersistence = new ObjectPersistence(storeContext);
+		storeContextFactory = new TestFsBlobStoreFactory();
+		objectInfoPersistence = new ObjectPersistence(storeContextFactory);
+		containerPersistence = new ContainerPersistence(storeContextFactory);
+		
+		try {
+			containerPersistence.creteContainer(container);
+		} catch (ContainerExistsException e) {
+			Assume.assumeNoException(e);
+		}
 		
 		char[] secretKeyPass = "aSimpleSecretPass".toCharArray();
-		
 		String storeAlias = "mainKeyStore";
 		char[] storePass = "aSimpleStorePass".toCharArray();
 		keyStore = TestKeyUtils.testSecretKeystore(storeAlias, storePass, secretKeyAlias, secretKeyPass);
@@ -56,12 +61,16 @@ public class ObjectPersistenceTest {
 
 	@AfterClass
 	public static void afterClass(){
-		storeContext.getBlobStore().deleteContainer(container);
-		storeContext.close();
+		try {
+			if(containerPersistence!=null && containerPersistence.containerExists(container))
+				containerPersistence.deleteContainer(container);
+		} catch (UnknownContainerException e) {
+			Assume.assumeNoException(e);
+		}
 	} 
 
 	@Test
-	public void testStoreObject() throws UnsupportedEncAlgorithmException, UnsupportedEncodingException, WrongKeyCredentialException, UnsupportedKeyLengthException {
+	public void testStoreObject() throws UnsupportedEncAlgorithmException, UnsupportedEncodingException, WrongKeyCredentialException, UnsupportedKeyLengthException, UnknownContainerException {
 		byte[] data = "This is a sample String to be stored.".getBytes("UTF-8");
 		ContentMetaInfo metaIno = null;
 		String name = UUID.randomUUID().toString();
@@ -71,7 +80,7 @@ public class ObjectPersistenceTest {
 	}
 
 	@Test
-	public void testLoadObjectInfo() {
+	public void testLoadObjectInfo() throws UnknownContainerException {
 		String dataStr = "This is a sample String to be stored.";
 		ContentMetaInfo metaIno = null;
 		String name = UUID.randomUUID().toString();
@@ -100,7 +109,7 @@ public class ObjectPersistenceTest {
 		ObjectHandle handle = new ObjectHandle(container, name);
 		try {
 			objectInfoPersistence.storeObject(dataStr.getBytes("UTF-8"), metaIno, handle, keyStore, secretKeyAlias, secretKeyPassHandler, encParams);
-		} catch (UnsupportedEncodingException | UnsupportedEncAlgorithmException | WrongKeyCredentialException | UnsupportedKeyLengthException e) {
+		} catch (UnsupportedEncodingException | UnsupportedEncAlgorithmException | WrongKeyCredentialException | UnsupportedKeyLengthException | UnknownContainerException e) {
 			Assume.assumeNoException(e);
 		}
 		Assume.assumeTrue(TestFsBlobStoreFactory.existsOnFs(container, name));
@@ -109,7 +118,7 @@ public class ObjectPersistenceTest {
 			byte[] bs = objectInfoPersistence.loadObject(new ObjectHandle(container, name), keyStore, secretKeyPassHandler);
 			String byteStr = new String(bs, "UTF-8");
 			Assert.assertEquals(dataStr, byteStr);
-		} catch (ObjectNotFoundException | WrongKeyCredentialException | UnsupportedEncodingException e) {
+		} catch (ObjectNotFoundException | WrongKeyCredentialException | UnsupportedEncodingException | UnknownContainerException e) {
 			org.junit.Assert.fail(e.getMessage());
 		}
 
@@ -126,6 +135,8 @@ public class ObjectPersistenceTest {
 		} catch (WrongKeyCredentialException e) {
 			// Noop. COrrect outcome
 		} catch(RuntimeException e){
+			org.junit.Assert.fail("Not expecting this exception");
+		} catch (UnknownContainerException e) {
 			org.junit.Assert.fail("Not expecting this exception");
 		}
 		

@@ -1,7 +1,6 @@
 package org.adorsys.encobject.service;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.Key;
 import java.security.KeyStore;
@@ -24,10 +23,6 @@ import org.adorsys.jjwk.selector.UnsupportedKeyLengthException;
 import org.adorsys.jkeygen.keystore.PasswordCallbackUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jclouds.blobstore.BlobStore;
-import org.jclouds.blobstore.BlobStoreContext;
-import org.jclouds.blobstore.ContainerNotFoundException;
-import org.jclouds.blobstore.domain.Blob;
 
 import com.nimbusds.jose.CompressionAlgorithm;
 import com.nimbusds.jose.JOSEException;
@@ -43,14 +38,13 @@ public class ObjectPersistence {
 
 	private DefaultJWEDecrypterFactory decrypterFactory = new DefaultJWEDecrypterFactory();
 	
-	private BlobStoreContext blobStoreContext;
+	private BlobStoreConnection blobStoreConnection;
 
-	public ObjectPersistence(BlobStoreContext blobStoreContext) {
-		super();
-		this.blobStoreContext = blobStoreContext;
+	public ObjectPersistence(BlobStoreContextFactory blobStoreContextFactory) {
+		this.blobStoreConnection = new BlobStoreConnection(blobStoreContextFactory);
 	}
 	
-	public void storeObject(byte[] data, ContentMetaInfo metaIno, ObjectHandle handle, KeyStore keyStore, String keyID, CallbackHandler keyPassHandler, EncryptionParams encParams) throws UnsupportedEncAlgorithmException, WrongKeyCredentialException, UnsupportedKeyLengthException {
+	public void storeObject(byte[] data, ContentMetaInfo metaIno, ObjectHandle handle, KeyStore keyStore, String keyID, CallbackHandler keyPassHandler, EncryptionParams encParams) throws UnsupportedEncAlgorithmException, WrongKeyCredentialException, UnsupportedKeyLengthException, UnknownContainerException {
 		// We accept empty meta info
 		if(metaIno==null) metaIno=new ContentMetaInfo();
 		
@@ -103,42 +97,23 @@ public class ObjectPersistence {
 		}
 		
 		String jweEncryptedObject = jweObject.serialize();
-
-		BlobStore blobStore = blobStoreContext.getBlobStore();
-		blobStore.createContainerInLocation(null, handle.getContainer());
-		// add blob
-		Blob blob;
+		
+		byte[] bytesToStore;
 		try {
-			blob = blobStore.blobBuilder(handle.getName())
-			.payload(jweEncryptedObject.getBytes("UTF-8"))
-			.build();
+			bytesToStore = jweEncryptedObject.getBytes("UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			throw new IllegalStateException("Unsupported content type", e);
 		}
-		blobStore.putBlob(handle.getContainer(), blob);
+		blobStoreConnection.putBlob(handle, bytesToStore);
+
 	}
 
-	public byte[] loadObject(ObjectHandle handle, KeyStore keyStore, CallbackHandler keyPassHandler) throws ObjectNotFoundException, WrongKeyCredentialException{
+	public byte[] loadObject(ObjectHandle handle, KeyStore keyStore, CallbackHandler keyPassHandler) throws ObjectNotFoundException, WrongKeyCredentialException, UnknownContainerException{
 
-		BlobStore blobStore = blobStoreContext.getBlobStore();
-		Blob blob;
-		try {
-			blob = blobStore.getBlob(handle.getContainer(), handle.getName());
-			if(blob==null)  throw new ObjectNotFoundException(handle.getContainer() + "/" + handle.getName());
-		} catch (ContainerNotFoundException e){
-			throw new ObjectNotFoundException(handle.getContainer());			
-		}
-		
-		InputStream jweEncryptedStream;
-		try {
-			jweEncryptedStream = blob.getPayload().openStream();
-		} catch (IOException e) {
-			throw new IllegalStateException(e);
-		}
-
+		byte[] jweEncryptedBytes = blobStoreConnection.getBlob(handle);
 		String jweEncryptedObject;
 		try {
-			jweEncryptedObject = IOUtils.toString(jweEncryptedStream, "UTF-8");
+			jweEncryptedObject = IOUtils.toString(jweEncryptedBytes, "UTF-8");
 		} catch (IOException e) {
 			throw new IllegalStateException("Unsupported content type", e);
 		}
