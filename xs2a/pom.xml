@@ -29,7 +29,7 @@
 
 			<dependency>
 				<groupId>de.adorsys.multibanking</groupId>
-				<artifactId>onlinebaning-adapter</artifactId>
+				<artifactId>onlinebanking-adapter</artifactId>
 				<version>1.0.0-SNAPSHOT</version>
 			</dependency>
 
