@@ -31,23 +31,8 @@
 				<groupId>de.adorsys.multibanking</groupId>
 				<artifactId>onlinebanking-adapter</artifactId>
 				<version>1.0.0-SNAPSHOT</version>
-			</dependency>
-
-			<dependency>
-				<groupId>de.adorsys.securekeystorage</groupId>
-				<artifactId>cse-java-common</artifactId>
-				<version>1.0-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>de.adorsys.securekeystorage</groupId>
-				<artifactId>cse-java-client</artifactId>
-				<version>1.0-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>de.adorsys.securekeystorage</groupId>
-				<artifactId>cse-java-nimbus-impl</artifactId>
-				<version>1.0-SNAPSHOT</version>
-				<scope>runtime</scope>
+				<scope>system</scope>
+				<systemPath>${basedir}/to_release/onlinebanking-adapter-1.0.0-SNAPSHOT.jar</systemPath>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -68,12 +53,31 @@
 				</executions>
 				<configuration>
 					<mainClass>org.adorsys.psd2.xs2a.main.Main</mainClass>
+					<properties>
+						<java.net.preferIPv4Stack>true</java.net.preferIPv4Stack>
+					</properties>
 					<environment>
 						<SERVER_KEY_STORE_FILE>src/test/resources/xs2atestkeystore2keys.jks</SERVER_KEY_STORE_FILE>
 						<SERVER_KEY_STORE_TYPE>jks</SERVER_KEY_STORE_TYPE>
 						<SERVER_KEY_STORE_PASSWORD>storepass</SERVER_KEY_STORE_PASSWORD>
 						<SERVER_KEY_ENTRY_PASSWORD>keypass</SERVER_KEY_ENTRY_PASSWORD>
 					</environment>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>0.4.13</version>
+				<configuration>
+					<imageName>${project.build.finalName}</imageName>
+					<dockerDirectory>docker</dockerDirectory>
+					<resources>
+						<resource>
+							<targetPath>/</targetPath>
+							<directory>${project.build.directory}</directory>
+							<include>${project.build.finalName}-swarm.jar</include>
+						</resource>
+					</resources>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -169,18 +173,6 @@
 			<groupId>de.adorsys.multibanking</groupId>
 			<artifactId>onlinebanking-adapter</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>de.adorsys.securekeystorage</groupId>
-			<artifactId>cse-java-common</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>de.adorsys.securekeystorage</groupId>
-			<artifactId>cse-java-client</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>de.adorsys.securekeystorage</groupId>
-			<artifactId>cse-java-nimbus-impl</artifactId>
-		</dependency>
 
 		<!-- Java EE 7 dependency -->
 		<dependency>
@@ -236,6 +228,40 @@
 					<artifactId>hamcrest-core</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+
+		<!-- Hack listing some runtime dependencies while waiting to fix release 
+			process -->
+		<dependency>
+			<groupId>com.github.hbci4j</groupId>
+			<artifactId>hbci4j-core</artifactId>
+			<version>3.0.9-SNAPSHOT</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/to_release/hbci4j-core-3.0.9-SNAPSHOT.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<version>1.1.2</version>
+			<artifactId>logback-classic</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<version>1.1.2</version>
+			<artifactId>logback-core</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.16.6</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<artifactId>slf4j-api</artifactId>
+			<groupId>org.slf4j</groupId>
+			<version>1.7.7</version>
+			<scope>runtime</scope>
 		</dependency>
 	</dependencies>
 </project>

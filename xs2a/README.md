@@ -34,3 +34,18 @@ If you want to do it on your own you have to build the parent directory, the hbc
 
 Follow Link to the documented [Swagger API](
     http://localhost:8080/swagger-ui/?url=http://localhost:8080/swagger.json)
+    
+    
+## Runing on docker
+
+```
+
+mvn clean package docker:build
+
+docker run -p 8080:8080 -v <BASEDIR>/src/test/resources:/opt/certs -e SERVER_KEY_STORE_FILE=/opt/certs/xs2atestkeystore2keys.jks -e SERVER_KEY_STORE_TYPE=jks -e SERVER_KEY_STORE_PASSWORD=storepass -e SERVER_KEY_ENTRY_PASSWORD=keypass xs2a
+```
+
+## Building with a docker container
+```
+$ docker run -it --rm --name xs2a -v "$PWD":/usr/src/xs2a -w /usr/src/xs2a maven:3.5 mvn clean install
+```
