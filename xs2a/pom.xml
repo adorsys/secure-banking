@@ -167,7 +167,7 @@
 		<!-- hbci -->
 		<dependency>
 			<groupId>de.adorsys.multibanking</groupId>
-			<artifactId>onlinebaning-adapter</artifactId>
+			<artifactId>onlinebanking-adapter</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>de.adorsys.securekeystorage</groupId>

@@ -1,8 +1,6 @@
 package org.adorsys.psd2.hbci.resource;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -47,11 +45,8 @@ public class HbciResource {
 			@ApiResponse(code = 400, message = "Bad request", responseHeaders=@ResponseHeader(name="ERROR_KEY", description="BAD_REQUEST"))})
 	public Response loadBankAccounts(@ApiParam(value="The encrypted bank access object") EncryptedHbciLoadAccountRequest encryptedRequest) {
 		HbciLoadAccountsRequest request = JWEUtils.decrypt(encryptedRequest.getJweString(), HbciLoadAccountsRequest.class);
-		Optional<List<BankAccount>> bankAccounts = onlineBankingService.loadBankAccounts(request.getBankAccess(), request.getPin());
-		ArrayList<BankAccount> bancAccountList = new ArrayList<>();
-		if(bankAccounts.isPresent()){
-			bancAccountList.addAll(bankAccounts.get());
-		}
+		List<BankAccount> bancAccountList = onlineBankingService.loadBankAccounts(request.getBankAccess(), request.getPin());
+
 		String encryptedJwe = JWEUtils.encrypt(bancAccountList, request);
 		EncryptedListOfHbciBankAccounts resp = new EncryptedListOfHbciBankAccounts();
 		resp.setJweString(encryptedJwe);
@@ -67,11 +62,8 @@ public class HbciResource {
 			@ApiResponse(code = 400, message = "Bad request", responseHeaders=@ResponseHeader(name="ERROR_KEY", description="BAD_REQUEST"))})
 	public Response loadPostings(@ApiParam(value="The encrypted bank access object") EncryptedHbciLoadBookingsRequest encryptedRequest) {
 		HbciLoadBookingsRequest request = JWEUtils.decrypt(encryptedRequest.getJweString(), HbciLoadBookingsRequest.class);
-		Optional<List<Booking>> bookings = onlineBankingService.loadBookings(request.getBankAccess(), request.getBankAccount(), request.getPin());
-		ArrayList<Booking> bookingList = new ArrayList<>();
-		if(bookings.isPresent()){
-			bookingList.addAll(bookings.get());
-		}
+		List<Booking> bookingList = onlineBankingService.loadBookings(request.getBankAccess(), request.getBankAccount(), request.getPin());
+
 		String encryptedJwe = JWEUtils.encrypt(bookingList, request);
 		EncryptedListOfHbciBookings resp = new EncryptedListOfHbciBookings();
 		resp.setJweString(encryptedJwe);
