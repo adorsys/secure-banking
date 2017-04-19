@@ -17,6 +17,7 @@ On the other hand the app itself needs to claim the **'Remote Notification' Back
 ### Encrypted Push
 Since iOS 10 it is also possible for the app (or more correctly, for an app extension) to first process the 
 push notification before it is displayed to the user. This enables us to send encrypted push notifications 
-to the device and decrypt it for displaying them. For this to work as expected the some conditions have to be
+to the device and decrypt it for displaying them. For this to work as expected some conditions have to be
 met. The aps dictionary of the push message has to include the **mutable-content** key with the value set to 1.
-Furthermore for the app the remote notifications have to be configured to pop up alerts.
+We need to add a **Notification Service Extension** target to the app itself. Furthermore for the app the remote 
+notifications have to be configured to pop up alerts.
