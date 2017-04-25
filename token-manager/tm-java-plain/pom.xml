@@ -27,16 +27,15 @@
 				<type>pom</type>
 			</dependency>
 
-			<!-- Colocated project. Might be build before. -->
 			<dependency>
 				<groupId>de.adorsys.envutils</groupId>
 				<artifactId>envutils4j</artifactId>
-				<version>1.0.0-SNAPSHOT</version>
+				<version>0.2</version>
 			</dependency>
 			<dependency>
 				<groupId>de.adorsys.cryptoutils</groupId>
 				<artifactId>jtstamp</artifactId>
-				<version>1.0.0-SNAPSHOT</version>
+				<version>0.1</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
