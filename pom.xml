@@ -23,7 +23,7 @@
 
         <version.nimbus-jose-jwt>4.34.1</version.nimbus-jose-jwt>
         <version.slf4j>1.7.22</version.slf4j>
-        <version.junit>4.12</version.junit>
+        <version.junit>4.13.1</version.junit>
         <version.apache-commons-codec>1.10</version.apache-commons-codec>
         <version.jackson-databind>2.8.6</version.jackson-databind>
         <version.wildfly.swarm>2017.2.0</version.wildfly.swarm>
